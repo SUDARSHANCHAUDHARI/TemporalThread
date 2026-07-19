@@ -1,0 +1,10 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "mcp": {
+    "temporal-thread": {
+      "type": "local",
+      "command": ["temporalthread", "start"],
+      "enabled": true
+    }
+  }
+}

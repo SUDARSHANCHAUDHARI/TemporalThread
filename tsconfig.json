@@ -7,6 +7,9 @@
     { "path": "packages/storage-sqlite" },
     { "path": "packages/core" },
     { "path": "apps/mcp-server" },
-    { "path": "apps/cli" }
+    { "path": "apps/cli" },
+    { "path": "examples/basic-mcp-client" },
+    { "path": "examples/manual-event-recording" },
+    { "path": "examples/ollama-tool-client" }
   ]
 }

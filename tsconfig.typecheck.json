@@ -14,5 +14,12 @@
       "@temporalthread/mcp-server": ["./apps/mcp-server/src/index.ts"]
     }
   },
-  "include": ["apps/**/*.ts", "packages/**/*.ts", "examples/**/*.ts", "tests/**/*.ts", "vitest.config.ts"]
+  "include": [
+    "apps/**/*.ts",
+    "packages/**/*.ts",
+    "integrations/**/*.ts",
+    "examples/**/*.ts",
+    "tests/**/*.ts",
+    "vitest.config.ts"
+  ]
 }

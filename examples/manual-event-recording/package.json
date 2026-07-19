@@ -6,6 +6,7 @@
   "dependencies": {
     "@temporalthread/config": "workspace:*",
     "@temporalthread/core": "workspace:*",
+    "@temporalthread/shared-types": "workspace:*",
     "@temporalthread/storage-sqlite": "workspace:*",
     "@temporalthread/temporal-parser": "workspace:*"
   }

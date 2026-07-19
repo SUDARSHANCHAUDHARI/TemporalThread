@@ -14,6 +14,9 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 1.29.0
         version: 1.29.0(zod@4.4.3)
+      '@opencode-ai/plugin':
+        specifier: 1.1.33
+        version: 1.1.33
       '@types/better-sqlite3':
         specifier: 7.6.13
         version: 7.6.13
@@ -92,6 +95,9 @@ importers:
       '@temporalthread/core':
         specifier: workspace:*
         version: link:../../packages/core
+      '@temporalthread/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
       '@temporalthread/storage-sqlite':
         specifier: workspace:*
         version: link:../../packages/storage-sqlite
@@ -411,6 +417,12 @@ packages:
     peerDependencies:
       '@emnapi/core': ^1.7.1
       '@emnapi/runtime': ^1.7.1
+
+  '@opencode-ai/plugin@1.1.33':
+    resolution: {integrity: sha512-fnOhcGk+mRzqYzUhJSOUZ5Ck0nMdZVG7FcJM/NvbGBNNAnaGePmCBfzKsAwhThMEk0+GjY7dcnyixD49zFbt3A==}
+
+  '@opencode-ai/sdk@1.1.33':
+    resolution: {integrity: sha512-ZE1ABxOxk1dSmDW7db3rUiEzvtZHypcWI6N/aBA0dtbp1Hql+XjOrU4cVqtygynAF5DCVDNFjOH2b375RXn8zw==}
 
   '@oxc-project/types@0.139.0':
     resolution: {integrity: sha512-r9gHphtCs+1M7J0pw6Sn/hh/Wpa/iQrOOkrNAlVLF/gHq+/CJmHIWKKUUhdWjcD6CIa8idarspCsASiXCXvFUw==}
@@ -1444,6 +1456,9 @@ packages:
     peerDependencies:
       zod: ^3.25.28 || ^4
 
+  zod@4.1.8:
+    resolution: {integrity: sha512-5R1P+WwQqmmMIEACyzSvo4JXHY5WiAFHRMg+zBZKgKS+Q1viRa0C1hmUKtHltoIFKtIdki3pRxkmpP74jnNYHQ==}
+
   zod@4.4.3:
     resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
@@ -1616,6 +1631,13 @@ snapshots:
       '@emnapi/runtime': 1.11.1
       '@tybys/wasm-util': 0.10.3
     optional: true
+
+  '@opencode-ai/plugin@1.1.33':
+    dependencies:
+      '@opencode-ai/sdk': 1.1.33
+      zod: 4.1.8
+
+  '@opencode-ai/sdk@1.1.33': {}
 
   '@oxc-project/types@0.139.0': {}
 
@@ -2539,5 +2561,7 @@ snapshots:
   zod-to-json-schema@3.25.2(zod@4.4.3):
     dependencies:
       zod: 4.4.3
+
+  zod@4.1.8: {}
 
   zod@4.4.3: {}

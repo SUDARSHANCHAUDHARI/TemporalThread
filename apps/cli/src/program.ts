@@ -2,6 +2,7 @@ import { startStdioServer } from '@temporalthread/mcp-server';
 import { Command } from 'commander';
 import { registerConfigCommand } from './commands/config.js';
 import { registerDoctorCommand } from './commands/doctor.js';
+import { registerHookCommand } from './commands/hook.js';
 import { registerIngestCommand } from './commands/ingest.js';
 import { registerInitCommand } from './commands/init.js';
 import {
@@ -34,6 +35,7 @@ export function createProgram(): Command {
   registerExportCommand(program);
   registerPurgeCommand(program);
   registerIngestCommand(program);
+  registerHookCommand(program);
   return program;
 }
 

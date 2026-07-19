@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "temporal-thread": {
+      "type": "stdio",
+      "command": "temporalthread",
+      "args": ["start"]
+    }
+  }
+}
