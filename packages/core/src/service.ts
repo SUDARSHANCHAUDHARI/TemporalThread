@@ -11,6 +11,7 @@ import {
   GetCurrentTimeInputSchema,
   GetLastInteractionInputSchema,
   GetTemporalContextInputSchema,
+  InteractionRoleSchema,
   type LastInteractionResult,
   ListCommitmentsInputSchema,
   type Project,
@@ -24,6 +25,7 @@ import {
   type TemporalContextResult,
   type TemporalReference,
   type TemporalResolution,
+  type TimelineItem,
   UpdateCommitmentInputSchema,
   type UpdatedCommitmentResult,
 } from '@temporalthread/shared-types';
@@ -326,6 +328,15 @@ export class TemporalThreadService {
       ? this.storage.getInteraction(parsed.sourceInteractionId)
       : null;
     if (parsed.sourceInteractionId && !source) throw new Error('Source interaction not found');
+    if (project && session && session.projectId !== project.id) {
+      throw new Error('Commitment scope mismatch between project and session');
+    }
+    if (project && source && source.projectId !== project.id) {
+      throw new Error('Commitment scope mismatch between project and source interaction');
+    }
+    if (session && source && source.sessionId !== session.id) {
+      throw new Error('Commitment scope mismatch between session and source interaction');
+    }
     const resolution = parsed.originalExpression
       ? resolveRelativeTime(parsed.originalExpression, anchor.toString(), parsed.timezone, this.config.locale)
       : null;
@@ -431,6 +442,44 @@ export class TemporalThreadService {
 
   purgeData() {
     return this.storage.purgeAll();
+  }
+
+  listTimeline(input: {
+    agent?: { name: string; platform?: string | undefined } | undefined;
+    project?: ProjectSelector | { path?: string | undefined; name?: string | undefined } | undefined;
+    sessionId?: string | undefined;
+    role?: InteractionFilters['role'] | undefined;
+    limit?: number | undefined;
+  }): TimelineItem[] {
+    const limit = input.limit ?? 50;
+    if (!Number.isInteger(limit) || limit < 1 || limit > 500) {
+      throw new Error('Timeline limit must be an integer from 1 to 500');
+    }
+    const role = input.role ? InteractionRoleSchema.parse(input.role) : undefined;
+    const resolved = this.resolveInteractionFilters({
+      ...input,
+      ...(role ? { role } : {}),
+    });
+    if (!resolved.matched) return [];
+    return this.storage
+      .listInteractions(resolved.filters, limit)
+      .map(({ interaction, agent, project, session }) => ({
+        interactionId: interaction.id,
+        timestamp: interaction.occurredAtUtc,
+        timezone: interaction.timezone,
+        role: interaction.role,
+        privacyMode: interaction.privacyMode,
+        temporalReferenceCount: this.storage.getTemporalReferences(interaction.id).length,
+        agent: { id: agent.id, name: agent.name, platform: agent.platform },
+        project: project
+          ? { id: project.id, name: project.name, normalizedPath: project.normalizedPath }
+          : null,
+        session: {
+          id: session.id,
+          externalSessionId: session.externalSessionId,
+          generatedSession: session.generatedSession,
+        },
+      }));
   }
 
   private resolveOrCreateSession(

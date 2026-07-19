@@ -57,6 +57,7 @@ function safeErrorMessage(error: unknown): string {
     'Source interaction not found',
     'Commitment not found',
     'Session identifier is ambiguous',
+    'Commitment scope mismatch',
     'anchorTime must be',
     'occurredAt must be',
     'start must be',

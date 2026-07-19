@@ -130,6 +130,18 @@ export interface PurgeResult {
   };
 }
 
+export interface TimelineItem {
+  interactionId: string;
+  timestamp: string;
+  timezone: string;
+  role: string;
+  privacyMode: string;
+  temporalReferenceCount: number;
+  agent: Pick<Agent, 'id' | 'name' | 'platform'>;
+  project: Pick<Project, 'id' | 'name' | 'normalizedPath'> | null;
+  session: Pick<Session, 'id' | 'externalSessionId' | 'generatedSession'>;
+}
+
 export interface DoctorCheck {
   name: string;
   status: 'pass' | 'warn' | 'fail';
