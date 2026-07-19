@@ -1,5 +1,5 @@
 {
-  "name": "temporalthread",
+  "name": "@temporalthread/workspace",
   "version": "0.1.0",
   "private": true,
   "description": "Give AI agents a persistent sense of time.",

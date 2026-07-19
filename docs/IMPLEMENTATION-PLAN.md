@@ -1,7 +1,8 @@
 # TemporalThread implementation plan
 
-Status: approved build brief, implementation in progress  
-Research date: 2026-07-19  
+Status: implementation and release verification complete
+Research date: 2026-07-19
+Completion date: 2026-07-20
 Target release: `0.1.0`
 
 ## Outcome
@@ -115,15 +116,15 @@ Verification: in-process schema tests plus a real stdio client that spawns the b
 
 ### Increment 5: CLI and generic adapter
 
-Implement `init`, `start`, `doctor`, `status`, `config`, `timeline`, `commitments`, `export`, `purge`, and `ingest`/JSONL support. `init` will be non-destructive, back up modified host configs, report exact changes, and default to `temporal-references-only`.
+Implement `init`, `start`, `doctor`, `status`, `config`, `timeline`, `commitments`, `export`, `purge`, and `ingest`/JSONL support. `init` will be non-destructive, report exact changes, prepare reviewed examples without editing host configuration, and default to `temporal-references-only`. Host-specific installers will back up files they modify.
 
 Verification: CLI process tests with isolated environment directories, deterministic clocks where relevant, doctor failure/success fixtures, malformed JSONL rejection, export, and purge.
 
 ### Increment 6: Codex integration
 
-Provide MCP config, project/user installation scripts, uninstall, doctor integration, skill, and hook adapters for `SessionStart`, `UserPromptSubmit`, and `Stop`. Hooks call the CLI adapter and return compact context where the host accepts it. Installers never overwrite config without confirmation and always create backups.
+Provide MCP config, a project-scoped installer, uninstall, doctor integration, skill, and hook adapters for `SessionStart`, `UserPromptSubmit`, and `Stop`. Hooks call the CLI adapter and return compact context where the host accepts it. The installer creates backups and merges only recognized entries.
 
-Verification: adapter fixture tests for documented hook JSON, generated config validation, shell syntax checks, and an installed-Codex smoke test when the local version supports the documented events.
+Verification: adapter fixture tests for documented hook JSON plus install-twice, doctor, preservation, backup, and uninstall tests in temporary projects. Live host execution remains a manual trust/compatibility step and is not claimed by the automated suite.
 
 ### Increment 7: remaining integrations
 
