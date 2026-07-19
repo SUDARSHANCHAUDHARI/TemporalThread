@@ -1,4 +1,5 @@
-import { accessSync, constants, existsSync } from 'node:fs';
+import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { isValidTimezone, loadConfig, resolveTemporalThreadPaths } from '@temporalthread/config';
 import { SystemClock, TemporalThreadService } from '@temporalthread/core';
 import { createMcpServer } from '@temporalthread/mcp-server';
@@ -18,6 +19,90 @@ function check(name: string, operation: () => string): DoctorCheck {
       detail: error instanceof Error ? error.message : 'check failed',
     };
   }
+}
+
+function installationCheck(name: string, path: string, label: string, marker?: string): DoctorCheck {
+  if (!existsSync(path)) return { name, status: 'warn', detail: `${label} is not installed` };
+  try {
+    if (marker && !readFileSync(path, 'utf8').includes(marker)) {
+      return { name, status: 'warn', detail: `${label} does not contain a TemporalThread entry` };
+    }
+    return { name, status: 'pass', detail: `${label} is installed` };
+  } catch {
+    return { name, status: 'fail', detail: `${label} could not be read` };
+  }
+}
+
+function hostInstallationChecks(integration: string, projectRoot: string): DoctorCheck[] {
+  if (integration === 'codex') {
+    return [
+      installationCheck(
+        'codex agent configuration',
+        join(projectRoot, '.codex/config.toml'),
+        '.codex/config.toml',
+        'mcp_servers.temporal-thread',
+      ),
+      installationCheck(
+        'codex skill installation',
+        join(projectRoot, '.agents/skills/temporalthread/SKILL.md'),
+        'Codex TemporalThread skill',
+      ),
+      installationCheck(
+        'codex hook installation',
+        join(projectRoot, '.codex/hooks.json'),
+        '.codex/hooks.json',
+        'temporalthread hook codex',
+      ),
+    ];
+  }
+  if (integration === 'claude-code') {
+    return [
+      installationCheck(
+        'claude-code agent configuration',
+        join(projectRoot, '.mcp.json'),
+        '.mcp.json',
+        'temporal-thread',
+      ),
+      installationCheck(
+        'claude-code skill installation',
+        join(projectRoot, '.claude/skills/temporalthread/SKILL.md'),
+        'Claude Code TemporalThread skill',
+      ),
+      installationCheck(
+        'claude-code hook installation',
+        join(projectRoot, '.claude/settings.json'),
+        '.claude/settings.json',
+        'temporalthread hook claude-code',
+      ),
+    ];
+  }
+  if (integration === 'opencode') {
+    return [
+      installationCheck(
+        'opencode agent configuration',
+        join(projectRoot, 'opencode.json'),
+        'opencode.json',
+        'temporal-thread',
+      ),
+      installationCheck(
+        'opencode skill installation',
+        join(projectRoot, '.opencode/skills/temporalthread/SKILL.md'),
+        'OpenCode TemporalThread skill',
+      ),
+      installationCheck(
+        'opencode plugin installation',
+        join(projectRoot, '.opencode/plugins/temporalthread.ts'),
+        'OpenCode TemporalThread plugin',
+      ),
+    ];
+  }
+  return [
+    {
+      name: `${integration} host installation`,
+      status: 'pass',
+      detail: 'no host configuration, skill, or hook installation is required',
+    },
+  ];
 }
 
 export function registerDoctorCommand(program: Command): void {
@@ -87,19 +172,7 @@ export function registerDoctorCommand(program: Command): void {
             return example;
           }),
         );
-        if (integration === 'generic' || integration === 'ollama') {
-          checks.push({
-            name: `${integration} skill and hooks`,
-            status: 'pass',
-            detail: 'not required for this integration',
-          });
-        } else {
-          checks.push({
-            name: `${integration} skill and hooks`,
-            status: 'warn',
-            detail: 'run the host-specific installer and review host trust/permission status',
-          });
-        }
+        checks.push(...hostInstallationChecks(integration, process.cwd()));
       }
       if (storage) storage.close();
       const result = { ok: checks.every((item) => item.status !== 'fail'), checks };

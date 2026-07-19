@@ -1,3 +1,4 @@
+import { randomUUID } from 'node:crypto';
 import { loadConfig, resolveTemporalThreadPaths } from '@temporalthread/config';
 import { SystemClock, TemporalThreadService } from '@temporalthread/core';
 import type { GetTemporalContextInput, RecordInteractionInput } from '@temporalthread/shared-types';
@@ -43,7 +44,7 @@ try {
     project: { path: process.cwd() },
     sessionId,
     text: process.argv.slice(2).join(' ') || 'Continue this tomorrow.',
-    idempotencyKey: `${sessionId}:user:1`,
+    idempotencyKey: process.env.AGENT_EVENT_ID ?? `${sessionId}:user:${randomUUID()}`,
   });
   const context = await adapter.getTemporalContext({ sessionId, includeCommitments: true });
   process.stdout.write(`${JSON.stringify(context, null, 2)}\n`);

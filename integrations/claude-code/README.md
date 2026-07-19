@@ -11,4 +11,6 @@ Status: MCP configuration and documented hook payload adapters are covered by au
 
 Claude Code treats most nonzero hook exits as non-blocking errors. TemporalThread never returns a blocking decision. Capture is not guaranteed when hooks are disabled, interrupted, or skipped on abnormal termination.
 
+Claude Code's documented hook payload does not expose a turn ID. The adapter therefore derives a fallback idempotency key from session, event role, and a message hash. Two identical messages with the same role in one session can coalesce; a custom generic adapter should supply stable event IDs when exact repeat preservation is required.
+
 References: [Claude Code MCP](https://code.claude.com/docs/en/mcp), [hooks](https://code.claude.com/docs/en/hooks), and [skills](https://code.claude.com/docs/en/slash-commands).

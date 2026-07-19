@@ -11,7 +11,7 @@
     "pnpm": ">=10.0.0"
   },
   "scripts": {
-    "audit": "pnpm audit --audit-level high",
+    "audit": "pnpm audit --prod --audit-level high",
     "build": "tsc -b",
     "clean": "tsc -b --clean",
     "format": "biome format --write .",

@@ -1,4 +1,4 @@
-import { execFile } from 'node:child_process';
+import { execFile, execFileSync } from 'node:child_process';
 import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
@@ -11,9 +11,13 @@ const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'));
 const cliEntry = resolve('apps/cli/src/bin.ts');
 const typecheckConfig = resolve('tsconfig.typecheck.json');
 
-async function runCli(home: string, arguments_: string[]): Promise<{ stdout: string; stderr: string }> {
+async function runCli(
+  home: string,
+  arguments_: string[],
+  cwd = process.cwd(),
+): Promise<{ stdout: string; stderr: string }> {
   return executeFile(process.execPath, [tsxCli, '--tsconfig', typecheckConfig, cliEntry, ...arguments_], {
-    cwd: process.cwd(),
+    cwd,
     env: {
       ...process.env,
       TEMPORALTHREAD_HOME: home,
@@ -144,5 +148,23 @@ describe('temporalthread CLI', () => {
       counts: { interactions: number };
     };
     expect(after.counts.interactions).toBe(0);
+  });
+
+  it('checks the selected host configuration, skill, and hooks in the current project', async () => {
+    const home = mkdtempSync(join(tmpdir(), 'temporalthread-cli-'));
+    const project = mkdtempSync(join(tmpdir(), 'temporalthread-codex-project-'));
+    await runCli(home, ['init', '--yes', '--timezone', 'UTC', '--integration', 'codex', '--json']);
+    execFileSync(process.execPath, [resolve('integrations/codex/install.mjs'), '--target', project]);
+
+    const doctor = JSON.parse((await runCli(home, ['doctor', '--json'], project)).stdout) as {
+      ok: boolean;
+      checks: Array<{ name: string; status: string }>;
+    };
+    expect(doctor.ok).toBe(true);
+    expect(
+      doctor.checks
+        .filter((item) => item.name.startsWith('codex ') && item.name !== 'codex configuration example')
+        .map((item) => item.status),
+    ).toEqual(['pass', 'pass', 'pass']);
   });
 });

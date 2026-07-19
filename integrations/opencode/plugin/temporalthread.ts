@@ -91,14 +91,18 @@ export async function ingestInteraction(event: InteractionEvent): Promise<void> 
 
 export const TemporalThreadPlugin: Plugin = async ({ client, directory }) => {
   async function reportFailure(): Promise<void> {
-    await client.app.log({
-      body: {
-        service: 'temporalthread',
-        level: 'warn',
-        message: 'TemporalThread could not capture a completed interaction',
-      },
-      query: { directory },
-    });
+    try {
+      await client.app.log({
+        body: {
+          service: 'temporalthread',
+          level: 'warn',
+          message: 'TemporalThread could not capture a completed interaction',
+        },
+        query: { directory },
+      });
+    } catch {
+      // Capture failures must not interrupt the host's message lifecycle.
+    }
   }
 
   return {

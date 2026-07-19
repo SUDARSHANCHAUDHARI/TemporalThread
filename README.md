@@ -1,0 +1,192 @@
+# TemporalThread
+
+**Give AI agents a persistent sense of time.**
+
+TemporalThread is a local-first MCP server and CLI that preserves temporal continuity across conversations, coding agents, projects, and restarts. It records when an interaction happened, distinguishes exact elapsed time from calendar-day difference, resolves relative phrases against their original message timestamp, and tracks explicit follow-up commitments.
+
+It is more than a clock tool. If a user said “Let’s continue tomorrow” at 8:00 PM on July 15 in Bangkok, TemporalThread anchors “tomorrow” to July 16. When the user returns on July 19, it can report that four exact days elapsed and that the commitment is three calendar days overdue—without reinterpreting “tomorrow” using July 19.
+
+## What it does
+
+- Persists agent, project, session, interaction, temporal-reference, and commitment metadata in local SQLite.
+- Exposes nine strictly validated tools over local MCP stdio.
+- Handles timezone offsets, DST gaps and overlaps, midnight, leap days, vague expressions, out-of-order events, and idempotent retries.
+- Defaults to storing only metadata plus matched temporal expressions—not full messages.
+- Provides export, purge, diagnostics, timeline, commitment, and generic ingestion commands.
+- Supplies host configuration, skills, and best-effort capture adapters.
+
+## What it does not do
+
+- It does not call an LLM, host a cloud service, collect telemetry, or open a network port.
+- MCP alone cannot intercept every platform’s conversation history.
+- Automatic capture depends on events exposed by each host and can miss abnormal termination.
+- A skill or hook improves reliability but cannot guarantee that an agent will always call a tool.
+- It does not treat Ollama itself as an MCP host or modify every Ollama client.
+- It does not fabricate exact times for vague phrases such as “later.”
+
+## Architecture
+
+```mermaid
+flowchart LR
+    A["Codex, Claude Code, OpenCode, custom agent"] -->|"MCP stdio"| M["MCP server"]
+    H["Documented hooks or JSONL"] --> C["CLI adapters"]
+    M --> S["Temporal service"]
+    C --> S
+    S --> P["Deterministic parser"]
+    S --> K["Injectable clock"]
+    S --> R["SQLite repository"]
+    R --> D[("Private local database")]
+```
+
+The clock, parser, storage, service, transport, CLI, and integrations are explicit boundaries. See [Architecture](docs/ARCHITECTURE.md) and [Data model](docs/DATA-MODEL.md).
+
+## Installation from source
+
+The MVP is not yet published to npm. Clone this repository, install Node.js 24 and pnpm 11.9.0, then run from the repository root:
+
+```sh
+pnpm install --frozen-lockfile
+pnpm build
+cd apps/cli
+npm link
+temporalthread init
+```
+
+`npm link` exposes the built local `temporalthread` binary. Remove it later with `npm unlink --global temporalthread`. Initialization asks which integrations to prepare when attached to a terminal, detects the operating system and IANA timezone, creates the config/database, applies migrations, and prints every created or preserved path. It never edits host configuration silently.
+
+For a non-interactive isolated setup:
+
+```sh
+temporalthread init --yes --timezone UTC --integration generic --json
+temporalthread doctor
+```
+
+## Quick example
+
+Start the MCP server from any compatible host:
+
+```sh
+temporalthread start
+```
+
+Or run the compiled basic client, which records an interaction and retrieves compact context:
+
+```sh
+node examples/basic-mcp-client/dist/index.js
+```
+
+The generic CLI accepts JSON, arrays, or JSONL:
+
+```sh
+temporalthread ingest --file integrations/generic/events.example.jsonl --json
+temporalthread timeline
+```
+
+## Host setup
+
+### Codex
+
+From the target project, run:
+
+```sh
+node path/to/TemporalThread/integrations/codex/install.mjs
+node path/to/TemporalThread/integrations/codex/doctor.mjs
+```
+
+Review the generated project MCP, hook, and skill files before trusting them. The installer and uninstaller are tested for backups, idempotency, unrelated-setting preservation, and locally edited skill preservation. See [Codex setup](integrations/codex/README.md).
+
+### Claude Code
+
+Merge `integrations/claude-code/.mcp.json` and `hooks.json` into the target project, then copy the skill to `.claude/skills/temporalthread/SKILL.md`. Prompt and last-assistant-message fields are supported; transcript files are intentionally ignored. See [Claude Code setup](integrations/claude-code/README.md).
+
+### OpenCode
+
+Merge `integrations/opencode/opencode.json`, copy the typed plugin, and install the skill. MCP configuration is supported; automatic plugin capture is **experimental** pending live end-to-end host verification. See [OpenCode setup](integrations/opencode/README.md).
+
+### Ollama
+
+Build, choose an installed tool-capable model, and run:
+
+```sh
+OLLAMA_MODEL=qwen3 node examples/ollama-tool-client/dist/index.js "How long has it been?"
+```
+
+The example talks only to the configured local Ollama endpoint and TemporalThread stdio server. Its tool loop is tested with a mocked API; no specific model is certified. See [Ollama setup](integrations/ollama/README.md).
+
+See [Integrations](docs/INTEGRATIONS.md) for the support matrix and generic fallback.
+
+## Privacy modes
+
+| Mode | Stored message data |
+| --- | --- |
+| `metadata-only` | identifiers, timestamps, timezone/offset, and hash |
+| `temporal-references-only` | metadata plus matched phrases and resolutions; default |
+| `full-local-history` | metadata, matched references, preview, and full text |
+
+Full history is never enabled automatically. All processing is local; stored content is never sent anywhere by TemporalThread. See [Privacy](docs/PRIVACY.md).
+
+## MCP tools
+
+| Tool | Purpose |
+| --- | --- |
+| `get_current_time` | Current UTC and local wall-clock context |
+| `record_interaction` | Idempotently persist an interaction under a privacy mode |
+| `get_temporal_context` | Compact last interaction, elapsed time, references, and commitments |
+| `get_last_interaction` | Most recent matching event; raw text requires explicit permission |
+| `calculate_elapsed_time` | Exact duration plus local calendar-day difference |
+| `resolve_relative_time` | Resolve a phrase against an explicit historical anchor |
+| `record_commitment` | Store an explicit follow-up with resolved or fuzzy due range |
+| `list_commitments` | List pending, due, overdue, completed, or cancelled items |
+| `update_commitment` | Complete, cancel, reopen, or reschedule an item |
+
+Every tool has strict input/output schemas and rejects unknown input fields.
+
+## CLI reference
+
+```text
+temporalthread init          initialize configuration, database, and examples
+temporalthread start         run the MCP stdio server
+temporalthread doctor        diagnose runtime, storage, and integration examples
+temporalthread status        show private-content-free local status
+temporalthread config        show/get/set configuration with backups
+temporalthread timeline      list compact interaction metadata
+temporalthread commitments   list commitments and derived status
+temporalthread ingest        ingest JSON, an array, or JSONL
+temporalthread export        export all privacy-permitted stored data
+temporalthread purge         delete all domain data after confirmation
+```
+
+Use `temporalthread <command> --help` for options. `TEMPORALTHREAD_HOME`, `TEMPORALTHREAD_CONFIG_PATH`, `TEMPORALTHREAD_DATABASE_PATH`, timezone, locale, privacy, thresholds, text-size, and log-level environment overrides are available for isolated or advanced use.
+
+## Troubleshooting
+
+- Run `temporalthread doctor --json` and `temporalthread status --json` first.
+- If the command is missing after a source build, rerun `npm link` inside `apps/cli` and ensure the npm global binary directory is on `PATH`.
+- If MCP does not appear, restart the host and review its project trust and MCP status.
+- If hooks do not capture, inspect the host’s hook status and use `record_interaction` or `temporalthread ingest` as the supported fallback.
+- If SQLite cannot open, stop all clients, preserve the database plus WAL/SHM files, and follow [Security and recovery](docs/SECURITY.md).
+- A host showing tools does not prove automatic capture; MCP and hook/plugin status are separate.
+
+## Known limitations
+
+- The deterministic English parser covers the documented MVP expressions, not unrestricted natural language.
+- `next Friday` is defined as the next Friday strictly after the anchor date and reports that ambiguity policy.
+- Fuzzy expressions remain fuzzy or unresolved.
+- No import command exists yet; export is a logical backup and portability format for future work.
+- OpenCode automatic capture has type and adapter tests but no live host certification.
+- Codex and Claude Code hook capture is best effort and requires local trust/configuration.
+- The default stdio architecture is local-only; Streamable HTTP is a future opt-in design.
+
+## Development
+
+```sh
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm audit --prod --audit-level high
+```
+
+Tests use a deterministic fake clock and cover DST, leap day, midnight, timezone change, privacy, sessions, migrations, malformed storage, all tools, a real stdio process restart, CLI operations, installers, hooks, and the Ollama loop. CI runs the gates on Linux, macOS, and Windows.
+
+Read [Contributing](CONTRIBUTING.md), [Security policy](SECURITY.md), the [Roadmap](docs/ROADMAP.md), and the [Changelog](CHANGELOG.md). TemporalThread is available under the [MIT License](LICENSE).
