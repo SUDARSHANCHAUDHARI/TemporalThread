@@ -171,6 +171,17 @@ export class SqliteStorage {
     return row ? mapSession(row as SqlRow) : null;
   }
 
+  findSessionsByExternalId(externalSessionId: string): Session[] {
+    return this.database
+      .prepare(
+        `SELECT * FROM sessions
+         WHERE external_session_id = ?
+         ORDER BY last_interaction_at DESC, id DESC`,
+      )
+      .all(externalSessionId)
+      .map((row) => mapSession(row as SqlRow));
+  }
+
   findGeneratedSession(
     agentId: string,
     projectId: string | null,
@@ -222,6 +233,21 @@ export class SqliteStorage {
 
   getSession(sessionId: string): Session | null {
     const row = this.database.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
+    return row ? mapSession(row as SqlRow) : null;
+  }
+
+  getPreviousSession(current: Session): Session | null {
+    const row = this.database
+      .prepare(
+        `SELECT * FROM sessions
+         WHERE id <> ?
+           AND agent_id = ?
+           AND IFNULL(project_id, '') = IFNULL(?, '')
+           AND last_interaction_at < ?
+         ORDER BY last_interaction_at DESC, id DESC
+         LIMIT 1`,
+      )
+      .get(current.id, current.agentId, current.projectId, current.startedAt);
     return row ? mapSession(row as SqlRow) : null;
   }
 
