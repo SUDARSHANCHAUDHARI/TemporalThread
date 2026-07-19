@@ -1,0 +1,9 @@
+{
+  "name": "@temporalthread/example-ollama-tool-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0"
+  }
+}

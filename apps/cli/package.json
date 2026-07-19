@@ -1,0 +1,18 @@
+{
+  "name": "temporalthread",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "bin": {
+    "temporalthread": "./dist/bin.js"
+  },
+  "dependencies": {
+    "@temporalthread/config": "workspace:*",
+    "@temporalthread/core": "workspace:*",
+    "@temporalthread/mcp-server": "workspace:*",
+    "@temporalthread/shared-types": "workspace:*",
+    "@temporalthread/storage-sqlite": "workspace:*",
+    "@temporalthread/temporal-parser": "workspace:*",
+    "commander": "15.0.0"
+  }
+}

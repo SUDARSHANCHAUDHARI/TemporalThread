@@ -1,0 +1,12 @@
+{
+  "name": "@temporalthread/example-manual-event-recording",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@temporalthread/config": "workspace:*",
+    "@temporalthread/core": "workspace:*",
+    "@temporalthread/storage-sqlite": "workspace:*",
+    "@temporalthread/temporal-parser": "workspace:*"
+  }
+}

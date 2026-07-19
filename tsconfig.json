@@ -1,0 +1,10 @@
+{
+  "files": [],
+  "references": [
+    { "path": "packages/shared-types" },
+    { "path": "packages/config" },
+    { "path": "packages/temporal-parser" },
+    { "path": "packages/storage-sqlite" },
+    { "path": "packages/core" }
+  ]
+}
