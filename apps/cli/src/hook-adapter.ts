@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { handleCodexHook } from '@temporalthread/codex-integration';
 import type { TemporalThreadConfig } from '@temporalthread/config';
 import type { TemporalThreadService } from '@temporalthread/core';
 
@@ -70,11 +71,14 @@ export function handleHostHook(options: {
   config: TemporalThreadConfig;
 }): Record<string, unknown> {
   const { host, input, service, config } = options;
+  if (host === 'codex') {
+    return handleCodexHook({ input, service, config }).output;
+  }
   const event = requiredString(input, 'hook_event_name');
   const sessionId = requiredString(input, 'session_id');
   const cwd = requiredString(input, 'cwd');
   const agent = {
-    name: host === 'codex' ? 'Codex' : 'Claude Code',
+    name: 'Claude Code',
     platform: host,
   };
   const selectors = {

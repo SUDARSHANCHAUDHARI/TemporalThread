@@ -39,9 +39,7 @@ describe('documented Codex and Claude Code hook adapters', () => {
       config,
       input: { ...common, hook_event_name: 'SessionStart', source: 'startup' },
     });
-    expect(start).toMatchObject({
-      hookSpecificOutput: { hookEventName: 'SessionStart' },
-    });
+    expect(start).toEqual({});
     expect(JSON.stringify(start)).not.toContain('rawText');
 
     const promptInput = {
@@ -55,7 +53,7 @@ describe('documented Codex and Claude Code hook adapters', () => {
     expect(promptOutput).toMatchObject({
       hookSpecificOutput: { hookEventName: 'UserPromptSubmit' },
     });
-    expect(storage.tableCounts().interactions).toBe(1);
+    expect(storage.tableCounts().interactions).toBe(2);
     expect(storage.tableCounts().temporalReferences).toBe(1);
 
     clock.advance({ minutes: 1 });
@@ -81,7 +79,7 @@ describe('documented Codex and Claude Code hook adapters', () => {
     const context = JSON.stringify(resumed);
     expect(context).toContain('resumedSession');
     expect(context).toContain('4 days');
-    expect(storage.listInteractions()).toHaveLength(2);
+    expect(storage.listInteractions()).toHaveLength(4);
     expect(storage.listInteractions().every((item) => item.interaction.rawText === null)).toBe(true);
   });
 
@@ -120,19 +118,20 @@ describe('documented Codex and Claude Code hook adapters', () => {
     expect(interactions.every((item) => item.session.externalSessionId === 'claude-session')).toBe(true);
   });
 
-  it('rejects unsupported events without serializing private fields', () => {
-    expect(() =>
-      handleHostHook({
-        host: 'codex',
-        service,
-        config,
-        input: {
-          session_id: 'session',
-          cwd,
-          hook_event_name: 'PreToolUse',
-          tool_input: { command: 'private command' },
-        },
-      }),
-    ).toThrow('Unsupported hook event: PreToolUse');
+  it('fails open for unsupported Codex events without serializing private fields', () => {
+    const result = handleHostHook({
+      host: 'codex',
+      service,
+      config,
+      input: {
+        session_id: 'session',
+        cwd,
+        hook_event_name: 'PreToolUse',
+        tool_input: { command: 'private command' },
+      },
+    });
+
+    expect(result).toEqual({});
+    expect(JSON.stringify(result)).not.toContain('private command');
   });
 });

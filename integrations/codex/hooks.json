@@ -3,11 +3,12 @@
   "hooks": {
     "SessionStart": [
       {
-        "matcher": "startup|resume|compact",
+        "matcher": "startup|resume|clear|compact",
         "hooks": [
           {
             "type": "command",
             "command": "temporalthread hook codex",
+            "timeout": 5,
             "statusMessage": "Loading temporal context"
           }
         ]
@@ -19,6 +20,7 @@
           {
             "type": "command",
             "command": "temporalthread hook codex",
+            "timeout": 5,
             "statusMessage": "Recording interaction time"
           }
         ]
@@ -30,6 +32,7 @@
           {
             "type": "command",
             "command": "temporalthread hook codex",
+            "timeout": 5,
             "statusMessage": "Saving temporal continuity"
           }
         ]

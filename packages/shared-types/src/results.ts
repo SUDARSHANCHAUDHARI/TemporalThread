@@ -49,6 +49,11 @@ export interface RecordedInteractionResult {
   temporalReferences: TemporalResolution[];
 }
 
+export interface EndSessionResult {
+  ended: boolean;
+  endedAt: string | null;
+}
+
 export interface LastInteractionResult {
   interactionId: string;
   timestamp: string;

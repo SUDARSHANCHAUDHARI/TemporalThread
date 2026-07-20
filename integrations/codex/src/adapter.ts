@@ -278,21 +278,33 @@ export function handleCodexHook(options: {
       };
     }
 
-    if (!input.last_assistant_message) {
-      return { output: {}, status: 'processed', recorded: false };
+    let recorded = false;
+    let recordedSessionId: string | undefined;
+    if (input.last_assistant_message) {
+      const result = options.service.recordInteraction({
+        role: 'assistant',
+        occurredAt,
+        timezone: options.config.timezone,
+        agent,
+        project,
+        ...(input.session_id ? { sessionId: input.session_id } : {}),
+        text: input.last_assistant_message,
+        privacyMode: options.config.privacyMode,
+        idempotencyKey: eventIdempotencyKey({ input, projectPath, role: 'assistant', occurredAt }),
+      });
+      recorded = true;
+      recordedSessionId = result.sessionId;
     }
-    options.service.recordInteraction({
-      role: 'assistant',
-      occurredAt,
-      timezone: options.config.timezone,
-      agent,
-      project,
-      ...(input.session_id ? { sessionId: input.session_id } : {}),
-      text: input.last_assistant_message,
-      privacyMode: options.config.privacyMode,
-      idempotencyKey: eventIdempotencyKey({ input, projectPath, role: 'assistant', occurredAt }),
-    });
-    return { output: {}, status: 'processed', recorded: true };
+    const sessionId = input.session_id ?? recordedSessionId;
+    if (sessionId) {
+      options.service.endSession({
+        sessionId,
+        endedAt: occurredAt,
+        agent,
+        project,
+      });
+    }
+    return { output: {}, status: 'processed', recorded };
   } catch (error) {
     return neutral('failed', safeErrorCode(error));
   }

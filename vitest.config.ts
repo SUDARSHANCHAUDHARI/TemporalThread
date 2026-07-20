@@ -11,6 +11,7 @@ export default defineConfig({
       '@temporalthread/temporal-parser': `${root}packages/temporal-parser/src/index.ts`,
       '@temporalthread/storage-sqlite': `${root}packages/storage-sqlite/src/index.ts`,
       '@temporalthread/core': `${root}packages/core/src/index.ts`,
+      '@temporalthread/codex-integration': `${root}integrations/codex/src/index.ts`,
       '@temporalthread/mcp-server': `${root}apps/mcp-server/src/index.ts`,
     },
   },

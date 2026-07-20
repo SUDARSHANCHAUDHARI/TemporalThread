@@ -225,10 +225,26 @@ export class SqliteStorage {
       .prepare(
         `UPDATE sessions SET
           started_at = MIN(started_at, ?),
-          last_interaction_at = MAX(last_interaction_at, ?)
+          last_interaction_at = MAX(last_interaction_at, ?),
+          ended_at = CASE
+            WHEN ended_at IS NOT NULL AND ended_at <= ? THEN NULL
+            ELSE ended_at
+          END
          WHERE id = ?`,
       )
-      .run(occurredAt, occurredAt, sessionId);
+      .run(occurredAt, occurredAt, occurredAt, sessionId);
+  }
+
+  endSession(sessionId: string, endedAt: string): Session | null {
+    const result = this.database
+      .prepare(
+        `UPDATE sessions SET
+          ended_at = MAX(COALESCE(ended_at, @endedAt), last_interaction_at, @endedAt),
+          last_interaction_at = MAX(last_interaction_at, @endedAt)
+         WHERE id = @sessionId`,
+      )
+      .run({ sessionId, endedAt });
+    return result.changes === 0 ? null : this.getSession(sessionId);
   }
 
   getSession(sessionId: string): Session | null {

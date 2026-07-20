@@ -150,6 +150,63 @@ describe('Phase 2 Codex adapter boundary', () => {
     expect(storage.tableCounts().interactions).toBe(1);
   });
 
+  it('closes duplicate stop events without requiring an assistant message and reopens on resume', () => {
+    handleCodexHook({
+      input: {
+        session_id: 'stop-lifecycle',
+        turn_id: 'prompt-before-stop',
+        cwd: projectPath,
+        hook_event_name: 'UserPromptSubmit',
+        prompt: 'Pause here.',
+      },
+      service,
+      config: baseConfig,
+      fallbackCwd: projectPath,
+    });
+    clock.set('2026-07-15T13:05:00Z');
+    const stopInput = {
+      session_id: 'stop-lifecycle',
+      turn_id: 'completed-turn',
+      cwd: projectPath,
+      hook_event_name: 'Stop',
+      last_assistant_message: null,
+    } as const;
+
+    const first = handleCodexHook({
+      input: stopInput,
+      service,
+      config: baseConfig,
+      fallbackCwd: projectPath,
+    });
+    const second = handleCodexHook({
+      input: stopInput,
+      service,
+      config: baseConfig,
+      fallbackCwd: projectPath,
+    });
+    const endedSession = storage.findSessionsByExternalId('stop-lifecycle')[0];
+
+    expect(first).toEqual({ output: {}, status: 'processed', recorded: false });
+    expect(second).toEqual(first);
+    expect(endedSession?.endedAt).toBe('2026-07-15T13:05:00Z');
+    expect(storage.tableCounts().interactions).toBe(1);
+
+    clock.set('2026-07-15T13:06:00Z');
+    handleCodexHook({
+      input: {
+        session_id: 'stop-lifecycle',
+        turn_id: 'prompt-after-stop',
+        cwd: projectPath,
+        hook_event_name: 'UserPromptSubmit',
+        prompt: 'Resume now.',
+      },
+      service,
+      config: baseConfig,
+      fallbackCwd: projectPath,
+    });
+    expect(storage.getSession(endedSession?.id ?? '')?.endedAt).toBeNull();
+  });
+
   it.each([
     ['metadata-only', 0, null],
     ['temporal-references-only', 1, null],

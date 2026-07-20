@@ -7,6 +7,7 @@
   },
   "include": ["src/**/*.ts"],
   "references": [
+    { "path": "../../integrations/codex" },
     { "path": "../../packages/shared-types" },
     { "path": "../../packages/config" },
     { "path": "../../packages/temporal-parser" },

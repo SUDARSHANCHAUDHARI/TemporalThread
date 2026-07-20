@@ -8,6 +8,8 @@ import {
   type CommitmentDisplayStatus,
   type CommitmentListResult,
   type CommitmentView,
+  EndSessionInputSchema,
+  type EndSessionResult,
   GetCurrentTimeInputSchema,
   GetLastInteractionInputSchema,
   GetTemporalContextInputSchema,
@@ -196,6 +198,17 @@ export class TemporalThreadService {
         ? this.storage.getTemporalReferences(inserted.interaction.id).map(temporalResolution)
         : extracted,
     };
+  }
+
+  endSession(input: unknown): EndSessionResult {
+    const parsed = EndSessionInputSchema.parse(input);
+    const endedAt = parsed.endedAt
+      ? canonicalInstant(parsed.endedAt, 'endedAt').toString()
+      : this.clock.now().toString();
+    const resolved = this.resolveInteractionFilters(parsed);
+    if (!resolved.matched || !resolved.session) return { ended: false, endedAt: null };
+    const session = this.storage.endSession(resolved.session.id, endedAt);
+    return session ? { ended: true, endedAt: session.endedAt } : { ended: false, endedAt: null };
   }
 
   getLastInteraction(input: unknown): LastInteractionResult | null {
@@ -521,7 +534,11 @@ export class TemporalThreadService {
 
   private resolveSession(sessionId: string, agentId?: string, projectId?: string | null): Session | null {
     const internal = this.storage.getSession(sessionId);
-    if (internal) return internal;
+    if (internal) {
+      const matchesAgent = !agentId || internal.agentId === agentId;
+      const matchesProject = projectId === undefined || internal.projectId === projectId;
+      return matchesAgent && matchesProject ? internal : null;
+    }
     const matches = this.storage
       .findSessionsByExternalId(sessionId)
       .filter((session) => !agentId || session.agentId === agentId)

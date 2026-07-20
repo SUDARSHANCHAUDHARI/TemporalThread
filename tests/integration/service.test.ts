@@ -42,6 +42,68 @@ afterEach(() => {
 });
 
 describe('TemporalThreadService interaction continuity', () => {
+  it('ends a scoped external session idempotently and reopens it on a later interaction', () => {
+    const { service, storage } = trackedHarness();
+    const recorded = service.recordInteraction({
+      role: 'user',
+      occurredAt: '2026-07-19T10:00:00Z',
+      agent: { name: 'Codex', platform: 'codex' },
+      project: { path: projectAlpha, name: 'Alpha' },
+      sessionId: 'lifecycle-session',
+      idempotencyKey: 'lifecycle-start',
+    });
+    service.recordInteraction({
+      role: 'user',
+      occurredAt: '2026-07-19T10:00:00Z',
+      agent: { name: 'Codex', platform: 'codex' },
+      project: { path: projectBeta, name: 'Beta' },
+      sessionId: 'lifecycle-session',
+      idempotencyKey: 'lifecycle-other-project',
+    });
+
+    expect(
+      service.endSession({
+        sessionId: recorded.sessionId,
+        endedAt: '2026-07-19T10:03:00Z',
+        agent: { name: 'Codex', platform: 'codex' },
+        project: { path: projectBeta },
+      }),
+    ).toEqual({ ended: false, endedAt: null });
+    expect(storage.getSession(recorded.sessionId)?.endedAt).toBeNull();
+
+    expect(
+      service.endSession({
+        sessionId: 'lifecycle-session',
+        endedAt: '2026-07-19T10:05:00Z',
+        agent: { name: 'Codex', platform: 'codex' },
+        project: { path: projectAlpha },
+      }),
+    ).toEqual({ ended: true, endedAt: '2026-07-19T10:05:00Z' });
+    expect(storage.getSession(recorded.sessionId)?.endedAt).toBe('2026-07-19T10:05:00Z');
+
+    expect(
+      service.endSession({
+        sessionId: 'lifecycle-session',
+        endedAt: '2026-07-19T10:04:00Z',
+        agent: { name: 'Codex', platform: 'codex' },
+        project: { path: projectAlpha },
+      }),
+    ).toEqual({ ended: true, endedAt: '2026-07-19T10:05:00Z' });
+
+    service.recordInteraction({
+      role: 'user',
+      occurredAt: '2026-07-19T10:06:00Z',
+      agent: { name: 'Codex', platform: 'codex' },
+      project: { path: projectAlpha },
+      sessionId: 'lifecycle-session',
+      idempotencyKey: 'lifecycle-resume',
+    });
+    expect(storage.getSession(recorded.sessionId)).toMatchObject({
+      endedAt: null,
+      lastInteractionAt: '2026-07-19T10:06:00Z',
+    });
+  });
+
   it('anchors tomorrow to the original interaction and reports the July 19 context', () => {
     const { service } = trackedHarness();
     const recorded = service.recordInteraction({

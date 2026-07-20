@@ -11,6 +11,7 @@
       "@temporalthread/temporal-parser": ["./packages/temporal-parser/src/index.ts"],
       "@temporalthread/storage-sqlite": ["./packages/storage-sqlite/src/index.ts"],
       "@temporalthread/core": ["./packages/core/src/index.ts"],
+      "@temporalthread/codex-integration": ["./integrations/codex/src/index.ts"],
       "@temporalthread/mcp-server": ["./apps/mcp-server/src/index.ts"]
     }
   },

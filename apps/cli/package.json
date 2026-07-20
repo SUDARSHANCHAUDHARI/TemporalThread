@@ -13,6 +13,7 @@
     "temporalthread": "./dist/bin.js"
   },
   "dependencies": {
+    "@temporalthread/codex-integration": "workspace:*",
     "@temporalthread/config": "workspace:*",
     "@temporalthread/core": "workspace:*",
     "@temporalthread/mcp-server": "workspace:*",

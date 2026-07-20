@@ -35,6 +35,9 @@ importers:
 
   apps/cli:
     dependencies:
+      '@temporalthread/codex-integration':
+        specifier: workspace:*
+        version: link:../../integrations/codex
       '@temporalthread/config':
         specifier: workspace:*
         version: link:../../packages/config

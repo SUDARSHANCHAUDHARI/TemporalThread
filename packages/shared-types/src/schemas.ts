@@ -60,6 +60,15 @@ export const RecordInteractionInputSchema = z
   })
   .strict();
 
+export const EndSessionInputSchema = z
+  .object({
+    sessionId: z.string().trim().min(1).max(256),
+    endedAt: TimestampSchema.optional(),
+    agent: AgentSelectorSchema.optional(),
+    project: ProjectSelectorSchema.optional(),
+  })
+  .strict();
+
 export const GetTemporalContextInputSchema = z
   .object({
     agent: AgentSelectorSchema.optional(),
@@ -152,6 +161,7 @@ export const GenericEventSchema = RecordInteractionInputSchema.extend({
 
 export type GetCurrentTimeInput = z.infer<typeof GetCurrentTimeInputSchema>;
 export type RecordInteractionInput = z.infer<typeof RecordInteractionInputSchema>;
+export type EndSessionInput = z.infer<typeof EndSessionInputSchema>;
 export type GetTemporalContextInput = z.infer<typeof GetTemporalContextInputSchema>;
 export type GetLastInteractionInput = z.infer<typeof GetLastInteractionInputSchema>;
 export type CalculateElapsedTimeInput = z.infer<typeof CalculateElapsedTimeInputSchema>;
