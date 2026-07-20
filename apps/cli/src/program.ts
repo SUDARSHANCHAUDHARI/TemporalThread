@@ -5,6 +5,7 @@ import { registerDoctorCommand } from './commands/doctor.js';
 import { registerHookCommand } from './commands/hook.js';
 import { registerIngestCommand } from './commands/ingest.js';
 import { registerInitCommand } from './commands/init.js';
+import { registerCodexIntegrationCommands } from './commands/integrate-codex.js';
 import {
   registerCommitmentsCommand,
   registerExportCommand,
@@ -36,6 +37,7 @@ export function createProgram(): Command {
   registerPurgeCommand(program);
   registerIngestCommand(program);
   registerHookCommand(program);
+  registerCodexIntegrationCommands(program);
   return program;
 }
 

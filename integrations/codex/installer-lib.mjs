@@ -12,7 +12,7 @@ import { fileURLToPath } from 'node:url';
 
 const integrationDirectory = dirname(fileURLToPath(import.meta.url));
 const repositoryRoot = resolve(integrationDirectory, '../..');
-const skillSource = join(repositoryRoot, 'skills/codex/temporalthread/SKILL.md');
+const skillSource = join(repositoryRoot, 'skills/codex/temporal-awareness/SKILL.md');
 const hookSource = join(integrationDirectory, 'hooks.json');
 const markerStart = '# temporalthread:start';
 const markerEnd = '# temporalthread:end';
@@ -41,7 +41,7 @@ export function installCodexIntegration(target = process.cwd()) {
   const codexDirectory = join(root, '.codex');
   const configPath = join(codexDirectory, 'config.toml');
   const hooksPath = join(codexDirectory, 'hooks.json');
-  const skillPath = join(root, '.agents/skills/temporalthread/SKILL.md');
+  const skillPath = join(root, '.agents/skills/temporal-awareness/SKILL.md');
   const changed = [];
   const preserved = [];
   const backups = [];
@@ -91,7 +91,7 @@ export function uninstallCodexIntegration(target = process.cwd()) {
   const root = resolve(target);
   const configPath = join(root, '.codex/config.toml');
   const hooksPath = join(root, '.codex/hooks.json');
-  const skillPath = join(root, '.agents/skills/temporalthread/SKILL.md');
+  const skillPath = join(root, '.agents/skills/temporal-awareness/SKILL.md');
   const changed = [];
   const preserved = [];
   const backups = [];
@@ -138,7 +138,7 @@ export function doctorCodexIntegration(target = process.cwd()) {
   const root = resolve(target);
   const configPath = join(root, '.codex/config.toml');
   const hooksPath = join(root, '.codex/hooks.json');
-  const skillPath = join(root, '.agents/skills/temporalthread/SKILL.md');
+  const skillPath = join(root, '.agents/skills/temporal-awareness/SKILL.md');
   const checks = [
     {
       name: 'project MCP configuration',

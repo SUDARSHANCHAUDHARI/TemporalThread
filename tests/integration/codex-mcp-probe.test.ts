@@ -3,11 +3,21 @@ import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { probeCodexMcpServer } from '../../integrations/codex/src/index.js';
+import { probeCodexMcpExecutable, probeCodexMcpServer } from '../../integrations/codex/src/index.js';
 
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'));
 
 describe('Codex MCP server probe', () => {
+  it('checks executable availability without starting the MCP service during dry-run', () => {
+    expect(probeCodexMcpExecutable({ command: process.execPath, args: [] })).toMatchObject({
+      ok: true,
+      toolNames: [],
+    });
+    expect(
+      probeCodexMcpExecutable({ command: resolve('missing-temporalthread-command'), args: [] }),
+    ).toMatchObject({ ok: false, errorCode: 'spawn-failed', toolNames: [] });
+  });
+
   it('performs a real stdio handshake and verifies all TemporalThread tools', async () => {
     const home = mkdtempSync(join(tmpdir(), 'temporalthread-codex-probe-'));
     const result = await probeCodexMcpServer({

@@ -1,3 +1,4 @@
+import { spawnSync } from 'node:child_process';
 import { performance } from 'node:perf_hooks';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { getDefaultEnvironment, StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
@@ -30,6 +31,33 @@ export interface CodexMcpProbeResult {
   toolNames: string[];
   durationMs: number;
   errorCode?: 'invalid-options' | 'spawn-failed' | 'timeout' | 'handshake-failed' | 'missing-tools';
+}
+
+export function probeCodexMcpExecutable(options: {
+  command: string;
+  args?: string[];
+  cwd?: string;
+  timeoutMs?: number;
+}): CodexMcpProbeResult {
+  const startedAt = performance.now();
+  const parsed = ProbeOptionsSchema.safeParse(options);
+  if (!parsed.success) return { ok: false, toolNames: [], durationMs: 0, errorCode: 'invalid-options' };
+  const args = [...parsed.data.args];
+  if (args.at(-1) === 'start') args.splice(-1, 1, '--version');
+  else args.push('--version');
+  const result = spawnSync(parsed.data.command, args, {
+    cwd: parsed.data.cwd,
+    encoding: 'utf8',
+    stdio: 'ignore',
+    timeout: parsed.data.timeoutMs,
+    windowsHide: true,
+  });
+  return {
+    ok: result.status === 0,
+    toolNames: [],
+    durationMs: Math.max(0, Math.round(performance.now() - startedAt)),
+    ...(result.status === 0 ? {} : { errorCode: 'spawn-failed' as const }),
+  };
 }
 
 class ProbeTimeoutError extends Error {}

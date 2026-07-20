@@ -44,7 +44,7 @@ function hostInstallationChecks(integration: string, projectRoot: string): Docto
       ),
       installationCheck(
         'codex skill installation',
-        join(projectRoot, '.agents/skills/temporalthread/SKILL.md'),
+        join(projectRoot, '.agents/skills/temporal-awareness/SKILL.md'),
         'Codex TemporalThread skill',
       ),
       installationCheck(
