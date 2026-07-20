@@ -6,6 +6,7 @@ TemporalThread is a local-first TypeScript monorepo. The production entry point 
 flowchart LR
     Host["Agent host or local client"] -->|"MCP stdio"| MCP["MCP server"]
     Hook["Documented host hook"] --> CLI["CLI adapter"]
+    Plugin["Codex plugin or direct installer"] -.-> Host
     Generic["JSON or JSONL event"] --> CLI
     MCP --> Service["Temporal service"]
     CLI --> Service
@@ -23,8 +24,12 @@ flowchart LR
 - `packages/storage-sqlite` owns parameterized SQL, migrations, transactions, indexes, export, purge, integrity checks, and file permissions.
 - `packages/core` coordinates sessions, privacy, parsing, elapsed time, commitment state, and compact context. Its `Clock` is injected.
 - `apps/mcp-server` exposes nine schemas and delegates to the service. Transport is isolated so Streamable HTTP can be added later without changing domain behavior.
-- `apps/cli` provides operations, generic ingestion, and documented host hook adapters.
-- `integrations` and `skills` contain host-specific configuration and best-effort capture guidance.
+- `apps/cli` provides operations, generic ingestion, documented host hook adapters, and the nested Codex
+  integration management commands.
+- `integrations/codex` owns Codex event schemas, MCP/hook configuration merging, safe paths, installation
+  ownership/versioning, doctor probes, and official plugin packaging. It delegates all temporal work to the
+  core service.
+- `integrations` and `skills` otherwise contain host-specific configuration and best-effort capture guidance.
 
 ## Write path
 

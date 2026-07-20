@@ -31,6 +31,15 @@ Migrations are atomic but intentionally have no automatic downgrade. Roll back b
 
 ## Integration trust
 
-MCP hosts and hooks execute with local user permissions. Review generated configuration, installer diffs, and trust prompts. The Codex installer modifies only a marked MCP block, recognized hook commands, and a known skill path; its uninstaller preserves locally edited skills. OpenCode automatic capture remains experimental until verified against a compatible live release.
+MCP hosts and hooks execute with local user permissions. Review generated configuration, installer diffs,
+plugin contents, and trust prompts. The Codex installer validates the MCP process before mutation, modifies
+only a marked MCP block, exact managed hook commands, a known skill path, and a content-free ownership
+manifest. It refuses symbolic-link targets and uncertain MCP ownership, backs up existing files, writes
+atomically, rolls back failed validation, and preserves locally edited skills during uninstall.
+
+Codex plugin installation does not install the CLI or approve its own hooks. The packaged artifact is checked
+for required legal/privacy files, forbidden database/secret extensions, personal absolute paths, symlinks,
+source/build metadata, and install/uninstall behavior in an isolated temporary environment. OpenCode
+automatic capture remains experimental until verified against a compatible live release.
 
 Report vulnerabilities according to the root [security policy](../SECURITY.md).

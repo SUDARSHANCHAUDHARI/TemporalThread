@@ -57,7 +57,7 @@ Codex stores user configuration at `~/.codex/config.toml` and trusted-project ov
 `.codex/config.toml`. A stdio server entry supports `command`, `args`, `cwd`, `env`, `env_vars`, `enabled`,
 `required`, `startup_timeout_sec`, `tool_timeout_sec`, approval policy, and tool allow/deny lists.
 
-TemporalThread will use this conservative installed-package configuration:
+TemporalThread uses this conservative installed-package configuration:
 
 ```toml
 [mcp_servers.temporal-thread]
@@ -71,7 +71,7 @@ tool_timeout_sec = 60
 ```
 
 `required = false` is intentional: failure to start optional temporal continuity must not prevent Codex
-startup. Development configuration will use `node` plus a user-selected built CLI path rather than a
+startup. Development configuration uses `node` plus a user-selected built CLI path rather than a
 developer-specific absolute path committed to the repository.
 
 ### Skills
@@ -80,7 +80,7 @@ A skill is a directory containing `SKILL.md`. Frontmatter must include `name` an
 references, assets, and agents are optional. Repository skills live under `.agents/skills` along the CWD to
 repository-root path, and user skills live under `$HOME/.agents/skills`.
 
-TemporalThread will ship `skills/codex/temporal-awareness/SKILL.md`. The description will say both when to
+TemporalThread ships `skills/codex/temporal-awareness/SKILL.md`. The description says both when to
 use and when not to use temporal continuity so skill selection remains selective.
 
 ### Hooks
@@ -90,7 +90,7 @@ plugin hook files. Matching command hooks run concurrently. Non-managed hook def
 review and hash-based trust.
 
 Every command hook receives JSON on stdin with common fields including `session_id`, `transcript_path`,
-`cwd`, `hook_event_name`, and `model`. TemporalThread will not read `transcript_path`.
+`cwd`, `hook_event_name`, and `model`. TemporalThread does not read `transcript_path`.
 
 | Event | Additional inputs used | Text available | Context output | Blocking behavior | TemporalThread behavior |
 | --- | --- | --- | --- | --- | --- |
@@ -98,14 +98,14 @@ Every command hook receives JSON on stdin with common fields including `session_
 | `UserPromptSubmit` | `turn_id`, `prompt` | User prompt | Plain text or JSON additional context | A block decision or exit 2 can block the prompt | Never block; process bounded prompt locally under privacy mode, record idempotently, inject only relevant prior context. |
 | `Stop` | `turn_id`, `stop_hook_active`, `last_assistant_message` | Latest assistant message, possibly null | Common JSON only | A block decision asks Codex to continue | Always return neutral JSON; optionally record permitted data and update session activity. |
 
-TemporalThread will exit zero with valid neutral output on adapter, database, parser, and payload failures.
-It will never use blocking decisions for temporal continuity.
+TemporalThread exits zero with valid neutral output on adapter, database, parser, and payload failures. It
+never uses blocking decisions for temporal continuity.
 
 ### Plugins
 
 The required plugin entry point is `.codex-plugin/plugin.json`. Official manifests may reference `skills`,
 `mcpServers`, `apps`, and `hooks` relative to the plugin root. TemporalThread needs no remote connector or
-custom ChatGPT UI, so the Phase 2 plugin will include only:
+custom ChatGPT UI, so the Phase 2 plugin includes only:
 
 - `.codex-plugin/plugin.json`;
 - `skills/temporal-awareness/SKILL.md`;
@@ -113,14 +113,14 @@ custom ChatGPT UI, so the Phase 2 plugin will include only:
 - `hooks/hooks.json` for optional best-effort automation;
 - license, README, privacy, and compatibility material.
 
-The repository will provide marketplace metadata for local/repository testing. Phase 2 will validate and
-pack the artifact but will not publish it or create a release.
+The repository provides marketplace metadata for local/repository testing. Phase 2 validates and packs the
+artifact but does not publish it or create a release.
 
 ## Security and privacy conclusions
 
 - Hook prompts arrive on stdin and must never be placed in command-line arguments, logs, thrown messages,
   installation manifests, or temporary integration files.
-- The integration will impose a byte-size limit below Codex's model-visible output limit.
+- The integration imposes a byte-size limit below Codex's model-visible output limit.
 - Hook output must contain derived bounded context, never complete transcripts, internal IDs, hashes, or
   database paths.
 - Plugin installation does not establish hook trust. Documentation and doctor output must say so.

@@ -1,6 +1,8 @@
 # Privacy
 
-TemporalThread processes interaction text locally and never sends stored content anywhere. It has no analytics, telemetry, remote error reporting, hosted database, or embedded LLM call.
+TemporalThread processes interaction text locally and makes no outbound network request. It has no analytics,
+telemetry, remote error reporting, hosted database, or embedded LLM call. A connected MCP host can explicitly
+request privacy-permitted results; that host's handling of tool results is governed by its own policy.
 
 ## Modes
 
@@ -27,3 +29,12 @@ Database, configuration, export, and backup files remain under the operating-sys
 ## Hooks
 
 Hooks receive content according to each host’s event contract. TemporalThread reads only documented prompt or completed-message fields and intentionally ignores transcript paths. A hook can still miss an event when disabled, untrusted, interrupted, or skipped during abnormal termination.
+
+The Codex adapter accepts at most 256 KiB on stdin, processes text in memory, applies the configured privacy
+mode, and returns at most 7,000 UTF-8 bytes of derived context. It does not place hook content in command-line
+arguments, integration manifests, temporary integration files, logs, or thrown messages. Firm commitments
+are not created automatically from hook text; they require an explicit tool call.
+
+Removing a host integration preserves the TemporalThread database. Codex data is purged only through
+`temporalthread purge` or the explicit `temporalthread integrate codex uninstall --purge-data --yes` path.
+See [Codex privacy](CODEX-PRIVACY.md) for the integration-specific data flow and threat model.

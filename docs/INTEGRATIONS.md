@@ -4,24 +4,41 @@ MCP exposes tools; it does not universally intercept host conversations. Automat
 
 | Integration | MCP tools | Automatic capture | Status |
 | --- | --- | --- | --- |
-| Codex | Project `.codex/config.toml` | Documented session, prompt, and stop hooks | Adapter and installer tested; host trust is manual |
-| Claude Code | Project `.mcp.json` | `UserPromptSubmit.prompt` and `Stop.last_assistant_message` | Adapter tested; installation is manual |
-| OpenCode | Local MCP configuration | Typed plugin events | Experimental until live host verification |
-| Ollama | Through example client | Example client records its own messages | Tested with mocked chat API; Ollama itself is not an MCP host |
-| Generic | Any MCP client or CLI | Host-owned adapter/JSONL | Supported and tested |
+| Codex | User/project config and official plugin | Documented session, prompt, and stop hooks | **Supported configuration**: direct installer and packed artifact tested; live host trust remains manual |
+| Claude Code | Project `.mcp.json` | `UserPromptSubmit.prompt` and `Stop.last_assistant_message` | **Partially supported**: adapter tested; installation is manual |
+| OpenCode | Local MCP configuration | Typed plugin events | **Experimental** until live host verification |
+| Ollama | Through example client | Example client records its own messages | **Partially supported**: mocked API tested; Ollama itself is not an MCP host |
+| Generic | Any MCP client or CLI | Host-owned adapter/JSONL | **Supported and tested** |
 
 ## Codex
 
-Build and initialize TemporalThread, then run the project-scoped installer from the repository you want to integrate:
+The direct installer supports user and project scope. From the repository to integrate:
 
 ```sh
-node path/to/TemporalThread/integrations/codex/install.mjs
-node path/to/TemporalThread/integrations/codex/doctor.mjs
+temporalthread integrate codex install --scope project --dry-run
+temporalthread integrate codex install --scope project --yes
+temporalthread integrate codex doctor --scope project
 ```
 
-Review `.codex/config.toml`, `.codex/hooks.json`, and `.agents/skills/temporalthread/SKILL.md`, then restart Codex and approve project/hook trust. The installer is idempotent, creates backups before modifications, and preserves unrelated content. Remove only its owned entries with `uninstall.mjs`.
+Use `--scope user` for all local projects. Review `.codex/config.toml`, `.codex/hooks.json`, and
+`.agents/skills/temporal-awareness/SKILL.md`, then restart Codex and approve project/hook trust. The installer
+is idempotent, creates backups before modification, validates MCP startup/tools, rolls back its own failed
+transaction, preserves unrelated content, and refuses uncertain ownership.
 
-Codex hooks record documented `prompt` and `last_assistant_message` fields and inject compact context. `transcript_path` is never parsed. Capture can be missed when hooks are disabled, untrusted, interrupted, or absent during abnormal termination. See [the integration guide](../integrations/codex/README.md).
+The official plugin lives at `integrations/codex/plugin`, with repository marketplace metadata at
+`.agents/plugins/marketplace.json`. It packages the same MCP map, skill, and hooks, but cannot install the
+`temporalthread` executable or approve hook trust. Plugin-capable desktop/CLI surfaces are supported; the IDE
+extension uses direct MCP and skill installation instead. ChatGPT web cannot reach this local stdio server,
+and mobile is unsupported.
+
+Codex hooks record documented `prompt` and `last_assistant_message` fields and inject compact context only
+when relevant. `transcript_path` is never parsed. Hooks do not create firm commitments; the skill must call
+`record_commitment`. Capture can be missed when hooks are disabled, untrusted, interrupted, timed out, or
+absent during abnormal termination. Uninstall removes only managed integration entries and preserves the
+database by default.
+
+See the [architecture and behavior guide](CODEX-INTEGRATION.md), [installation](CODEX-INSTALLATION.md),
+[privacy](CODEX-PRIVACY.md), and [troubleshooting](CODEX-TROUBLESHOOTING.md).
 
 ## Claude Code
 

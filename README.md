@@ -86,14 +86,50 @@ temporalthread timeline
 
 ### Codex
 
-From the target project, run:
+TemporalThread's Codex integration has three cooperating parts:
+
+| Part | Responsibility |
+| --- | --- |
+| MCP server | Owns the temporal tools and all durable local data. |
+| `temporal-awareness` skill | Teaches Codex when temporal context matters and when not to call a tool. |
+| Lifecycle hooks | Best-effort recording for documented `SessionStart`, `UserPromptSubmit`, and `Stop` events. |
+
+From the target project, preview and install the direct integration:
 
 ```sh
-node path/to/TemporalThread/integrations/codex/install.mjs
-node path/to/TemporalThread/integrations/codex/doctor.mjs
+temporalthread integrate codex install --scope project --dry-run
+temporalthread integrate codex install --scope project --yes
+temporalthread integrate codex doctor --scope project
 ```
 
-Review the generated project MCP, hook, and skill files before trusting them. The installer and uninstaller are tested for backups, idempotency, unrelated-setting preservation, and locally edited skill preservation. See [Codex setup](integrations/codex/README.md).
+Use `--scope user` for all local projects. The installer validates the MCP process before changing Codex,
+merges only TemporalThread-owned entries, creates timestamped backups, and never approves its own hooks.
+Review the installed hook commands and accept Codex's trust prompt explicitly.
+
+The repository also contains an official-format plugin under `integrations/codex/plugin` and a local
+marketplace entry under `.agents/plugins/marketplace.json`. Plugin installation still requires the
+`temporalthread` executable on `PATH`; the Codex IDE extension uses the direct installer because it does not
+install plugins.
+
+Hook capture is automatic only when a supported, trusted event is delivered. Compact context is injected
+only for a resumed session, a temporal cue, a due commitment, or a meaningful timezone change. Creating a
+firm commitment, retrieving context outside those hook cases, and recording an event missed by hooks still
+depend on Codex calling the MCP tools. A hook is not a transcript recorder and abnormal termination can omit
+`Stop`.
+
+For the July example, `record_interaction` anchors “tomorrow” to July 15 in `Asia/Bangkok`, and
+`record_commitment` records the explicit follow-up. On July 19, `get_temporal_context` reports about four
+days elapsed and a due date three calendar days in the past. Under the default
+`temporal-references-only` mode, the complete prompt is not retained.
+
+Remove only managed Codex files while preserving the database:
+
+```sh
+temporalthread integrate codex uninstall --scope project --yes
+```
+
+See [Codex integration](docs/CODEX-INTEGRATION.md), [installation](docs/CODEX-INSTALLATION.md),
+[privacy](docs/CODEX-PRIVACY.md), and [troubleshooting](docs/CODEX-TROUBLESHOOTING.md).
 
 ### Claude Code
 
@@ -123,7 +159,8 @@ See [Integrations](docs/INTEGRATIONS.md) for the support matrix and generic fall
 | `temporal-references-only` | metadata plus matched phrases and resolutions; default |
 | `full-local-history` | metadata, matched references, preview, and full text |
 
-Full history is never enabled automatically. All processing is local; stored content is never sent anywhere by TemporalThread. See [Privacy](docs/PRIVACY.md).
+Full history is never enabled automatically. TemporalThread makes no outbound network request; connected MCP
+hosts receive only explicitly requested, privacy-permitted results. See [Privacy](docs/PRIVACY.md).
 
 ## MCP tools
 
@@ -154,6 +191,7 @@ temporalthread commitments   list commitments and derived status
 temporalthread ingest        ingest JSON, an array, or JSONL
 temporalthread export        export all privacy-permitted stored data
 temporalthread purge         delete all domain data after confirmation
+temporalthread integrate codex ...  install, inspect, diagnose, or remove the Codex integration
 ```
 
 Use `temporalthread <command> --help` for options. `TEMPORALTHREAD_HOME`, `TEMPORALTHREAD_CONFIG_PATH`, `TEMPORALTHREAD_DATABASE_PATH`, timezone, locale, privacy, thresholds, text-size, and log-level environment overrides are available for isolated or advanced use.
@@ -184,6 +222,7 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm verify:codex-package
 pnpm audit --prod --audit-level high
 ```
 

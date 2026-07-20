@@ -4,7 +4,8 @@
 
 - Local SQLite continuity with three privacy modes.
 - Nine MCP stdio tools, operational CLI, generic ingestion, and deterministic temporal parsing.
-- Tested Codex/Claude Code hook adapters and Codex installer.
+- Official-format Codex plugin, safe user/project installer, doctor, packed-artifact verification, and tested
+  Codex/Claude Code hook adapters.
 - Typed experimental OpenCode plugin and local Ollama tool-calling example.
 
 ## Next

@@ -1,7 +1,8 @@
 # Privacy
 
-TemporalThread is local-first. It opens no network listener, performs no telemetry, and stores data only in
-the configured local SQLite database.
+TemporalThread is local-first. It opens no network listener, performs no telemetry, makes no outbound network
+request, and stores data only in the configured local SQLite database. Selected MCP results and bounded hook
+context are returned to the invoking Codex host under that host's data policy.
 
 - `metadata-only` stores timestamps, safe identities, hashes, and event metadata without prompt text or
   temporal phrase text.

@@ -1,8 +1,8 @@
 # TemporalThread Codex plugin
 
 TemporalThread gives Codex local temporal continuity through one skill, one local stdio MCP server, and
-best-effort lifecycle hooks. The plugin contains no remote connector and sends no data to TemporalThread or
-another cloud service.
+best-effort lifecycle hooks. The plugin contains no remote connector and makes no outbound network request;
+it returns selected local MCP results and bounded hook context to the invoking Codex host.
 
 ## Requirements
 
