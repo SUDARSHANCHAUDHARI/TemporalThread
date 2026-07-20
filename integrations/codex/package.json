@@ -19,9 +19,11 @@
     "dist/**/*.js.map"
   ],
   "dependencies": {
+    "@modelcontextprotocol/sdk": "1.29.0",
     "@temporalthread/config": "workspace:*",
     "@temporalthread/core": "workspace:*",
     "@temporalthread/shared-types": "workspace:*",
+    "smol-toml": "1.7.0",
     "zod": "4.4.3"
   }
 }
