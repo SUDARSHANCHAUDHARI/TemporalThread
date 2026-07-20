@@ -6,6 +6,7 @@
     { "path": "packages/temporal-parser" },
     { "path": "packages/storage-sqlite" },
     { "path": "packages/core" },
+    { "path": "integrations/codex" },
     { "path": "apps/mcp-server" },
     { "path": "apps/cli" },
     { "path": "examples/basic-mcp-client" },

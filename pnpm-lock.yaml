@@ -111,6 +111,21 @@ importers:
         specifier: 1.29.0
         version: 1.29.0(zod@4.4.3)
 
+  integrations/codex:
+    dependencies:
+      '@temporalthread/config':
+        specifier: workspace:*
+        version: link:../../packages/config
+      '@temporalthread/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+      '@temporalthread/shared-types':
+        specifier: workspace:*
+        version: link:../../packages/shared-types
+      zod:
+        specifier: 4.4.3
+        version: 4.4.3
+
   packages/config:
     dependencies:
       '@temporalthread/shared-types':

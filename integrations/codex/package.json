@@ -1,0 +1,27 @@
+{
+  "name": "@temporalthread/codex-integration",
+  "version": "0.1.0",
+  "description": "Official Codex integration package for TemporalThread.",
+  "type": "module",
+  "license": "MIT",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map",
+    "dist/**/*.js",
+    "dist/**/*.js.map"
+  ],
+  "dependencies": {
+    "@temporalthread/config": "workspace:*",
+    "@temporalthread/core": "workspace:*",
+    "@temporalthread/shared-types": "workspace:*",
+    "zod": "4.4.3"
+  }
+}

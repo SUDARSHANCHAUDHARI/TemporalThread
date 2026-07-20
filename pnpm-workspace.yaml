@@ -2,6 +2,7 @@ packages:
   - apps/*
   - packages/*
   - examples/*
+  - integrations/codex
 
 allowBuilds:
   better-sqlite3: true
