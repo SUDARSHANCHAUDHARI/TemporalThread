@@ -11,6 +11,16 @@ _RepoMem/
 .env
 .env.*
 !.env.example
+auth.json
+local.properties
+secure.properties
+keystore.properties
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+*.key
 .DS_Store
 *.log
 tmp/
