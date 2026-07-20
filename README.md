@@ -224,9 +224,21 @@ pnpm typecheck
 pnpm test
 pnpm build
 pnpm verify:codex-package
+pnpm verify:clean-source
 pnpm audit --prod --audit-level high
 ```
 
 Tests use a deterministic fake clock and cover DST, leap day, midnight, timezone change, privacy, sessions, migrations, malformed storage, all tools, a real stdio process restart, CLI operations, installers, hooks, and the Ollama loop. CI runs the gates on Linux, macOS, and Windows.
+
+For a non-publishing release dry run, start with an empty ignored `release-artifacts/` directory:
+
+```sh
+pnpm release:artifacts
+pnpm release:sbom
+pnpm verify:release-artifacts
+```
+
+These commands build eight tarballs, `SHA256SUMS`, a release manifest, and an SPDX 2.3 SBOM. They never
+publish, tag, create a release, change repository visibility, or modify real Codex configuration.
 
 Read [Contributing](CONTRIBUTING.md), [Security policy](SECURITY.md), the [Roadmap](docs/ROADMAP.md), and the [Changelog](CHANGELOG.md). TemporalThread is available under the [MIT License](LICENSE).

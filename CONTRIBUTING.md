@@ -28,6 +28,10 @@ pnpm audit --prod --audit-level high
 
 Update documentation and `CHANGELOG.md` for user-visible behavior. Explain privacy, migration, or integration compatibility consequences in the pull request.
 
+Release-candidate changes must also pass `pnpm verify:codex-package`, `pnpm verify:clean-source`, and the
+artifact/SBOM verification documented in the root README. Release scripts are non-publishing; tagging,
+publication, releases, and visibility changes require separate maintainer approval.
+
 ## Security and privacy
 
 Do not commit interaction databases, exports, transcripts, secrets, or local agent configuration. New integrations must use stable documented events, avoid shell interpolation, and state any capture limitation. Follow [SECURITY.md](SECURITY.md) for vulnerabilities.

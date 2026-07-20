@@ -1,8 +1,32 @@
 {
   "name": "@temporalthread/shared-types",
   "version": "0.1.0",
+  "description": "Public schemas and domain types for TemporalThread.",
   "type": "module",
   "license": "MIT",
+  "homepage": "https://github.com/SUDARSHANCHAUDHARI/TemporalThread#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SUDARSHANCHAUDHARI/TemporalThread.git",
+    "directory": "packages/shared-types"
+  },
+  "bugs": {
+    "url": "https://github.com/SUDARSHANCHAUDHARI/TemporalThread/issues"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "dist/**/*.d.ts",
+    "dist/**/*.d.ts.map",
+    "dist/**/*.js",
+    "dist/**/*.js.map",
+    "README.md",
+    "LICENSE"
+  ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

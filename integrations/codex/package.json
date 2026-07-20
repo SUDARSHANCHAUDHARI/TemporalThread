@@ -4,6 +4,21 @@
   "description": "Official Codex integration package for TemporalThread.",
   "type": "module",
   "license": "MIT",
+  "homepage": "https://github.com/SUDARSHANCHAUDHARI/TemporalThread#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SUDARSHANCHAUDHARI/TemporalThread.git",
+    "directory": "integrations/codex"
+  },
+  "bugs": {
+    "url": "https://github.com/SUDARSHANCHAUDHARI/TemporalThread/issues"
+  },
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "exports": {

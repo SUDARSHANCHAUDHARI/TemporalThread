@@ -4,6 +4,8 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ## [Unreleased]
 
+## [0.1.0] - UNRELEASED
+
 ### Added
 
 - Local MCP stdio server with nine strictly validated temporal continuity tools.
@@ -19,6 +21,10 @@ All notable changes to TemporalThread will be documented in this file. The forma
 - Tested Codex and Claude Code hook adapters, an experimental typed OpenCode plugin, and generic/Ollama
   examples.
 - Cross-platform CI for Linux, macOS, and Windows.
+- Manual-only release-dry-run CI for clean source/packed installation, strict tarball verification, SHA-256
+  checksums, SPDX 2.3 SBOM generation, and 14-day release-candidate artifacts on all three platforms.
+- Privacy-aware bug/feature issue forms, pull request template, npm distribution plan, live Codex
+  certification plan, public-repository audit, dependency-license review, and v0.1.0 release gate documents.
 
 ### Changed
 
@@ -34,6 +40,11 @@ All notable changes to TemporalThread will be documented in this file. The forma
   status, signal, stdout, and stderr without dumping environment variables.
 - The canonical Codex skill is now `temporal-awareness`; the default remains
   `temporal-references-only`, and clear commitments still require an explicit `record_commitment` tool call.
+- All eight intended public packages now have complete registry metadata, strict file allowlists, package
+  READMEs/licenses, exact packed workspace versions, and independently verified artifact manifests.
+- Packed verification now exercises CLI help/init/doctor/status, real nine-tool MCP stdio calls, temporal
+  interaction/context/commitment behavior, default privacy, export, uninstall preservation, and explicit
+  purge. A separate isolated source-copy certification uses private home/cache/store/temp directories.
 
 ### Security
 
@@ -42,3 +53,6 @@ All notable changes to TemporalThread will be documented in this file. The forma
   paths.
 - Codex MCP remains local stdio, optional at host startup, and configured with write approvals; plugin/hook
   trust remains an explicit Codex/user decision.
+- Release artifact verification rejects links, path traversal, sources/tests/build metadata, local state,
+  databases/logs, secret patterns, machine paths, invalid metadata, local-only dependencies, and a non-portable
+  CLI entry point.

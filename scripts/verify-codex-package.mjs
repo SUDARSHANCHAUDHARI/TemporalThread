@@ -11,22 +11,15 @@ import {
 import { homedir, tmpdir } from 'node:os';
 import { delimiter, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { exerciseMcpRelease } from './mcp-release-smoke.mjs';
+import { releasePackages } from './release-packages.mjs';
 
 const repositoryRoot = resolve(import.meta.dirname, '..');
 const maximumDiagnosticCharacters = 4_000;
 const pnpmCli = process.env.npm_execpath;
 if (!pnpmCli) throw new Error('Package verification must run through pnpm');
 
-const packageSpecs = [
-  ['@temporalthread/shared-types', 'packages/shared-types', 'temporalthread-shared-types-0.1.0.tgz'],
-  ['@temporalthread/config', 'packages/config', 'temporalthread-config-0.1.0.tgz'],
-  ['@temporalthread/temporal-parser', 'packages/temporal-parser', 'temporalthread-temporal-parser-0.1.0.tgz'],
-  ['@temporalthread/storage-sqlite', 'packages/storage-sqlite', 'temporalthread-storage-sqlite-0.1.0.tgz'],
-  ['@temporalthread/core', 'packages/core', 'temporalthread-core-0.1.0.tgz'],
-  ['@temporalthread/mcp-server', 'apps/mcp-server', 'temporalthread-mcp-server-0.1.0.tgz'],
-  ['@temporalthread/codex-integration', 'integrations/codex', 'temporalthread-codex-integration-0.1.0.tgz'],
-  ['temporalthread', 'apps/cli', 'temporalthread-0.1.0.tgz'],
-];
+const packageSpecs = releasePackages.map(({ name, directory, archive }) => [name, directory, archive]);
 
 function diagnosticValue(record, key) {
   if (!record || typeof record !== 'object' || !(key in record)) return '';
@@ -145,7 +138,7 @@ try {
         name: 'temporalthread-packed-verification',
         private: true,
         version: '1.0.0',
-        dependencies: localPackages,
+        dependencies: { ...localPackages, '@modelcontextprotocol/sdk': '1.29.0' },
       },
       null,
       2,
@@ -200,6 +193,44 @@ try {
   ) {
     throw new Error('Packed TemporalThread CLI version check failed');
   }
+  const help = runCli('check packed CLI help', cliEntry, ['--help'], {
+    cwd: projectRoot,
+    env: environment,
+  });
+  if (!help.includes('Give AI agents a persistent sense of time.')) {
+    throw new Error('Packed TemporalThread CLI help check failed');
+  }
+  const initialized = JSON.parse(
+    runCli(
+      'initialize packed TemporalThread installation',
+      cliEntry,
+      ['init', '--yes', '--timezone', 'UTC', '--integration', 'generic', '--json'],
+      { cwd: projectRoot, env: environment },
+    ),
+  );
+  if (
+    initialized.privacyMode !== 'temporal-references-only' ||
+    initialized.hostConfigurationsModified !== false ||
+    !existsSync(initialized.databasePath)
+  ) {
+    throw new Error('Packed TemporalThread initialization failed its privacy or storage checks');
+  }
+  const doctor = JSON.parse(
+    runCli('run packed TemporalThread doctor', cliEntry, ['doctor', '--json'], {
+      cwd: projectRoot,
+      env: environment,
+    }),
+  );
+  if (!doctor.ok) throw new Error('Packed TemporalThread doctor failed');
+  const status = JSON.parse(
+    runCli('read packed TemporalThread status', cliEntry, ['status', '--json'], {
+      cwd: projectRoot,
+      env: environment,
+    }),
+  );
+  if (status.integrity !== 'ok' || status.privacyMode !== 'temporal-references-only') {
+    throw new Error('Packed TemporalThread status failed its integrity or privacy check');
+  }
   mkdirSync(join(projectRoot, '.codex'), { recursive: true });
   writeFileSync(join(projectRoot, '.codex', 'config.toml'), 'model = "gpt-5"\n', 'utf8');
 
@@ -223,6 +254,25 @@ try {
   const databasePath = join(temporalHome, 'temporalthread.sqlite');
   if (!existsSync(databasePath)) throw new Error('Packed install did not initialize local storage');
 
+  const mcp = await exerciseMcpRelease({
+    nodeModulesRoot: join(installRoot, 'node_modules'),
+    cliEntry,
+    cwd: projectRoot,
+    env: environment,
+  });
+  if (readFileSync(databasePath).includes('RELEASE_SMOKE_PRIVATE_SENTENCE')) {
+    throw new Error('Packed default privacy mode retained the complete release-smoke prompt');
+  }
+  const exportPath = join(verificationRoot, 'packed-export.json');
+  runCli('export packed TemporalThread data', cliEntry, ['export', '--output', exportPath], {
+    cwd: projectRoot,
+    env: environment,
+  });
+  const exported = JSON.parse(readFileSync(exportPath, 'utf8'));
+  if (!exported.interactions?.length || !exported.commitments?.length) {
+    throw new Error('Packed TemporalThread export is missing recorded temporal data');
+  }
+
   const uninstalled = JSON.parse(
     runCli(
       'uninstall packed Codex integration',
@@ -241,15 +291,44 @@ try {
     throw new Error('Packed uninstall did not preserve unrelated Codex configuration');
   }
 
+  const purged = JSON.parse(
+    runCli('explicitly purge packed TemporalThread data', cliEntry, ['purge', '--yes', '--json'], {
+      cwd: projectRoot,
+      env: environment,
+    }),
+  );
+  if (purged.deleted.interactions < 1 || purged.deleted.commitments < 1) {
+    throw new Error('Packed explicit purge did not delete the recorded domain data');
+  }
+  const finalStatus = JSON.parse(
+    runCli('read packed TemporalThread status after purge', cliEntry, ['status', '--json'], {
+      cwd: projectRoot,
+      env: environment,
+    }),
+  );
+  if (finalStatus.counts.interactions !== 0 || finalStatus.counts.commitments !== 0) {
+    throw new Error('Packed TemporalThread data remained after explicit purge');
+  }
+
   process.stdout.write(
     `${JSON.stringify({
       ok: true,
       tarballs: tarballs.length,
       integrationFiles: integrationFiles.length,
       pluginFiles: pluginValidation.files.length,
+      cliHelp: true,
+      initialized: true,
+      doctor: true,
+      status: true,
+      mcpTools: mcp.tools.length,
+      temporalInteraction: mcp.interaction,
+      temporalContext: mcp.context,
+      commitment: mcp.commitment,
+      export: true,
       packedInstall: true,
       packedUninstall: true,
       databasePreserved: true,
+      explicitPurge: true,
     })}\n`,
   );
 } finally {

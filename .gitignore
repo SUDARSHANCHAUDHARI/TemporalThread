@@ -24,3 +24,4 @@ keystore.properties
 .DS_Store
 *.log
 tmp/
+release-artifacts/
