@@ -1,6 +1,9 @@
 node_modules/
 dist/
 coverage/
+graphify-out/
+_Graphify/
+_RepoMem/
 *.tsbuildinfo
 *.sqlite
 *.sqlite-shm
