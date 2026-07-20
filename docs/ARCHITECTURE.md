@@ -42,7 +42,13 @@ flowchart LR
 
 ## Read path
 
-Queries filter by stable internal identities after resolving agent, project, and session selectors. Last-interaction ordering uses occurrence time rather than insertion time. Temporal context is intentionally bounded: one last interaction, one previous session, five unresolved references, and a configurable maximum number of active commitments.
+Queries filter by stable internal identities after resolving agent, project, and session selectors.
+`get_last_interaction` retains the generic latest-event contract. Temporal context instead uses a dedicated
+latest-conversational query restricted to user and assistant interactions, so lifecycle, tool, doctor,
+installer, and health bookkeeping cannot replace the prior meaningful conversation. Both queries order by
+occurrence time rather than insertion time. Temporal context is intentionally bounded: one conversational
+interaction, one previous session, five unresolved references, and a configurable maximum number of active
+commitments.
 
 ## Concurrency and recovery
 

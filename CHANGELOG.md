@@ -27,6 +27,11 @@ All notable changes to TemporalThread will be documented in this file. The forma
   rolls back validation failures, preserves modified/unowned files, and refuses silent downgrades.
 - Installed Codex MCP configuration now launches the package-manager command shim through `cmd.exe` on
   Windows while keeping the direct `temporalthread start` command on macOS and Linux.
+- Temporal context now selects the latest meaningful user or assistant interaction, so lifecycle-generated
+  `SessionStart` bookkeeping cannot reset elapsed conversation time. Generic `get_last_interaction` behavior
+  remains unchanged, and real `Stop.last_assistant_message` responses remain eligible context.
+- Packed-package command failures now report a bounded, sanitized logical operation, working directory, exit
+  status, signal, stdout, and stderr without dumping environment variables.
 - The canonical Codex skill is now `temporal-awareness`; the default remains
   `temporal-references-only`, and clear commitments still require an explicit `record_commitment` tool call.
 

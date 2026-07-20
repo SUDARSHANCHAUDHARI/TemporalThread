@@ -144,6 +144,17 @@ Check:
 The skill influences model behavior but cannot guarantee a tool call. Ask Codex explicitly to use
 TemporalThread when the missing context matters.
 
+## Session start appears to reset elapsed time
+
+Current TemporalThread versions exclude lifecycle-generated `SessionStart` system rows from
+`get_temporal_context`. The generic `get_last_interaction` tool may still show that operational row by design,
+but injected context should name the latest user or assistant conversation. Upgrade and rerun the integration
+doctor if an immediate prompt reports only seconds since the previous conversation.
+
+For a safe diagnostic, compare `get_temporal_context` with `get_last_interaction`; do not enable
+`full-local-history` merely to inspect timing. A real assistant message captured by `Stop` should become the
+latest meaningful conversation. A stop without assistant text should not create a replacement interaction.
+
 ## Model did not record a commitment
 
 Automatic prompt hooks record privacy-permitted interaction metadata/references; they do not create firm

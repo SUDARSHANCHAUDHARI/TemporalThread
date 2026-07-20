@@ -32,10 +32,11 @@ extension uses direct MCP and skill installation instead. ChatGPT web cannot rea
 and mobile is unsupported.
 
 Codex hooks record documented `prompt` and `last_assistant_message` fields and inject compact context only
-when relevant. `transcript_path` is never parsed. Hooks do not create firm commitments; the skill must call
-`record_commitment`. Capture can be missed when hooks are disabled, untrusted, interrupted, timed out, or
-absent during abnormal termination. Uninstall removes only managed integration entries and preserves the
-database by default.
+when relevant. Lifecycle-generated `SessionStart` rows remain operational history but cannot replace the
+latest user or assistant conversation used for temporal context. `transcript_path` is never parsed. Hooks do
+not create firm commitments; the skill must call `record_commitment`. Capture can be missed when hooks are
+disabled, untrusted, interrupted, timed out, or absent during abnormal termination. Uninstall removes only
+managed integration entries and preserves the database by default.
 
 See the [architecture and behavior guide](CODEX-INTEGRATION.md), [installation](CODEX-INSTALLATION.md),
 [privacy](CODEX-PRIVACY.md), and [troubleshooting](CODEX-TROUBLESHOOTING.md).

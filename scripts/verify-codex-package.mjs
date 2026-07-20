@@ -1,4 +1,4 @@
-import { execFileSync } from 'node:child_process';
+import { spawnSync } from 'node:child_process';
 import {
   existsSync,
   mkdirSync,
@@ -8,11 +8,12 @@ import {
   rmSync,
   writeFileSync,
 } from 'node:fs';
-import { tmpdir } from 'node:os';
+import { homedir, tmpdir } from 'node:os';
 import { delimiter, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 const repositoryRoot = resolve(import.meta.dirname, '..');
+const maximumDiagnosticCharacters = 4_000;
 const pnpmCli = process.env.npm_execpath;
 if (!pnpmCli) throw new Error('Package verification must run through pnpm');
 
@@ -27,8 +28,58 @@ const packageSpecs = [
   ['temporalthread', 'apps/cli', 'temporalthread-0.1.0.tgz'],
 ];
 
-function runPnpm(arguments_, cwd = repositoryRoot) {
-  return execFileSync(process.execPath, [pnpmCli, ...arguments_], {
+function diagnosticValue(record, key) {
+  if (!record || typeof record !== 'object' || !(key in record)) return '';
+  const value = record[key];
+  return Buffer.isBuffer(value) ? value.toString('utf8') : String(value ?? '');
+}
+
+function sanitizeDiagnostic(value) {
+  const printable = [...String(value)]
+    .map((character) => {
+      const codePoint = character.codePointAt(0) ?? 0;
+      return codePoint < 32 && character !== '\n' && character !== '\r' && character !== '\t'
+        ? ' '
+        : character;
+    })
+    .join('')
+    .replaceAll(repositoryRoot, '<repository>')
+    .replaceAll(verificationRoot, '<temporary>')
+    .replaceAll(homedir(), '$HOME')
+    .replace(
+      /((?:authorization|token|secret|password|api[_-]?key)["']?\s*[=:]\s*["']?)[^\s,"']+/giu,
+      '$1<redacted>',
+    )
+    .replace(
+      /\b(?:github_pat_[A-Za-z0-9_]{20,}|gh[pousr]_[A-Za-z0-9]{30,}|sk-[A-Za-z0-9_-]{20,})\b/gu,
+      '<redacted-token>',
+    )
+    .trim();
+  return printable.length > maximumDiagnosticCharacters
+    ? `${printable.slice(0, maximumDiagnosticCharacters)}…[truncated]`
+    : printable || '<empty>';
+}
+
+function runChecked(operation, executable, arguments_, options) {
+  const result = spawnSync(executable, arguments_, options);
+  if (result.error || result.status !== 0) {
+    throw new Error(
+      [
+        'Packed package verification command failed',
+        `operation: ${operation}`,
+        `working directory: ${sanitizeDiagnostic(options.cwd)}`,
+        `exit status: ${sanitizeDiagnostic(diagnosticValue(result, 'status') || 'unavailable')}`,
+        `signal: ${sanitizeDiagnostic(diagnosticValue(result, 'signal') || 'none')}`,
+        `stdout:\n${sanitizeDiagnostic(diagnosticValue(result, 'stdout'))}`,
+        `stderr:\n${sanitizeDiagnostic(diagnosticValue(result, 'stderr'))}`,
+      ].join('\n'),
+    );
+  }
+  return result.stdout;
+}
+
+function runPnpm(operation, arguments_, cwd = repositoryRoot) {
+  return runChecked(operation, process.execPath, [pnpmCli, ...arguments_], {
     cwd,
     encoding: 'utf8',
     env: { ...process.env, NO_COLOR: '1' },
@@ -36,8 +87,8 @@ function runPnpm(arguments_, cwd = repositoryRoot) {
   });
 }
 
-function runCli(cliEntry, arguments_, options) {
-  return execFileSync(process.execPath, [cliEntry, ...arguments_], {
+function runCli(operation, cliEntry, arguments_, options) {
+  return runChecked(operation, process.execPath, [cliEntry, ...arguments_], {
     cwd: options.cwd,
     env: options.env,
     encoding: 'utf8',
@@ -67,7 +118,13 @@ try {
   mkdirSync(projectRoot, { recursive: true });
 
   for (const [, directory] of packageSpecs) {
-    runPnpm(['--dir', resolve(repositoryRoot, directory), 'pack', '--pack-destination', tarballDirectory]);
+    runPnpm(`pack ${directory}`, [
+      '--dir',
+      resolve(repositoryRoot, directory),
+      'pack',
+      '--pack-destination',
+      tarballDirectory,
+    ]);
   }
   const tarballs = readdirSync(tarballDirectory).filter((name) => name.endsWith('.tgz'));
   if (tarballs.length !== packageSpecs.length) {
@@ -102,7 +159,7 @@ try {
       .join('\n')}\n`,
     'utf8',
   );
-  runPnpm(['install', '--prefer-offline'], installRoot);
+  runPnpm('install packed tarballs', ['install', '--prefer-offline'], installRoot);
 
   const integrationRoot = join(installRoot, 'node_modules', '@temporalthread', 'codex-integration');
   const installedIntegration = await import(pathToFileURL(join(integrationRoot, 'dist', 'index.js')).href);
@@ -135,17 +192,27 @@ try {
     TEMPORALTHREAD_LOG_LEVEL: 'silent',
     NO_COLOR: '1',
   };
-  if (runCli(cliEntry, ['--version'], { cwd: projectRoot, env: environment }).trim() !== '0.1.0') {
+  if (
+    runCli('check packed CLI version', cliEntry, ['--version'], {
+      cwd: projectRoot,
+      env: environment,
+    }).trim() !== '0.1.0'
+  ) {
     throw new Error('Packed TemporalThread CLI version check failed');
   }
   mkdirSync(join(projectRoot, '.codex'), { recursive: true });
   writeFileSync(join(projectRoot, '.codex', 'config.toml'), 'model = "gpt-5"\n', 'utf8');
 
   const installed = JSON.parse(
-    runCli(cliEntry, ['integrate', 'codex', 'install', '--scope', 'project', '--yes', '--json'], {
-      cwd: projectRoot,
-      env: environment,
-    }),
+    runCli(
+      'install packed Codex integration and validate MCP startup',
+      cliEntry,
+      ['integrate', 'codex', 'install', '--scope', 'project', '--yes', '--json'],
+      {
+        cwd: projectRoot,
+        env: environment,
+      },
+    ),
   );
   if (!installed.doctor?.ok || installed.components.join(',') !== 'mcp,skill,hooks') {
     throw new Error('Packed Codex integration install did not pass its doctor checks');
@@ -157,10 +224,15 @@ try {
   if (!existsSync(databasePath)) throw new Error('Packed install did not initialize local storage');
 
   const uninstalled = JSON.parse(
-    runCli(cliEntry, ['integrate', 'codex', 'uninstall', '--scope', 'project', '--yes', '--json'], {
-      cwd: projectRoot,
-      env: environment,
-    }),
+    runCli(
+      'uninstall packed Codex integration',
+      cliEntry,
+      ['integrate', 'codex', 'uninstall', '--scope', 'project', '--yes', '--json'],
+      {
+        cwd: projectRoot,
+        env: environment,
+      },
+    ),
   );
   if (!uninstalled.databasePreserved || !existsSync(databasePath)) {
     throw new Error('Packed uninstall did not preserve the TemporalThread database');

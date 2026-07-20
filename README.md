@@ -112,10 +112,11 @@ marketplace entry under `.agents/plugins/marketplace.json`. Plugin installation 
 install plugins.
 
 Hook capture is automatic only when a supported, trusted event is delivered. Compact context is injected
-only for a resumed session, a temporal cue, a due commitment, or a meaningful timezone change. Creating a
-firm commitment, retrieving context outside those hook cases, and recording an event missed by hooks still
-depend on Codex calling the MCP tools. A hook is not a transcript recorder and abnormal termination can omit
-`Stop`.
+only for a resumed session, a temporal cue, a due commitment, or a meaningful timezone change. A new
+`SessionStart` lifecycle row does not replace the prior meaningful user or assistant conversation used for
+elapsed-time context. Creating a firm commitment, retrieving context outside those hook cases, and recording
+an event missed by hooks still depend on Codex calling the MCP tools. A hook is not a transcript recorder and
+abnormal termination can omit `Stop`.
 
 For the July example, `record_interaction` anchors “tomorrow” to July 15 in `Asia/Bangkok`, and
 `record_commitment` records the explicit follow-up. On July 19, `get_temporal_context` reports about four
@@ -168,7 +169,7 @@ hosts receive only explicitly requested, privacy-permitted results. See [Privacy
 | --- | --- |
 | `get_current_time` | Current UTC and local wall-clock context |
 | `record_interaction` | Idempotently persist an interaction under a privacy mode |
-| `get_temporal_context` | Compact last interaction, elapsed time, references, and commitments |
+| `get_temporal_context` | Compact latest user/assistant interaction, elapsed time, references, and commitments |
 | `get_last_interaction` | Most recent matching event; raw text requires explicit permission |
 | `calculate_elapsed_time` | Exact duration plus local calendar-day difference |
 | `resolve_relative_time` | Resolve a phrase against an explicit historical anchor |

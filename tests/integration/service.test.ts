@@ -303,6 +303,13 @@ describe('TemporalThreadService interaction continuity', () => {
       idempotencyKey: 'timezone-change',
       text: 'Continue tomorrow.',
     });
+    service.recordInteraction({
+      role: 'system',
+      occurredAt: '2026-07-19T12:59:00Z',
+      timezone: 'Asia/Bangkok',
+      agent: { name: 'Codex', platform: 'codex' },
+      idempotencyKey: 'timezone-lifecycle',
+    });
 
     const context = service.getTemporalContext({});
     expect(context.timezoneChange).toEqual({
@@ -313,6 +320,115 @@ describe('TemporalThreadService interaction continuity', () => {
     expect(
       service.storage.getTemporalReferences(context.lastInteraction?.interactionId as string)[0],
     ).toMatchObject({ anchorTimezone: 'America/New_York' });
+  });
+
+  it.each(['user', 'assistant'] as const)(
+    'uses the latest %s conversation for temporal context while retaining generic lifecycle history',
+    (role) => {
+      const { service } = trackedHarness();
+      const conversation = service.recordInteraction({
+        role,
+        occurredAt: '2026-07-18T12:00:00Z',
+        timezone: 'Asia/Bangkok',
+        agent: { name: 'Codex', platform: 'codex' },
+        project: { path: projectAlpha },
+        sessionId: `conversation-${role}`,
+        idempotencyKey: `conversation-${role}`,
+      });
+      const lifecycle = service.recordInteraction({
+        role: 'system',
+        occurredAt: '2026-07-19T12:59:54Z',
+        timezone: 'Asia/Bangkok',
+        agent: { name: 'Codex', platform: 'codex' },
+        project: { path: projectAlpha },
+        sessionId: `lifecycle-${role}`,
+        idempotencyKey: `lifecycle-${role}`,
+      });
+      const operational = service.recordInteraction({
+        role: 'tool',
+        occurredAt: '2026-07-19T12:59:55Z',
+        timezone: 'Asia/Bangkok',
+        agent: { name: 'Codex', platform: 'codex' },
+        project: { path: projectAlpha },
+        sessionId: `lifecycle-${role}`,
+        idempotencyKey: `operational-${role}`,
+      });
+
+      expect(service.getLastInteraction({ project: { path: projectAlpha } })?.interactionId).toBe(
+        operational.interactionId,
+      );
+      expect(lifecycle.interactionId).not.toBe(operational.interactionId);
+      expect(service.getTemporalContext({ project: { path: projectAlpha } })).toMatchObject({
+        lastInteraction: { interactionId: conversation.interactionId, role },
+        elapsed: { totalMilliseconds: 90_000_000, calendarDayDifference: 1 },
+        resumedSession: true,
+      });
+    },
+  );
+
+  it('scopes conversational context by agent, project, and session and returns null when none matches', () => {
+    const { service } = trackedHarness();
+    const selected = service.recordInteraction({
+      role: 'user',
+      occurredAt: '2026-07-18T10:00:00Z',
+      agent: { name: 'Codex', platform: 'codex' },
+      project: { path: projectAlpha },
+      sessionId: 'selected-session',
+      idempotencyKey: 'selected-newer',
+    });
+    service.recordInteraction({
+      role: 'assistant',
+      occurredAt: '2026-07-17T10:00:00Z',
+      agent: { name: 'Codex', platform: 'codex' },
+      project: { path: projectAlpha },
+      sessionId: 'selected-session',
+      idempotencyKey: 'selected-older-out-of-order',
+    });
+    service.recordInteraction({
+      role: 'assistant',
+      occurredAt: '2026-07-19T12:00:00Z',
+      agent: { name: 'Claude Code', platform: 'claude-code' },
+      project: { path: projectAlpha },
+      sessionId: 'other-agent-session',
+      idempotencyKey: 'other-agent',
+    });
+    service.recordInteraction({
+      role: 'assistant',
+      occurredAt: '2026-07-19T12:30:00Z',
+      agent: { name: 'Codex', platform: 'codex' },
+      project: { path: projectBeta },
+      sessionId: 'other-project-session',
+      idempotencyKey: 'other-project',
+    });
+    service.recordInteraction({
+      role: 'system',
+      occurredAt: '2026-07-19T12:59:00Z',
+      agent: { name: 'Lifecycle only', platform: 'test' },
+      sessionId: 'lifecycle-only-session',
+      idempotencyKey: 'lifecycle-only',
+    });
+
+    const selectors = {
+      agent: { name: 'Codex', platform: 'codex' },
+      project: { path: projectAlpha },
+      sessionId: 'selected-session',
+    };
+    expect(service.getTemporalContext(selectors).lastInteraction?.interactionId).toBe(selected.interactionId);
+    expect(
+      service.getTemporalContext({ agent: { name: 'Claude Code', platform: 'claude-code' } }).lastInteraction
+        ?.role,
+    ).toBe('assistant');
+    expect(service.getTemporalContext({ project: { path: projectBeta } }).lastInteraction?.role).toBe(
+      'assistant',
+    );
+    expect(service.getTemporalContext({ agent: { name: 'Lifecycle only', platform: 'test' } })).toMatchObject(
+      { lastInteraction: null, elapsed: null, resumedSession: false },
+    );
+    expect(service.getTemporalContext({ agent: { name: 'Missing', platform: 'test' } })).toMatchObject({
+      lastInteraction: null,
+      elapsed: null,
+      resumedSession: false,
+    });
   });
 
   it('does not classify a future-dated last interaction as a resumed session', () => {

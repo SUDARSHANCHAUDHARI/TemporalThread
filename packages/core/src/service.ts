@@ -14,6 +14,7 @@ import {
   GetLastInteractionInputSchema,
   GetTemporalContextInputSchema,
   InteractionRoleSchema,
+  type InteractionWithRelations,
   type LastInteractionResult,
   ListCommitmentsInputSchema,
   type Project,
@@ -217,6 +218,13 @@ export class TemporalThreadService {
     if (!resolved.matched) return null;
     const record = this.storage.getLastInteraction(resolved.filters);
     if (!record) return null;
+    return this.lastInteractionResult(record, parsed.includeRawText ?? false);
+  }
+
+  private lastInteractionResult(
+    record: InteractionWithRelations,
+    includeRawText: boolean,
+  ): LastInteractionResult {
     const { interaction, agent, project, session } = record;
     const result = {
       interactionId: interaction.id,
@@ -239,9 +247,7 @@ export class TemporalThreadService {
       },
       role: interaction.role,
     };
-    return parsed.includeRawText &&
-      interaction.privacyMode === 'full-local-history' &&
-      interaction.rawText !== null
+    return includeRawText && interaction.privacyMode === 'full-local-history' && interaction.rawText !== null
       ? { ...result, rawText: interaction.rawText }
       : result;
   }
@@ -267,12 +273,8 @@ export class TemporalThreadService {
       };
     }
 
-    const last = this.getLastInteraction({
-      ...(parsed.agent ? { agent: parsed.agent } : {}),
-      ...(parsed.project ? { project: parsed.project } : {}),
-      ...(parsed.sessionId ? { sessionId: parsed.sessionId } : {}),
-    });
-    const lastRecord = this.storage.getLastInteraction(resolved.filters);
+    const lastRecord = this.storage.getLastConversationalInteraction(resolved.filters);
+    const last = lastRecord ? this.lastInteractionResult(lastRecord, false) : null;
     const elapsed = last?.elapsed ?? null;
     const threshold = this.config.temporalContextRefreshThresholdMinutes * 60 * 1_000;
     const previousSession = lastRecord ? this.storage.getPreviousSession(lastRecord.session) : null;

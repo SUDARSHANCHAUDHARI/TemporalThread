@@ -366,12 +366,28 @@ export class SqliteStorage {
 
   getLastInteraction(filters: InteractionFilters = {}): InteractionWithRelations | null {
     const where = this.interactionWhere(filters);
+    return this.getLatestInteraction(where.clause, where.parameters);
+  }
+
+  getLastConversationalInteraction(
+    filters: Omit<InteractionFilters, 'role'> = {},
+  ): InteractionWithRelations | null {
+    const where = this.interactionWhere(filters);
+    const conversationClause = "role IN ('user', 'assistant')";
+    const clause = where.clause ? `${where.clause} AND ${conversationClause}` : `WHERE ${conversationClause}`;
+    return this.getLatestInteraction(clause, where.parameters);
+  }
+
+  private getLatestInteraction(
+    clause: string,
+    parameters: Array<string | number | null>,
+  ): InteractionWithRelations | null {
     const row = this.database
       .prepare(
-        `SELECT * FROM interactions ${where.clause}
+        `SELECT * FROM interactions ${clause}
          ORDER BY occurred_at_utc DESC, id DESC LIMIT 1`,
       )
-      .get(...where.parameters);
+      .get(...parameters);
     if (!row) return null;
 
     const interaction = mapInteraction(row as SqlRow);

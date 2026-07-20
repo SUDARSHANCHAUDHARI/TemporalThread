@@ -37,6 +37,19 @@ erDiagram
 
 Every interaction stores a SHA-256 message hash when text is supplied. `text_preview` and `raw_text` are null unless that individual interaction uses `full-local-history`. Temporal references are absent in `metadata-only`; the default `temporal-references-only` retains only matched phrases and resolutions. Commitment `original_text` follows the source interaction’s privacy permission.
 
+## Conversation context
+
+Interaction roles remain `user`, `assistant`, `system`, and `tool`. The generic latest-interaction query may
+return any role. Temporal context has a narrower contract: its previous meaningful conversation is the newest
+`user` or `assistant` interaction by occurrence time. Internal lifecycle rows such as Codex `SessionStart`
+remain stored and queryable but cannot reset elapsed conversation time. A real assistant response recorded
+from `Stop.last_assistant_message` remains eligible; a `Stop` event without assistant text creates no
+interaction.
+
+This is a query rule, not a schema change. Existing databases and rows require no migration. If a future
+integration supports meaningful system conversation, it must add an explicit classification rather than
+relying on lifecycle message content.
+
 ## Commitment status
 
 Persisted status is `pending`, `completed`, `cancelled`, or `rescheduled`. `due` and `overdue` are query-time display states derived from a pending commitment’s due range and current clock. Rescheduling records a new due resolution while retaining the commitment identity.

@@ -56,7 +56,7 @@ host, and confirm MCP visibility.
 
 | Event | Input used | Automatic action | Context returned |
 | --- | --- | --- | --- |
-| `SessionStart` | `session_id`, `cwd`, `source` | Retrieve prior context, record safe session timing | Only for a resumed session, due commitment, or timezone change |
+| `SessionStart` | `session_id`, `cwd`, `source` | Retrieve prior context, record non-conversational lifecycle timing | Only for a resumed session, due commitment, or timezone change |
 | `UserPromptSubmit` | `session_id`, `turn_id`, `cwd`, `prompt` | Process under the configured privacy mode and record idempotently | Only for a temporal cue, resumed session, due commitment, or timezone change |
 | `Stop` | `session_id`, `turn_id`, `cwd`, optional `last_assistant_message` | Record permitted assistant data and best-effort session activity/end state | Neutral JSON; never asks Codex to continue |
 
@@ -66,6 +66,12 @@ treated as untrusted data, sanitized, and truncated before injection.
 
 All hook failures return neutral output with a zero process exit. Malformed input, an unavailable database,
 a parser failure, a five-second host timeout, or a missing MCP server must not prevent Codex from continuing.
+
+`SessionStart` timing is operational bookkeeping, not a conversation turn. `get_temporal_context` selects the
+latest user or assistant interaction, while the generic `get_last_interaction` tool can still return the
+latest lifecycle/system row. Therefore a session start immediately followed by “I'm back” preserves the
+elapsed time from the prior real conversation. A `Stop` event with `last_assistant_message` records an eligible
+assistant interaction; a stop without assistant text records no synthetic interaction.
 
 ## Automatic versus model-driven behavior
 
@@ -98,8 +104,9 @@ a duplicate interaction.
 
 At `2026-07-19T23:00:00+07:00`, the user says “I'm back.” Compact context can report that about four days and
 three hours passed, the expected continuation date was July 16, and July 19 is three local calendar days
-later. Codex may mention this naturally when it helps; the skill explicitly avoids repeatedly judging or
-reminding the user about the gap.
+later. A `SessionStart` event emitted seconds before this prompt cannot replace the July 15 conversation.
+Codex may mention this naturally when it helps; the skill explicitly avoids repeatedly judging or reminding
+the user about the gap.
 
 ## Failure and fallback behavior
 
