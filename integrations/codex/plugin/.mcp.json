@@ -1,0 +1,6 @@
+{
+  "temporal-thread": {
+    "command": "temporalthread",
+    "args": ["start"]
+  }
+}

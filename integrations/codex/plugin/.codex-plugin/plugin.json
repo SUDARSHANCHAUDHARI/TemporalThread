@@ -1,0 +1,24 @@
+{
+  "name": "temporalthread",
+  "version": "0.1.0",
+  "description": "Local-first temporal continuity, relative-time reasoning, and explicit follow-up tracking for Codex.",
+  "author": {
+    "name": "TemporalThread contributors"
+  },
+  "license": "MIT",
+  "keywords": ["time", "continuity", "mcp", "local-first"],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "hooks": "./hooks/hooks.json",
+  "interface": {
+    "displayName": "TemporalThread",
+    "shortDescription": "Local-first temporal continuity for Codex",
+    "longDescription": "Preserve interaction timing, resolve relative dates from their original context, and track explicit follow-up commitments through a local stdio MCP server.",
+    "developerName": "TemporalThread contributors",
+    "category": "Productivity",
+    "capabilities": ["Read", "Write"],
+    "defaultPrompt": [
+      "Use TemporalThread when prior timing or an explicit follow-up materially affects this task."
+    ]
+  }
+}

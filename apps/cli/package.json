@@ -7,7 +7,9 @@
     "dist/**/*.d.ts",
     "dist/**/*.d.ts.map",
     "dist/**/*.js",
-    "dist/**/*.js.map"
+    "dist/**/*.js.map",
+    "README.md",
+    "LICENSE"
   ],
   "bin": {
     "temporalthread": "./dist/bin.js"

@@ -53,5 +53,8 @@ jobs:
       - name: Build workspace
         run: pnpm build
 
+      - name: Validate packed Codex integration
+        run: pnpm verify:codex-package
+
       - name: Audit production dependencies
         run: pnpm audit

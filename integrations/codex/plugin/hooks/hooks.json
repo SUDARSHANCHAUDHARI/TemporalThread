@@ -1,0 +1,42 @@
+{
+  "description": "TemporalThread records documented prompt/stop fields and injects compact temporal context.",
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|clear|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "temporalthread hook codex",
+            "timeout": 5,
+            "statusMessage": "Loading temporal context"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "temporalthread hook codex",
+            "timeout": 5,
+            "statusMessage": "Recording interaction time"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "temporalthread hook codex",
+            "timeout": 5,
+            "statusMessage": "Saving temporal continuity"
+          }
+        ]
+      }
+    ]
+  }
+}

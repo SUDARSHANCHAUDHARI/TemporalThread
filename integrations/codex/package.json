@@ -16,7 +16,11 @@
     "dist/**/*.d.ts",
     "dist/**/*.d.ts.map",
     "dist/**/*.js",
-    "dist/**/*.js.map"
+    "dist/**/*.js.map",
+    "hooks.json",
+    "plugin",
+    "README.md",
+    "LICENSE"
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.29.0",

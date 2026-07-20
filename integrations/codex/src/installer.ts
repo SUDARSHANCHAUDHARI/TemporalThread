@@ -142,7 +142,7 @@ function integrationRoot(): string {
 export function readCodexIntegrationAssets(): CodexIntegrationAssets {
   const root = integrationRoot();
   const repositoryRoot = resolve(root, '../..');
-  const packagedSkill = join(root, 'assets/temporal-awareness/SKILL.md');
+  const packagedSkill = join(root, 'plugin/skills/temporal-awareness/SKILL.md');
   return {
     hooksContent: readFileSync(join(root, 'hooks.json'), 'utf8'),
     skillContent: readFileSync(

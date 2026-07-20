@@ -1,0 +1,16 @@
+{
+  "name": "temporalthread-local",
+  "plugins": [
+    {
+      "name": "temporalthread",
+      "source": {
+        "source": "local",
+        "path": "./integrations/codex/plugin"
+      },
+      "category": "Productivity",
+      "interface": {
+        "displayName": "TemporalThread"
+      }
+    }
+  ]
+}

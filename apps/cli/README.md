@@ -1,5 +1,11 @@
 # TemporalThread CLI
 
-This package provides the `temporalthread` command and local MCP stdio server for the TemporalThread workspace.
+`temporalthread` is the local-first CLI and stdio MCP server for TemporalThread. It requires Node.js 24 or
+newer and stores data in a local SQLite database under the platform-specific TemporalThread data directory.
 
-The 0.1 MVP is currently distributed from source rather than the npm registry. See the repository root README for installation, privacy modes, integrations, commands, and support status.
+Run `temporalthread init`, then `temporalthread doctor`. Codex users can run
+`temporalthread integrate codex install --scope user` or choose project scope. The default
+`temporal-references-only` privacy mode does not retain complete prompt text.
+
+No package command opens a network listener or sends telemetry. Integration removal preserves the database
+unless `--purge-data --yes` is explicitly supplied.
