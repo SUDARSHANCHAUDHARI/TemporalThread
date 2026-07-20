@@ -10,7 +10,8 @@ import {
 
 describe('Codex MCP configuration', () => {
   it('renders the official optional stdio configuration for an installed CLI', () => {
-    const server = createCodexMcpServerConfig({ mode: 'installed' });
+    const launch = { mode: 'installed', platform: 'linux' } as const;
+    const server = createCodexMcpServerConfig(launch);
     expect(server).toEqual({
       command: 'temporalthread',
       args: ['start'],
@@ -21,9 +22,31 @@ describe('Codex MCP configuration', () => {
       tool_timeout_sec: 60,
     });
 
-    const rendered = renderCodexMcpConfiguration({ mode: 'installed' });
-    const inspection = inspectCodexMcpConfiguration(rendered);
+    const rendered = renderCodexMcpConfiguration(launch);
+    const inspection = inspectCodexMcpConfiguration(rendered, launch);
     expect(inspection).toMatchObject({ valid: true, present: true, matchesRecommended: true });
+  });
+
+  it('launches the installed CLI through the Windows command processor', () => {
+    const launch = { mode: 'installed', platform: 'win32' } as const;
+    const server = createCodexMcpServerConfig(launch);
+
+    expect(server).toEqual({
+      command: 'cmd.exe',
+      args: ['/d', '/s', '/c', 'temporalthread', 'start'],
+      enabled: true,
+      required: false,
+      default_tools_approval_mode: 'writes',
+      startup_timeout_sec: 10,
+      tool_timeout_sec: 60,
+    });
+
+    const rendered = renderCodexMcpConfiguration(launch);
+    expect(inspectCodexMcpConfiguration(rendered, launch)).toMatchObject({
+      valid: true,
+      present: true,
+      matchesRecommended: true,
+    });
   });
 
   it('quotes a caller-supplied Windows development entry without shell interpolation', () => {

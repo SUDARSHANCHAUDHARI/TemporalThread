@@ -22,7 +22,7 @@ const CodexMcpServerConfigSchema = z
 
 export type CodexMcpServerConfig = z.infer<typeof CodexMcpServerConfigSchema>;
 export type CodexMcpLaunchOptions =
-  | { mode: 'installed' }
+  | { mode: 'installed'; platform?: NodeJS.Platform }
   | {
       mode: 'development';
       cliEntryPath: string;
@@ -159,15 +159,15 @@ function validateDevelopmentPath(value: string, platform: NodeJS.Platform): stri
 }
 
 export function createCodexMcpServerConfig(options: CodexMcpLaunchOptions): CodexMcpServerConfig {
+  const platform = options.platform ?? process.platform;
   const launch =
     options.mode === 'installed'
-      ? { command: 'temporalthread', args: ['start'] }
+      ? platform === 'win32'
+        ? { command: 'cmd.exe', args: ['/d', '/s', '/c', 'temporalthread', 'start'] }
+        : { command: 'temporalthread', args: ['start'] }
       : {
           command: options.nodeExecutable?.trim() || 'node',
-          args: [
-            validateDevelopmentPath(options.cliEntryPath, options.platform ?? process.platform),
-            'start',
-          ],
+          args: [validateDevelopmentPath(options.cliEntryPath, platform), 'start'],
         };
   return CodexMcpServerConfigSchema.parse({
     ...launch,

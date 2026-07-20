@@ -32,6 +32,11 @@ Codex.
 5. Restart Codex and inspect its MCP status. The configured server is optional (`required = false`), so a
    startup failure should not block Codex.
 
+Installed-package mode uses the native `temporalthread start` command on macOS/Linux and a fixed
+`cmd.exe /d /s /c temporalthread start` wrapper on Windows. If an older managed Windows entry still names
+`temporalthread` directly, rerun the MCP-only installer to migrate the owned block without touching unrelated
+Codex settings.
+
 ## Skill not detected
 
 User scope expects `~/.agents/skills/temporal-awareness/SKILL.md`; project scope expects

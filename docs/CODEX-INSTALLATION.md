@@ -74,9 +74,11 @@ temporalthread integrate codex install --scope user --dry-run
 temporalthread integrate codex install --scope user --yes
 ```
 
-The generated MCP entry launches `temporalthread start`, is enabled but not required, uses the `writes`
-approval mode, allows ten seconds for startup, and allows sixty seconds per tool call. Optional temporal
-continuity therefore does not make Codex startup depend on the server.
+The generated MCP entry launches `temporalthread start` directly on macOS and Linux. On Windows it uses
+`cmd.exe /d /s /c temporalthread start` so the package-manager command shim starts reliably. The entry is
+enabled but not required, uses the `writes` approval mode, allows ten seconds for startup, and allows sixty
+seconds per tool call. Optional temporal continuity therefore does not make Codex startup depend on the
+server.
 
 ## Plugin installation
 

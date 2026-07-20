@@ -25,6 +25,8 @@ All notable changes to TemporalThread will be documented in this file. The forma
 - Codex integration installation now parses and preserves unrelated TOML/JSON, validates the MCP executable
   and protocol before mutation, creates timestamped backups, writes atomically, tracks ownership/version,
   rolls back validation failures, preserves modified/unowned files, and refuses silent downgrades.
+- Installed Codex MCP configuration now launches the package-manager command shim through `cmd.exe` on
+  Windows while keeping the direct `temporalthread start` command on macOS and Linux.
 - The canonical Codex skill is now `temporal-awareness`; the default remains
   `temporal-references-only`, and clear commitments still require an explicit `record_commitment` tool call.
 
