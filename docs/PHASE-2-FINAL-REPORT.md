@@ -21,6 +21,7 @@ configuration.
 | 2.7 | Official plugin/marketplace package and packed-artifact verification | `38c728d` |
 | 2.8 | Installation, architecture, privacy, troubleshooting, compatibility, and changelog docs | `69d4295` |
 | 2.9 | Combined July acceptance test, clean-install/security/release-readiness audit, final report | This final checkpoint |
+| 2.10 | Windows-safe installed launcher and green three-platform package validation | `230be46` |
 
 ## Acceptance evidence
 
@@ -39,7 +40,7 @@ configuration.
 | July 15 → July 19 continuity | Combined E2E installs the integration, discovers tools, records/retries the July 15 event, records one commitment, restarts real stdio MCP with a July 19 fake clock, and verifies 4 days/3 hours plus 3 overdue calendar days | Pass |
 | Duplicate safety | Same idempotency key returns the original interaction with `duplicate: true`; database remains at one interaction/reference and one explicitly recorded commitment | Pass |
 | Packed artifact | Eight local tarballs install in an isolated project; packaged CLI/plugin validation, MCP install/doctor, uninstall, unrelated config, and database preservation all pass | Pass |
-| Cross-platform design | Node-only installer, platform path resolution, Windows/macOS/Linux fixtures, spaces/Unicode tests, and CI matrix for Ubuntu/macOS/Windows | Pass by automated contracts; live hosts remain manual |
+| Cross-platform design | Node-only installer, platform path resolution, Windows/macOS/Linux fixtures, spaces/Unicode tests, and CI matrix for Ubuntu/macOS/Windows | Pass; run `29755452393` succeeded on all three platforms, while live-host certification remains manual |
 | Documentation matches behavior | Root README, four Codex guides, integration matrix, architecture/privacy/security/roadmap, plugin/package docs, and changelog updated | Pass |
 | Unsupported behavior is honest | Docs exclude guaranteed capture/end, transcript parsing, reminder delivery, auto-completion, IDE plugin install, web/mobile local stdio, remote MCP, and cloud sync | Pass |
 | Official plugin format only | `.codex-plugin/plugin.json`, relative component paths, `.mcp.json`, hook/skill copies, repository marketplace, legal/privacy/compatibility files, strict package schema | Pass |
@@ -54,7 +55,7 @@ All commands ran with Node.js 24.14.0 and pnpm 11.9.0:
 | `pnpm format:check` | 118 files checked |
 | `pnpm lint` | 118 files checked |
 | `pnpm typecheck` | Pass |
-| `pnpm test` | 23 files, 110 tests passed |
+| `pnpm test` | 23 files, 111 tests passed |
 | `pnpm build` | Pass |
 | `pnpm verify:codex-package` | 8 tarballs, 48 integration files, 8 plugin files; install/uninstall/database-preservation pass |
 | `pnpm run audit` | No known production dependency vulnerabilities |
@@ -98,8 +99,9 @@ qualification.
 
 ## Remaining manual verification
 
-Automated tests validate official contracts but do not grant host trust or certify a particular installed
-Codex release. Before a public release:
+Automated tests and GitHub Actions validate official contracts and isolated packed installation on macOS,
+Linux, and Windows, but do not grant host trust or certify a particular installed Codex release. Before a
+public release:
 
 1. Install the packed artifact on clean macOS, Linux, and Windows machines through the intended distribution
    channel.
