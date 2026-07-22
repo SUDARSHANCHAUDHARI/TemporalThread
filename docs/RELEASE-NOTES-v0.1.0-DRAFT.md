@@ -88,6 +88,8 @@ deletion action. Stop clients before copying or inspecting SQLite/WAL/SHM files.
 - Byte-for-byte release artifact reproducibility across operating systems is not established.
 - The current stable MCP TypeScript SDK range resolves a vulnerable Hono server in packed consumers; release
   remains blocked until a stable dependency update carries Hono 2.0.10 or newer.
+- Phase 4.1 reproduced the blocked graph in isolated npm and pnpm consumers. The release verifier now audits
+  both managers and rejects any mixed or vulnerable nested Hono copy without relying on workspace overrides.
 
 ## Upgrade notes
 

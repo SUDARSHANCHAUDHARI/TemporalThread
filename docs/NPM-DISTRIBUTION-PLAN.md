@@ -20,8 +20,8 @@ The locked workspace graph is secured with root overrides to `@hono/node-server@
 `fast-uri@3.1.4`, and the source production audit is clean. A fresh consumer installation from the eight
 tarballs does not inherit the workspace override: it resolves `@hono/node-server@1.19.14` through the current
 stable `@modelcontextprotocol/sdk@1.29.0`. That version is within the affected ranges for
-[GHSA-frvp-7c67-39w9](https://github.com/advisories/GHSA-frvp-7c67-39w9) and
-[GHSA-9mqv-5hh9-4cgg](https://github.com/advisories/GHSA-9mqv-5hh9-4cgg).
+[GHSA-frvp-7c67-39w9](https://github.com/advisories/GHSA-frvp-7c67-39w9). The later Hono 2.x advisories are
+why the repository keeps 2.0.10, rather than merely 2.0.5, as its accepted source security floor.
 
 npm's [override documentation](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#overrides) states
 that overrides are considered only in the root project and that overrides in installed dependencies or
@@ -32,6 +32,11 @@ Preferred resolution: update to a stable MCP TypeScript SDK version whose produc
 `@hono/node-server@2.0.10` or newer, then repeat the source audit, packed dependency inspection, and full
 release matrix. Do not add hidden vendoring, bundle duplication, or an npm shrinkwrap without a separate
 architecture and security review.
+
+Phase 4.1 retested both npm and pnpm with isolated caches/stores and all eight tarballs outside the source
+workspace. Both resolve SDK 1.29.0, Hono node-server 1.19.14, and `fast-uri` 3.1.4; both production audits
+fail. A direct Hono 2.0.11 experiment left nested 1.19.14, and the upstream range issue remains open. See
+`docs/PACKED-DEPENDENCY-ROOT-CAUSE.md` and `docs/DEPENDENCY-SECURITY-SOLUTION-DECISION.md`.
 
 ## Intended public package set
 

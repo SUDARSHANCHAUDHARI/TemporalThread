@@ -12,12 +12,19 @@ import { homedir, tmpdir } from 'node:os';
 import { delimiter, join, resolve } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { exerciseMcpRelease } from './mcp-release-smoke.mjs';
+import {
+  assessPackedDependencyGraph,
+  productionVersions,
+  summarizeAudit,
+} from './packed-dependency-security.mjs';
 import { releasePackages } from './release-packages.mjs';
 
 const repositoryRoot = resolve(import.meta.dirname, '..');
 const maximumDiagnosticCharacters = 4_000;
 const pnpmCli = process.env.npm_execpath;
 if (!pnpmCli) throw new Error('Package verification must run through pnpm');
+const npmExecutable = process.platform === 'win32' ? (process.env.ComSpec ?? 'cmd.exe') : 'npm';
+const npmArgumentPrefix = process.platform === 'win32' ? ['/d', '/s', '/c', 'npm.cmd'] : [];
 const verificationArguments = process.argv.slice(2).filter((argument) => argument !== '--');
 if (verificationArguments.some((argument) => argument !== '--require-secure-dependencies')) {
   throw new Error('Usage: pnpm verify:codex-package -- [--require-secure-dependencies]');
@@ -76,6 +83,21 @@ function runChecked(operation, executable, arguments_, options) {
   return result.stdout;
 }
 
+function runCaptured(operation, executable, arguments_, options) {
+  const result = spawnSync(executable, arguments_, options);
+  if (result.error) {
+    throw new Error(
+      [
+        'Packed package verification command could not start',
+        `operation: ${operation}`,
+        `working directory: ${sanitizeDiagnostic(options.cwd)}`,
+        `error: ${sanitizeDiagnostic(result.error.message)}`,
+      ].join('\n'),
+    );
+  }
+  return result;
+}
+
 function runPnpm(operation, arguments_, cwd = repositoryRoot) {
   return runChecked(operation, process.execPath, [pnpmCli, ...arguments_], {
     cwd,
@@ -83,6 +105,48 @@ function runPnpm(operation, arguments_, cwd = repositoryRoot) {
     env: { ...process.env, NO_COLOR: '1' },
     maxBuffer: 20 * 1_024 * 1_024,
   });
+}
+
+function runNpm(operation, arguments_, cwd, environment) {
+  return runChecked(operation, npmExecutable, [...npmArgumentPrefix, ...arguments_], {
+    cwd,
+    encoding: 'utf8',
+    env: environment,
+    windowsHide: true,
+    maxBuffer: 20 * 1_024 * 1_024,
+  });
+}
+
+function parseJsonOutput(operation, output) {
+  try {
+    return JSON.parse(output);
+  } catch (error) {
+    throw new Error(`${operation} did not return valid JSON: ${sanitizeDiagnostic(error.message)}`);
+  }
+}
+
+function runAudit(operation, executable, arguments_, cwd, environment) {
+  const result = runCaptured(operation, executable, arguments_, {
+    cwd,
+    encoding: 'utf8',
+    env: environment,
+    windowsHide: true,
+    maxBuffer: 20 * 1_024 * 1_024,
+  });
+  const exitStatus = result.status;
+  if (exitStatus !== 0 && exitStatus !== 1) {
+    throw new Error(
+      [
+        'Packed package production audit could not establish a security result',
+        `operation: ${operation}`,
+        `working directory: ${sanitizeDiagnostic(cwd)}`,
+        `exit status: ${sanitizeDiagnostic(exitStatus ?? 'unavailable')}`,
+        `stdout:\n${sanitizeDiagnostic(result.stdout)}`,
+        `stderr:\n${sanitizeDiagnostic(result.stderr)}`,
+      ].join('\n'),
+    );
+  }
+  return summarizeAudit(parseJsonOutput(operation, result.stdout), exitStatus);
 }
 
 function runCli(operation, cliEntry, arguments_, options) {
@@ -105,43 +169,37 @@ function allFiles(root, current = root) {
   return files.sort();
 }
 
-function productionVersions(graph, packageName) {
-  const versions = new Set();
-  function visit(dependencies) {
-    for (const [name, dependency] of Object.entries(dependencies ?? {})) {
-      if (name === packageName && typeof dependency.version === 'string') {
-        versions.add(dependency.version);
-      }
-      visit(dependency.dependencies);
-    }
-  }
-  for (const project of graph) visit(project.dependencies);
-  return [...versions].sort();
-}
-
-function hasVersionAtLeast(versions, expectedMajor, expectedMinor, expectedPatch) {
-  return (
-    versions.length > 0 &&
-    versions.every((version) => {
-      const match = /^(\d+)\.(\d+)\.(\d+)$/u.exec(version);
-      if (!match) return false;
-      const [, major, minor, patch] = match.map(Number);
-      return (
-        major === expectedMajor &&
-        (minor > expectedMinor || (minor === expectedMinor && patch >= expectedPatch))
-      );
-    })
+function assessPackedConsumer(graph, audit) {
+  const dependencySecurity = assessPackedDependencyGraph(graph, audit);
+  const temporalThreadPackageVersions = Object.fromEntries(
+    packageSpecs.map(([name]) => [name, productionVersions(graph, name)]),
   );
+  const allReleasePackagesInstalled = Object.values(temporalThreadPackageVersions).every(
+    (versions) => versions.length === 1 && versions[0] === '0.1.0',
+  );
+
+  return {
+    ...dependencySecurity,
+    temporalThreadPackageVersions,
+    allReleasePackagesInstalled,
+    secure: dependencySecurity.secure && allReleasePackagesInstalled,
+  };
 }
 
 const verificationRoot = mkdtempSync(join(tmpdir(), 'temporalthread-packed-'));
 try {
   const tarballDirectory = join(verificationRoot, 'tarballs');
-  const installRoot = join(verificationRoot, 'install');
+  const npmInstallRoot = join(verificationRoot, 'npm-consumer');
+  const pnpmInstallRoot = join(verificationRoot, 'pnpm-consumer');
+  const npmCache = join(verificationRoot, 'npm-cache');
+  const pnpmStore = join(verificationRoot, 'pnpm-store');
   const temporalHome = join(verificationRoot, 'home');
   const projectRoot = join(verificationRoot, 'Project Ω with spaces');
   mkdirSync(tarballDirectory, { recursive: true });
-  mkdirSync(installRoot, { recursive: true });
+  mkdirSync(npmInstallRoot, { recursive: true });
+  mkdirSync(pnpmInstallRoot, { recursive: true });
+  mkdirSync(npmCache, { recursive: true });
+  mkdirSync(pnpmStore, { recursive: true });
   mkdirSync(projectRoot, { recursive: true });
 
   for (const [, directory] of packageSpecs) {
@@ -165,45 +223,86 @@ try {
     }),
   );
 
+  const packedConsumerManifest = {
+    name: 'temporalthread-packed-verification',
+    private: true,
+    version: '1.0.0',
+    packageManager: 'pnpm@11.9.0',
+    dependencies: localPackages,
+  };
   writeFileSync(
-    join(installRoot, 'package.json'),
-    `${JSON.stringify(
-      {
-        name: 'temporalthread-packed-verification',
-        private: true,
-        version: '1.0.0',
-        dependencies: { ...localPackages, '@modelcontextprotocol/sdk': '1.29.0' },
-      },
-      null,
-      2,
-    )}\n`,
+    join(npmInstallRoot, 'package.json'),
+    `${JSON.stringify(packedConsumerManifest, null, 2)}\n`,
+    'utf8',
+  );
+  writeFileSync(join(npmInstallRoot, '.npmrc'), 'registry=https://registry.npmjs.org/\n', 'utf8');
+  const npmEnvironment = {
+    ...process.env,
+    NO_COLOR: '1',
+    npm_config_cache: npmCache,
+    npm_config_userconfig: join(npmInstallRoot, '.npmrc'),
+  };
+  runNpm(
+    'install packed tarballs with npm',
+    ['install', '--no-audit', '--no-fund', '--package-lock=true'],
+    npmInstallRoot,
+    npmEnvironment,
+  );
+  const npmProductionGraph = parseJsonOutput(
+    'inspect npm packed production dependencies',
+    runNpm(
+      'inspect npm packed production dependencies',
+      ['ls', '--omit=dev', '--all', '--json'],
+      npmInstallRoot,
+      npmEnvironment,
+    ),
+  );
+  const npmAudit = runAudit(
+    'audit npm packed production dependencies',
+    npmExecutable,
+    [...npmArgumentPrefix, 'audit', '--omit=dev', '--audit-level=low', '--json'],
+    npmInstallRoot,
+    npmEnvironment,
+  );
+
+  writeFileSync(
+    join(pnpmInstallRoot, 'package.json'),
+    `${JSON.stringify(packedConsumerManifest, null, 2)}\n`,
     'utf8',
   );
   writeFileSync(
-    join(installRoot, 'pnpm-workspace.yaml'),
+    join(pnpmInstallRoot, 'pnpm-workspace.yaml'),
     `allowBuilds:\n  better-sqlite3: true\noverrides:\n${Object.entries(localPackages)
       .map(([name, specifier]) => `  '${name}': ${specifier}`)
       .join('\n')}\n`,
     'utf8',
   );
-  runPnpm('install packed tarballs', ['install', '--prefer-offline'], installRoot);
-  const packedProductionGraph = JSON.parse(
+  runPnpm('install packed tarballs with pnpm', ['install', '--store-dir', pnpmStore], pnpmInstallRoot);
+  const pnpmProductionGraph = parseJsonOutput(
+    'inspect pnpm packed production dependencies',
     runPnpm(
-      'inspect packed production dependencies',
+      'inspect pnpm packed production dependencies',
       ['list', '--prod', '--depth', 'Infinity', '--json'],
-      installRoot,
+      pnpmInstallRoot,
     ),
   );
-  const resolvedSecurityDependencies = {
-    '@hono/node-server': productionVersions(packedProductionGraph, '@hono/node-server'),
-    'fast-uri': productionVersions(packedProductionGraph, 'fast-uri'),
+  const pnpmAudit = runAudit(
+    'audit pnpm packed production dependencies',
+    process.execPath,
+    [pnpmCli, 'audit', '--prod', '--audit-level', 'low', '--json'],
+    pnpmInstallRoot,
+    { ...process.env, NO_COLOR: '1' },
+  );
+  const packedDependencyConsumers = {
+    npm: assessPackedConsumer(npmProductionGraph, npmAudit),
+    pnpm: assessPackedConsumer(pnpmProductionGraph, pnpmAudit),
   };
-  const packedDependencySecurity =
-    hasVersionAtLeast(resolvedSecurityDependencies['@hono/node-server'], 2, 0, 10) &&
-    hasVersionAtLeast(resolvedSecurityDependencies['fast-uri'], 3, 1, 4);
+  const packedDependencySecurity = Object.values(packedDependencyConsumers).every(
+    (consumer) => consumer.secure,
+  );
   const securityGateFailed = requireSecureDependencies && !packedDependencySecurity;
 
-  const integrationRoot = join(installRoot, 'node_modules', '@temporalthread', 'codex-integration');
+  const integrationRoot = join(pnpmInstallRoot, 'node_modules', '@temporalthread', 'codex-integration');
   const installedIntegration = await import(pathToFileURL(join(integrationRoot, 'dist', 'index.js')).href);
   const pluginValidation = installedIntegration.validateCodexPluginPackage({
     pluginRoot: join(integrationRoot, 'plugin'),
@@ -224,8 +323,18 @@ try {
     if (!integrationFiles.includes(required)) throw new Error(`Packed integration is missing ${required}`);
   }
 
-  const cliEntry = join(installRoot, 'node_modules', 'temporalthread', 'dist', 'bin.js');
-  const executableDirectory = join(installRoot, 'node_modules', '.bin');
+  const npmCliEntry = join(npmInstallRoot, 'node_modules', 'temporalthread', 'dist', 'bin.js');
+  if (
+    runCli('check npm-packed CLI version', npmCliEntry, ['--version'], {
+      cwd: projectRoot,
+      env: npmEnvironment,
+    }).trim() !== '0.1.0'
+  ) {
+    throw new Error('npm-packed TemporalThread CLI version check failed');
+  }
+
+  const cliEntry = join(pnpmInstallRoot, 'node_modules', 'temporalthread', 'dist', 'bin.js');
+  const executableDirectory = join(pnpmInstallRoot, 'node_modules', '.bin');
   const environment = {
     ...process.env,
     PATH: `${executableDirectory}${delimiter}${process.env.PATH ?? ''}`,
@@ -304,7 +413,15 @@ try {
   if (!existsSync(databasePath)) throw new Error('Packed install did not initialize local storage');
 
   const mcp = await exerciseMcpRelease({
-    nodeModulesRoot: join(installRoot, 'node_modules'),
+    nodeModulesRoot: join(pnpmInstallRoot, 'node_modules'),
+    dependencyResolverPath: join(
+      pnpmInstallRoot,
+      'node_modules',
+      '@temporalthread',
+      'mcp-server',
+      'dist',
+      'index.js',
+    ),
     cliEntry,
     cwd: projectRoot,
     env: environment,
@@ -378,7 +495,7 @@ try {
       packedUninstall: true,
       databasePreserved: true,
       explicitPurge: true,
-      resolvedSecurityDependencies,
+      packedDependencyConsumers,
       packedDependencySecurity,
     })}\n`,
   );

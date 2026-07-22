@@ -45,6 +45,9 @@ All notable changes to TemporalThread will be documented in this file. The forma
 - Packed verification now exercises CLI help/init/doctor/status, real nine-tool MCP stdio calls, temporal
   interaction/context/commitment behavior, default privacy, export, uninstall preservation, and explicit
   purge. A separate isolated source-copy certification uses private home/cache/store/temp directories.
+- Packed dependency verification now installs all eight tarballs into independent npm and pnpm consumers
+  with isolated caches/stores, audits both production graphs, reports every SDK/Hono/fast-uri version, and
+  fails closed when any manager retains a vulnerable nested dependency.
 
 ### Security
 

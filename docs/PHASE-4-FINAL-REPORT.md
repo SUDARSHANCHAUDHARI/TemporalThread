@@ -116,6 +116,26 @@ The packed consumer remains functionally correct but resolves `@hono/node-server
 `packedDependencySecurity: false` and exits 1. This is an expected release-blocking result, not a passing
 quality gate.
 
+### Phase 4.1 dependency-resolution attempt
+
+Phase 4.1 independently rechecked the registry, advisory, SDK repository, and clean npm/pnpm consumer graphs.
+SDK 1.29.0 remains the latest stable release and declares Hono node-server `^1.19.9`; upstream issue
+`modelcontextprotocol/typescript-sdk#2531` remains open. A direct Hono 2.0.11 experiment retained nested
+1.19.14, while npm/pnpm overrides remain consumer-root-only. Shrinkwrap, bundling, and a fork would add
+cross-manager or architecture/maintenance risk disproportionate to this stdio-only release.
+
+The packed verifier now installs all eight tarballs into independent npm and pnpm consumers with isolated
+caches/stores, adds no root SDK/Hono dependency, validates every TemporalThread package at 0.1.0, inspects all
+SDK/Hono/fast-uri versions, and runs low-threshold production audits for both managers. Its functional mode
+still passes CLI/MCP/Codex/privacy/export/uninstall/purge checks, including nine-tool discovery. Its secure
+mode still fails closed because npm reports five propagated moderate findings and pnpm reports the single
+underlying moderate advisory at Hono 1.19.14.
+
+The updated local suite passes 24 files and 118 tests. No dependency manifest or lockfile changed because no
+supportable secure fix exists, and no fresh tarball/checksum/SBOM candidate was generated after the failed
+security gate. See `docs/PHASE-4.1-BASELINE.md`, `docs/PACKED-DEPENDENCY-ROOT-CAUSE.md`, and
+`docs/DEPENDENCY-SECURITY-SOLUTION-DECISION.md`.
+
 ## Clean-install and packed behavior
 
 Both an isolated clean source copy and an isolated eight-tarball consumer passed:

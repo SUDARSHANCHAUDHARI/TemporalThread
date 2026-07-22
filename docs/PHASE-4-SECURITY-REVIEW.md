@@ -126,6 +126,13 @@ release workflow now requires secure packed dependencies and fails before artifa
 operating systems. A stable upstream SDK range permitting Hono 2.0.10+ is the preferred fix; a shrinkwrap or
 packaging redesign needs separate architecture/security approval.
 
+Phase 4.1 strengthened this evidence by creating independent clean npm and pnpm consumers, isolating their
+cache/store, omitting any direct root SDK/Hono declaration, inspecting every resolved version, and running a
+low-threshold production audit for both managers. npm reports five propagated moderate findings and pnpm
+reports the single underlying moderate advisory. Both resolve only Hono node-server 1.19.14. The affected
+`serveStatic` operation is not imported or reachable through TemporalThread's stdio-only implementation, but
+the production dependency and audit failures remain release-blocking.
+
 The production license set remains permissive; see `docs/DEPENDENCY-LICENSE-REVIEW.md`.
 
 `better-sqlite3` is the only native runtime requirement. Frozen-lockfile installation still runs its trusted,

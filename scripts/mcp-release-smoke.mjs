@@ -1,3 +1,4 @@
+import { realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
@@ -23,10 +24,10 @@ function assertToolResult(label, result) {
 
 export async function exerciseMcpRelease(options) {
   const consumerManifest = join(options.nodeModulesRoot, '..', 'package.json');
-  const resolveFromConsumer = createRequire(consumerManifest);
+  const resolveFromRuntime = createRequire(realpathSync(options.dependencyResolverPath ?? consumerManifest));
   const [{ Client }, { StdioClientTransport, getDefaultEnvironment }] = await Promise.all([
-    import(pathToFileURL(resolveFromConsumer.resolve('@modelcontextprotocol/sdk/client/index.js')).href),
-    import(pathToFileURL(resolveFromConsumer.resolve('@modelcontextprotocol/sdk/client/stdio.js')).href),
+    import(pathToFileURL(resolveFromRuntime.resolve('@modelcontextprotocol/sdk/client/index.js')).href),
+    import(pathToFileURL(resolveFromRuntime.resolve('@modelcontextprotocol/sdk/client/stdio.js')).href),
   ]);
   const transport = new StdioClientTransport({
     command: process.execPath,

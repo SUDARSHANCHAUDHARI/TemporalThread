@@ -25,6 +25,10 @@ consumer resolves vulnerable 1.19.14. Release dry run `29932142666` stopped befo
 new SBOM. A future candidate must bind the source graph and separately verify the installed packed-consumer
 graph before its SBOM and checksums are accepted.
 
+Phase 4.1 confirmed the blocker independently with npm and pnpm and did not generate a replacement SBOM.
+Artifact/SBOM generation remains downstream of the secure packed dependency gate; retaining NO-GO therefore
+produces zero fresh release-candidate artifacts by design.
+
 ## Scope and limitations
 
 - Format: SPDX 2.3 JSON; data license CC0-1.0.
