@@ -1,7 +1,7 @@
 # npm distribution plan for v0.1.0
 
 Status: BLOCKED; prepared commands are not approved for execution
-Registry check: 2026-07-20; dependency-security follow-up: 2026-07-22
+Registry check: 2026-07-20 and 2026-07-23; dependency-security follow-up: 2026-07-22/23
 Publication performed: no
 
 ## Decision: model B
@@ -25,8 +25,9 @@ why the repository keeps 2.0.10, rather than merely 2.0.5, as its accepted sourc
 
 npm's [override documentation](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#overrides) states
 that overrides are considered only in the root project and that overrides in installed dependencies or
-workspaces are ignored. Release dry run `29932142666` therefore fails intentionally before artifact creation
-on Ubuntu, macOS, and Windows. Historical commit-`dc2c0b4` artifacts are superseded and must not be published.
+workspaces are ignored. Phase 4.1 release dry run `29940910728` therefore fails intentionally before artifact
+creation on Ubuntu, macOS, and Windows. Historical commit-`dc2c0b4` artifacts are superseded and must not be
+published.
 
 Preferred resolution: update to a stable MCP TypeScript SDK version whose production range permits
 `@hono/node-server@2.0.10` or newer, then repeat the source audit, packed dependency inspection, and full

@@ -1,6 +1,6 @@
 # Phase 4 release security review
 
-Review date: 2026-07-20; dependency-advisory follow-up 2026-07-22
+Review date: 2026-07-20; dependency-advisory follow-up 2026-07-22; Phase 4.1 evidence 2026-07-23
 Scope: v0.1.0 source, history, package manifests, eight tarballs, SPDX SBOM, workflows, installer/uninstaller,
 hooks, MCP stdio boundary, SQLite, export/purge, logs, diagnostics, and release tooling
 
@@ -132,6 +132,9 @@ low-threshold production audit for both managers. npm reports five propagated mo
 reports the single underlying moderate advisory. Both resolve only Hono node-server 1.19.14. The affected
 `serveStatic` operation is not imported or reachable through TemporalThread's stdio-only implementation, but
 the production dependency and audit failures remain release-blocking.
+
+Exact-commit release dry run `29940910728` reproduced that result on Ubuntu, macOS, and Windows after each
+platform passed 118 tests, build, and real packed functional smoke. It uploaded no artifacts.
 
 The production license set remains permissive; see `docs/DEPENDENCY-LICENSE-REVIEW.md`.
 

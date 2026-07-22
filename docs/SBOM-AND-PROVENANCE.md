@@ -126,7 +126,7 @@ published version or rewrite a release tag. Follow `docs/NPM-DISTRIBUTION-PLAN.m
 | SBOM structural verification | PASS locally |
 | Tarball SHA-256 generation/verification | PASS locally |
 | Historical clean source association | SUPERSEDED for commit `dc2c0b44f56ec3d21294d2949a8c861238256adc`; no tag created |
-| Current packed-consumer dependency gate | FAIL/BLOCKED at Hono 1.19.14 on run `29932142666` |
+| Current packed-consumer dependency gate | FAIL/BLOCKED for npm and pnpm at Hono 1.19.14 on run `29940910728` |
 | Current release-candidate SBOM | BLOCKED; no artifact generated after the security follow-up |
 | Public repository required for npm provenance | BLOCKED by explicit approval |
 | npm scope ownership/2FA | BLOCKED/unverified |

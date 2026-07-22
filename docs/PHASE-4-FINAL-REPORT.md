@@ -1,6 +1,6 @@
 # Phase 4 final report
 
-Report status: final Phase 4 audit evidence recorded; dependency-security follow-up added 2026-07-22
+Report status: final Phase 4 audit evidence recorded; Phase 4.1 evidence added 2026-07-23
 Decision: **NO-GO** for the complete public v0.1.0 launch
 
 ## Baseline and repository state
@@ -183,6 +183,16 @@ the new packed-dependency security gate on Ubuntu (job `88964364351`), macOS (jo
 `@hono/node-server@1.19.14`, `fast-uri@3.1.4`, and `packedDependencySecurity: false`. Later artifact, SBOM,
 audit, and upload steps were skipped, so this run produced no candidate artifact.
 
+Phase 4.1 normal CI
+[`29940659504`](https://github.com/SUDARSHANCHAUDHARI/TemporalThread/actions/runs/29940659504) passed exact
+commit `9cfeff1` on Ubuntu (job `88993371890`), macOS (job `88993371966`), and Windows (job `88993371918`). The
+exact-commit release dry run
+[`29940910728`](https://github.com/SUDARSHANCHAUDHARI/TemporalThread/actions/runs/29940910728) then failed
+closed at the dual npm/pnpm packed security gate on Ubuntu (job `88994228831`), macOS (job `88994228934`),
+and Windows (job `88994228856`). Every job first passed 118 tests, build, real packed startup, nine-tool
+discovery, install/doctor, uninstall preservation, and purge. All later artifact/SBOM/upload steps were
+skipped; the run has zero artifacts.
+
 ## Dependency, license, SBOM, and provenance
 
 - Source registry audit: no known production vulnerability after locked overrides to
@@ -192,7 +202,7 @@ audit, and upload steps were skipped, so this run produced no candidate artifact
 - Engineering license gate: PASS for the current non-vendored npm model; direct dependencies are MIT, ISC,
   and BSD-3-Clause, with only permissive transitive metadata buckets. This is not legal advice.
 - Historical SPDX gate: PASS locally and in the three commit-`dc2c0b4` workflow jobs; those artifacts are
-  superseded. The current release-candidate SBOM gate is BLOCKED because run `29932142666` stopped before
+  superseded. The current release-candidate SBOM gate is BLOCKED because run `29940910728` stopped before
   generation.
 - Provenance plan: protected GitHub-hosted publication with least privilege, public source, and npm OIDC after
   initial package bootstrap.
