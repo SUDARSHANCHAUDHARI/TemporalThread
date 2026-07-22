@@ -115,7 +115,7 @@ published version or rewrite a release tag. Follow `docs/NPM-DISTRIBUTION-PLAN.m
 | SPDX generation | PASS locally |
 | SBOM structural verification | PASS locally |
 | Tarball SHA-256 generation/verification | PASS locally |
-| Clean tagged source association | Pending final workflow run |
+| Clean source association | PASS for exact commit `dc2c0b44f56ec3d21294d2949a8c861238256adc`; no tag created |
 | Public repository required for npm provenance | BLOCKED by explicit approval |
 | npm scope ownership/2FA | BLOCKED/unverified |
 | Trusted publisher | Not configured; future public action |

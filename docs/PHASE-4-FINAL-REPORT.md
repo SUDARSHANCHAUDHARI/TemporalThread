@@ -1,6 +1,6 @@
 # Phase 4 final report
 
-Report status: local audit complete; post-push workflow evidence pending
+Report status: final Phase 4 audit evidence recorded
 Decision: **NO-GO** for the complete public v0.1.0 launch
 
 ## Baseline and repository state
@@ -8,7 +8,7 @@ Decision: **NO-GO** for the complete public v0.1.0 launch
 | Item | Result |
 | --- | --- |
 | Baseline commit | `9f8015bec0f73c515579f6107d02e687ddc97507` |
-| Phase 4 implementation commit | Pending commit |
+| Phase 4 implementation commit | `dc2c0b44f56ec3d21294d2949a8c861238256adc` |
 | Branch | `main` |
 | Remote | `SUDARSHANCHAUDHARI/TemporalThread` |
 | Visibility | Private |
@@ -47,30 +47,31 @@ leave unresolved registry dependencies. The root workspace and three examples re
 Publication order: `shared-types`; then `config`/`temporal-parser`/`storage-sqlite`; then `core`; then
 `mcp-server`/`codex-integration`; then `temporalthread`.
 
-## Local artifact evidence
+## Selected clean artifact evidence
 
-The final local dirty-tree candidate contains eight tarballs, 225 files, 127,351 compressed bytes, and
-564,679 unpacked bytes. These checksums identify only that local candidate and are not release values; the
-selected clean workflow artifact will replace this table after push.
+The selected Ubuntu workflow artifact is built from the clean Phase 4 implementation commit. It contains
+eight tarballs, 225 files, 127,351 compressed bytes, and 564,679 unpacked bytes. These checksums identify the
+reviewed release candidate; nothing was published from it.
 
-| Package | Compressed bytes | Unpacked bytes | Files | Local SHA-256 |
+| Package | Compressed bytes | Unpacked bytes | Files | Selected SHA-256 |
 | --- | ---: | ---: | ---: | --- |
-| `@temporalthread/shared-types` | 11,859 | 73,254 | 31 | `a78433fd80656bcf3226db6229665de7d1b73af0fb0a59c1b784ca88ba1c2677` |
-| `@temporalthread/config` | 5,453 | 18,426 | 7 | `47b67f76d04c1de2692df4b1fe6360c85fd50203eddeca0489ff7627ed949501` |
-| `@temporalthread/temporal-parser` | 8,511 | 30,818 | 19 | `9df550922e3ad6d21ee55b1c322e2edd7e8bea4045a479dc6de9e4d5429c0ce9` |
-| `@temporalthread/storage-sqlite` | 12,587 | 56,474 | 19 | `2441b035bf2ca39991e571b226c23db5c9549cdc0b8afc39f045d54cbd463a95` |
-| `@temporalthread/core` | 14,519 | 65,706 | 19 | `bb5136173cb44af7bf09eeda879e6f5c657aef8fdad052220c9107c71b97c006` |
-| `@temporalthread/mcp-server` | 5,900 | 19,238 | 23 | `73f4a106b4dd30a9903ecda00df85aac4debcd86e8fe8adb2b30234ba4abb5c6` |
-| `@temporalthread/codex-integration` | 38,705 | 167,828 | 48 | `42e6287633c71bd9418452a1fa3a0f98efeeeb6413c1a619e325cdf677251cbf` |
-| `temporalthread` | 29,817 | 132,935 | 59 | `bd0eeb2c34127049edd58433df80d2c740b49cfaefe6d33d6b16a2a86b68a032` |
+| `@temporalthread/shared-types` | 11,859 | 73,254 | 31 | `148dbe0335fabd61c1a2c7a0f6ba33f031a3b1a32c07bf077f0c64de0a17910a` |
+| `@temporalthread/config` | 5,453 | 18,426 | 7 | `c8814981d91b483ca9b74125de2d1476e7d1eef8f75ab22b5e3cadb97c50e5f2` |
+| `@temporalthread/temporal-parser` | 8,511 | 30,818 | 19 | `22ef61ef6ff838f5f041c6d7035c4690562b5d438bc22f8aecad95bd188981f4` |
+| `@temporalthread/storage-sqlite` | 12,587 | 56,474 | 19 | `7415ae0d9ac168ab00b77199f4daa42ecb32ecd3907bf00ec5217ccfa032c9ae` |
+| `@temporalthread/core` | 14,519 | 65,706 | 19 | `3b7aa81763bde083d75900f32b829cd49323455c6bb27dbe0b4a9532dbfc8d10` |
+| `@temporalthread/mcp-server` | 5,902 | 19,238 | 23 | `8b802764221983d59bc7109cf9560cf35537b2dfad721eeef2546f445c1dc47a` |
+| `@temporalthread/codex-integration` | 38,705 | 167,828 | 48 | `48a67f088648c0dc7cbefd1e3e48f6f76a09cc1d18720c9e1961b0470129221e` |
+| `temporalthread` | 29,815 | 132,935 | 59 | `a6160a8fbfdec004831d66c49c4edda5b914abab7a57d58c1a26b1ceaeba69d9` |
 
 Every tarball has a README, MIT LICENSE, valid public manifest, strict compiled-file allowlist, exact packed
 workspace versions, and no unexpected source/test/build/local/private files. `better-sqlite3` is the native
 runtime dependency for storage and its dependents.
 
-Two consecutive clean local builds produced the same sorted file set but not identical tarball bytes because
-pnpm emitted different dependency-key ordering in some packed manifests. Byte-for-byte reproducibility is
-therefore not claimed; the selected artifact's checksum is authoritative.
+The three workflow artifacts have the same sorted file set, sizes, and unpacked bytes, but different tarball
+hashes across operating systems. Two consecutive local builds also differed because pnpm emitted different
+dependency-key ordering in some packed manifests. Byte-for-byte reproducibility is therefore not claimed;
+the selected Ubuntu artifact's checksums above are authoritative for this candidate.
 
 ## Local quality gates
 
@@ -117,22 +118,28 @@ No mock replaced MCP startup and no real Codex or TemporalThread home was writte
 
 ## Cross-platform and workflow evidence
 
-Baseline CI run `29758836761` passed Ubuntu, macOS, and Windows at `9f8015b`. The Phase 4 implementation run
-and manual `Release dry run` IDs/artifact IDs are pending the required commit/push.
+Baseline CI run `29758836761` passed Ubuntu, macOS, and Windows at `9f8015b`. Phase 4 CI run `29763767993`
+and manual release-dry-run `29763942578` both passed at exact commit `dc2c0b4`. The three downloaded artifact
+sets were then independently reparsed and verified locally with clean-tree, SBOM, and exact-commit checks.
 
 | Evidence | Ubuntu | macOS | Windows |
 | --- | --- | --- | --- |
 | Baseline CI | PASS | PASS | PASS |
-| Phase 4 CI | Pending | Pending | Pending |
-| Release dry run | Pending | Pending | Pending |
-| Uploaded candidate artifact | Pending | Pending | Pending |
+| Phase 4 CI | PASS; job `88424655175` | PASS; job `88424655113` | PASS; job `88424655144` |
+| Release dry run | PASS; job `88425620750` | PASS; job `88425620814` | PASS; job `88425620747` |
+| Uploaded candidate artifact | PASS; ID `8470037243` | PASS; ID `8470020074` | PASS; ID `8470080320` |
+| Downloaded independent verification | PASS | PASS | PASS |
+
+All artifacts expire on 2026-08-03 under the documented 14-day retention policy. GitHub reported archive
+sizes of 140,559 bytes (Ubuntu), 140,552 bytes (macOS), and 140,554 bytes (Windows).
 
 ## Dependency, license, SBOM, and provenance
 
 - Registry audit: no known production vulnerability at the configured threshold.
 - Engineering license gate: PASS for the current non-vendored npm model; direct dependencies are MIT, ISC,
   and BSD-3-Clause, with only permissive transitive metadata buckets. This is not legal advice.
-- SPDX gate: PASS locally; machine-generated output stays in workflow artifacts.
+- SPDX gate: PASS locally and in all three workflow jobs; machine-generated output stays in workflow
+  artifacts.
 - Provenance plan: protected GitHub-hosted publication with least privilege, public source, and npm OIDC after
   initial package bootstrap.
 - No trusted publisher, token, environment, signed tag, attestation, or release was created.
@@ -173,12 +180,11 @@ desktop/IDE fallback, terminal-restart PATH, real-host uninstall, and database p
 
 1. `@temporalthread` npm organization ownership and npm 2FA/recovery access are BLOCKED/unverified.
 2. Real current Codex certification is MANUAL and incomplete.
-3. Phase 4 CI/release-dry-run evidence is pending commit/push.
-4. Visibility, publication, tag, GitHub release, and announcement approvals are absent by design.
+3. Visibility, publication, tag, GitHub release, and announcement approvals are absent by design.
 
-Decision: **NO-GO** for the complete public v0.1.0 launch. If Phase 4 CI passes, the repository code and
-candidate artifacts are ready for owner review, but the npm authority blocker prevents CONDITIONAL GO for
-the full launch.
+Decision: **NO-GO** for the complete public v0.1.0 launch. The repository code and selected candidate
+artifacts are ready for owner review, but the npm authority blocker prevents CONDITIONAL GO for the full
+launch.
 
 ## Exact next human action
 

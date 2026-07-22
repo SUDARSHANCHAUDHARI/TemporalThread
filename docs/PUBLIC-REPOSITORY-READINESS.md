@@ -95,8 +95,8 @@ and [private vulnerability reporting](https://docs.github.com/en/code-security/s
 
 - npm `@temporalthread` scope authority is not established.
 - Real Codex CLI/desktop trust and discovery certification is incomplete.
-- The final release dry-run workflow has not yet passed at the Phase 4 commit.
 - Public visibility, npm publication, tag, and GitHub release each require explicit human approval.
 
-The repository is structurally ready for review as public source once automated Phase 4 CI passes, but these
-blockers prevent treating it as a complete v0.1.0 public package launch today.
+The repository is structurally ready for owner review as public source after green Phase 4 CI and release
+dry-run matrices, but the remaining blockers prevent treating it as a complete v0.1.0 public package launch
+today.
