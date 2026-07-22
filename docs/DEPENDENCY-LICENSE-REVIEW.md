@@ -1,6 +1,6 @@
 # Dependency license engineering review
 
-Review date: 2026-07-20
+Review date: 2026-07-20; dependency-resolution follow-up 2026-07-22
 Scope: direct and transitive production dependency metadata for the eight v0.1.0 release packages
 
 This is an engineering review, not legal advice. It reports package-manager metadata and common
@@ -37,6 +37,10 @@ No copyleft, proprietary, `UNLICENSED`, unknown, or missing license bucket appea
 license report. The generated SPDX 2.3 SBOM includes 140 local/direct/transitive package records and carries
 the detected declarations without turning them into legal conclusions.
 
+The follow-up source graph resolves `@hono/node-server@2.0.10` and `fast-uri@3.1.4`; both remain MIT-licensed.
+A packed consumer instead resolves Hono 1.19.14. That difference does not change the license conclusion, but
+it is a separate release-blocking security finding documented in `docs/PHASE-4-SECURITY-REVIEW.md`.
+
 ## MIT distribution observation
 
 The detected production licenses are generally permissive and commonly combined with an MIT-licensed
@@ -71,4 +75,5 @@ repeat this review and aggregate the required notices into that artifact.
 ## Release recommendation
 
 License gate: PASS for the current non-vendored npm package model, with the attribution and repeat-review
-conditions above. No dependency upgrade or legal guarantee is part of this result.
+conditions above. Distribution security gate: FAIL/BLOCKED independently. No legal guarantee is part of this
+result.

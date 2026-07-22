@@ -62,12 +62,14 @@ TemporalThread is local-first, not anonymous.
 
 ## Installation state
 
-The package set is not published. Until publication is explicitly approved, use the documented source install
-or a reviewed eight-tarball release-dry-run artifact. Do not present `npm install temporalthread` as an active
-public installation method yet.
+The package set is not published. Until publication is explicitly approved, use only the documented source
+install. Do not present `npm install temporalthread` as an active public installation method yet, and do not
+use a prior dry-run artifact as a release candidate.
 
 The intended registry model is the `temporalthread` CLI plus seven public `@temporalthread/*` runtime
-packages. Ownership of the `@temporalthread` npm scope must be established before release.
+packages. Ownership of the `@temporalthread` npm scope must be established before release. The prior dry-run
+artifacts are superseded and must not be installed or published as a release candidate because their fresh
+consumer graph resolves vulnerable `@hono/node-server@1.19.14`.
 
 ## Uninstall and deletion
 
@@ -84,6 +86,8 @@ deletion action. Stop clients before copying or inspecting SQLite/WAL/SHM files.
 - OpenCode live automation and real Codex host trust are not yet certified for this release candidate.
 - Claude Code support remains partial; Ollama is an example-client path, not native MCP hosting.
 - Byte-for-byte release artifact reproducibility across operating systems is not established.
+- The current stable MCP TypeScript SDK range resolves a vulnerable Hono server in packed consumers; release
+  remains blocked until a stable dependency update carries Hono 2.0.10 or newer.
 
 ## Upgrade notes
 
@@ -98,8 +102,9 @@ release-dry-run artifact. Do not copy local dirty-tree checksums into the final 
 
 ## SBOM and provenance
 
-The release dry run produces `temporalthread-v0.1.0.spdx.json` (SPDX 2.3) for the eight-package production
-graph. The final public npm publication should use a protected GitHub-hosted job with npm provenance and,
+The release tooling can produce `temporalthread-v0.1.0.spdx.json` (SPDX 2.3) for the eight-package production
+graph. The prior SBOM is superseded; the security follow-up correctly stopped before creating a new candidate
+SBOM. The final public npm publication should use a protected GitHub-hosted job with npm provenance and,
 after bootstrap, trusted publishing/OIDC. No provenance, signed tag, or release attestation exists yet.
 
 ## Release status

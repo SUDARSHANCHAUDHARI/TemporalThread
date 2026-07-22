@@ -1,6 +1,6 @@
 # Phase 4 final report
 
-Report status: final Phase 4 audit evidence recorded
+Report status: final Phase 4 audit evidence recorded; dependency-security follow-up added 2026-07-22
 Decision: **NO-GO** for the complete public v0.1.0 launch
 
 ## Baseline and repository state
@@ -9,6 +9,8 @@ Decision: **NO-GO** for the complete public v0.1.0 launch
 | --- | --- |
 | Baseline commit | `9f8015bec0f73c515579f6107d02e687ddc97507` |
 | Phase 4 implementation commit | `dc2c0b44f56ec3d21294d2949a8c861238256adc` |
+| Phase 4 evidence commit | `1ab308660c99dfc3d7bfbc6cb7de270970ec311b` |
+| Dependency-security commit | `117a097ed44f108d5e7c4b9f5cee8fedd25774d3` |
 | Branch | `main` |
 | Remote | `SUDARSHANCHAUDHARI/TemporalThread` |
 | Visibility | Private |
@@ -47,11 +49,13 @@ leave unresolved registry dependencies. The root workspace and three examples re
 Publication order: `shared-types`; then `config`/`temporal-parser`/`storage-sqlite`; then `core`; then
 `mcp-server`/`codex-integration`; then `temporalthread`.
 
-## Selected clean artifact evidence
+## Superseded clean artifact evidence
 
-The selected Ubuntu workflow artifact is built from the clean Phase 4 implementation commit. It contains
-eight tarballs, 225 files, 127,351 compressed bytes, and 564,679 unpacked bytes. These checksums identify the
-reviewed release candidate; nothing was published from it.
+The selected Ubuntu workflow artifact was built from the clean Phase 4 implementation commit before the
+2026-07-22 dependency-advisory follow-up. It contains eight tarballs, 225 files, 127,351 compressed bytes,
+and 564,679 unpacked bytes. These checksums identify the historically reviewed bytes; nothing was published
+from them. The artifacts are now **superseded audit evidence, not release candidates**, because a fresh
+consumer install resolves vulnerable `@hono/node-server@1.19.14`.
 
 | Package | Compressed bytes | Unpacked bytes | Files | Selected SHA-256 |
 | --- | ---: | ---: | ---: | --- |
@@ -99,6 +103,19 @@ requirement and cannot run pnpm 11.9.0; every recorded gate was rerun with the b
 runtime. An earlier frozen-install rehearsal also displayed the available pnpm 11.15.1 update, which was not
 applied during the release audit.
 
+### 2026-07-22 dependency-security follow-up
+
+The follow-up used Node.js 24.5.0 and pnpm 11.9.0 locally. Formatting, lint, type-check, all 114 tests, build,
+the full production audit, normal packed functional verification, and isolated clean-source verification
+passed. The source graph resolves `@hono/node-server@2.0.10` and `fast-uri@3.1.4`, and reports no known
+production vulnerabilities.
+
+The packed consumer remains functionally correct but resolves `@hono/node-server@1.19.14` and
+`fast-uri@3.1.4`. The release-only invocation
+`pnpm verify:codex-package -- --require-secure-dependencies` therefore returns structured evidence with
+`packedDependencySecurity: false` and exits 1. This is an expected release-blocking result, not a passing
+quality gate.
+
 ## Clean-install and packed behavior
 
 Both an isolated clean source copy and an isolated eight-tarball consumer passed:
@@ -126,20 +143,37 @@ sets were then independently reparsed and verified locally with clean-tree, SBOM
 | --- | --- | --- | --- |
 | Baseline CI | PASS | PASS | PASS |
 | Phase 4 CI | PASS; job `88424655175` | PASS; job `88424655113` | PASS; job `88424655144` |
-| Release dry run | PASS; job `88425620750` | PASS; job `88425620814` | PASS; job `88425620747` |
-| Uploaded candidate artifact | PASS; ID `8470037243` | PASS; ID `8470020074` | PASS; ID `8470080320` |
+| Historical release dry run | PASS; job `88425620750` | PASS; job `88425620814` | PASS; job `88425620747` |
+| Historical uploaded artifact | PASS; ID `8470037243` | PASS; ID `8470020074` | PASS; ID `8470080320` |
 | Downloaded independent verification | PASS | PASS | PASS |
 
 All artifacts expire on 2026-08-03 under the documented 14-day retention policy. GitHub reported archive
 sizes of 140,559 bytes (Ubuntu), 140,552 bytes (macOS), and 140,554 bytes (Windows).
 
+The 2026-07-22 source CI run
+[`29931945659`](https://github.com/SUDARSHANCHAUDHARI/TemporalThread/actions/runs/29931945659) passed at exact
+commit `117a097` on Ubuntu (job `88963660016`), macOS (job `88963660052`), and Windows (job `88963660133`).
+Its formatting, lint, type-check, 114-test, build, normal packed-functional, and source-audit gates were all
+green.
+
+The subsequent non-publishing release dry run
+[`29932142666`](https://github.com/SUDARSHANCHAUDHARI/TemporalThread/actions/runs/29932142666) failed closed at
+the new packed-dependency security gate on Ubuntu (job `88964364351`), macOS (job `88964364562`), and Windows
+(job `88964364478`). Every job passed formatting, lint, type-check, tests, and build first, then reported
+`@hono/node-server@1.19.14`, `fast-uri@3.1.4`, and `packedDependencySecurity: false`. Later artifact, SBOM,
+audit, and upload steps were skipped, so this run produced no candidate artifact.
+
 ## Dependency, license, SBOM, and provenance
 
-- Registry audit: no known production vulnerability at the configured threshold.
+- Source registry audit: no known production vulnerability after locked overrides to
+  `@hono/node-server@2.0.10` and `fast-uri@3.1.4`.
+- Packed npm-consumer dependency gate: FAIL/BLOCKED because root workspace overrides are not part of the
+  published package manifests and the current stable MCP SDK range resolves `@hono/node-server@1.19.14`.
 - Engineering license gate: PASS for the current non-vendored npm model; direct dependencies are MIT, ISC,
   and BSD-3-Clause, with only permissive transitive metadata buckets. This is not legal advice.
-- SPDX gate: PASS locally and in all three workflow jobs; machine-generated output stays in workflow
-  artifacts.
+- Historical SPDX gate: PASS locally and in the three commit-`dc2c0b4` workflow jobs; those artifacts are
+  superseded. The current release-candidate SBOM gate is BLOCKED because run `29932142666` stopped before
+  generation.
 - Provenance plan: protected GitHub-hosted publication with least privilege, public source, and npm OIDC after
   initial package bootstrap.
 - No trusted publisher, token, environment, signed tag, attestation, or release was created.
@@ -153,10 +187,11 @@ name was reserved.
 
 ## Security and privacy
 
-Release security gate: PASS for source/artifacts. Current tree/history scans found no tracked sensitive file,
-common token/private-key prefix, actual personal machine path, real conversation, or database. No unsafe
-shell interpolation/eval/environment dump was found. SQL values are parameterized; fixed dynamic table names
-are internal; installer containment/symlink/atomic-write/rollback controls remain tested.
+Release security gate: PASS for source and FAIL/BLOCKED for the packed npm distribution. Current tree/history
+scans found no tracked sensitive file, common token/private-key prefix, actual personal machine path, real
+conversation, or database. No unsafe shell interpolation/eval/environment dump was found. SQL values are
+parameterized; fixed dynamic table names are internal; installer containment/symlink/atomic-write/rollback
+controls remain tested.
 
 Default privacy remains `temporal-references-only`, complete prompts are absent in the clean/packed smoke,
 MCP remains local stdio, context is bounded, transcript parsing is absent, and capture claims remain best
@@ -178,16 +213,20 @@ desktop/IDE fallback, terminal-restart PATH, real-host uninstall, and database p
 
 ## Blockers and decision
 
-1. `@temporalthread` npm organization ownership and npm 2FA/recovery access are BLOCKED/unverified.
-2. Real current Codex certification is MANUAL and incomplete.
-3. Visibility, publication, tag, GitHub release, and announcement approvals are absent by design.
+1. The packed npm consumer resolves vulnerable `@hono/node-server@1.19.14`; the current stable
+   `@modelcontextprotocol/sdk@1.29.0` range does not carry the source workspace override.
+2. `@temporalthread` npm organization ownership and npm 2FA/recovery access are BLOCKED/unverified.
+3. Real current Codex certification is MANUAL and incomplete.
+4. Visibility, publication, tag, GitHub release, and announcement approvals are absent by design.
 
-Decision: **NO-GO** for the complete public v0.1.0 launch. The repository code and selected candidate
-artifacts are ready for owner review, but the npm authority blocker prevents CONDITIONAL GO for the full
-launch.
+Decision: **NO-GO** for the complete public v0.1.0 launch. The repository source is green for owner review,
+but there is no current security-cleared release artifact. The packed dependency and npm authority blockers
+prevent CONDITIONAL GO for the full launch.
 
 ## Exact next human action
 
-Establish or verify the `temporalthread` npm organization under the intended owner and confirm account
-2FA/recovery access—without publishing. Then execute the temporary packed candidate procedure in
-`docs/LIVE-CODEX-CERTIFICATION.md` and provide the text-only results for final gate review.
+Do not publish the existing tarballs. Track or request a stable `@modelcontextprotocol/sdk` release whose
+production range permits patched `@hono/node-server@2.0.10` or newer, update the dependency, and rerun the
+three-platform release dry run. A larger packaging or shrinkwrap workaround requires separate architecture
+and security approval. After the dependency gate is green, establish/verify npm scope and 2FA authority and
+complete the text-only live Codex certification.

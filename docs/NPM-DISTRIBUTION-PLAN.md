@@ -1,7 +1,7 @@
 # npm distribution plan for v0.1.0
 
-Status: prepared, not approved for execution
-Registry check: 2026-07-20
+Status: BLOCKED; prepared commands are not approved for execution
+Registry check: 2026-07-20; dependency-security follow-up: 2026-07-22
 Publication performed: no
 
 ## Decision: model B
@@ -13,6 +13,25 @@ workspace code into the CLI would be an architecture and build change outside th
 
 The root `@temporalthread/workspace` package and all three example packages remain private and must never be
 published.
+
+## Current distribution dependency blocker
+
+The locked workspace graph is secured with root overrides to `@hono/node-server@2.0.10` and
+`fast-uri@3.1.4`, and the source production audit is clean. A fresh consumer installation from the eight
+tarballs does not inherit the workspace override: it resolves `@hono/node-server@1.19.14` through the current
+stable `@modelcontextprotocol/sdk@1.29.0`. That version is within the affected ranges for
+[GHSA-frvp-7c67-39w9](https://github.com/advisories/GHSA-frvp-7c67-39w9) and
+[GHSA-9mqv-5hh9-4cgg](https://github.com/advisories/GHSA-9mqv-5hh9-4cgg).
+
+npm's [override documentation](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#overrides) states
+that overrides are considered only in the root project and that overrides in installed dependencies or
+workspaces are ignored. Release dry run `29932142666` therefore fails intentionally before artifact creation
+on Ubuntu, macOS, and Windows. Historical commit-`dc2c0b4` artifacts are superseded and must not be published.
+
+Preferred resolution: update to a stable MCP TypeScript SDK version whose production range permits
+`@hono/node-server@2.0.10` or newer, then repeat the source audit, packed dependency inspection, and full
+release matrix. Do not add hidden vendoring, bundle duplication, or an npm shrinkwrap without a separate
+architecture and security review.
 
 ## Intended public package set
 
@@ -74,9 +93,9 @@ Official references: [trusted publishing](https://docs.npmjs.com/trusted-publish
 
 ## Future publication commands
 
-These commands are destructive public actions. They are documentation only and must not be run until scope
-ownership, repository visibility, manual Codex certification, release approval, and a clean release-dry-run
-artifact are all confirmed.
+These commands are destructive public actions. They are documentation only and must not be run until the
+packed dependency security blocker, scope ownership, repository visibility, manual Codex certification,
+release approval, and a clean successful release-dry-run artifact are all confirmed.
 
 Run from the exact tagged checkout in a protected GitHub-hosted publication job. For initial bootstrap with
 a protected granular token, configure `NODE_AUTH_TOKEN` as an environment secret without printing it. With
@@ -133,6 +152,8 @@ and [unpublish policy](https://docs.npmjs.com/policies/unpublish/).
 ## Remaining limitations and risks
 
 - Scope ownership and account 2FA are currently unverified blockers.
+- The packed npm graph currently resolves vulnerable `@hono/node-server@1.19.14`; no current artifact or
+  SBOM is approved for publication.
 - Name availability can change between audit and release.
 - An eight-package initial publish can stop partway; dependency-order verification limits but cannot remove
   that registry transaction risk.

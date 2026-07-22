@@ -1,15 +1,15 @@
 # Phase 4 release security review
 
-Review date: 2026-07-20
+Review date: 2026-07-20; dependency-advisory follow-up 2026-07-22
 Scope: v0.1.0 source, history, package manifests, eight tarballs, SPDX SBOM, workflows, installer/uninstaller,
 hooks, MCP stdio boundary, SQLite, export/purge, logs, diagnostics, and release tooling
 
 ## Recommendation
 
-No release-blocking source, privacy, packaging, or workflow security defect was found. The code is suitable
-for release-candidate testing, subject to the external npm-scope blocker and manual real-Codex certification.
-This conclusion is evidence scoped to the audited commit and generated candidate; it is not a guarantee that
-all vulnerabilities are absent.
+No release-blocking source or privacy defect was found, but the follow-up found a release-blocking difference
+between the secured workspace graph and a fresh packed npm consumer. Source development is suitable to
+continue; npm publication is not. This conclusion is evidence scoped to the audited commits and generated
+candidate; it is not a guarantee that all vulnerabilities are absent.
 
 ## Tools and checks used
 
@@ -32,8 +32,9 @@ Secret scanning reports paths/counts only and does not print discovered values.
 | Severity | Finding | Evidence and remediation |
 | --- | --- | --- |
 | Critical | None found | No remediation required from this review. |
-| High | None found | Production audit reports no known vulnerability at the configured threshold. |
-| Medium | None found | No unsafe shell interpolation, arbitrary command construction, path escape, or default full-text retention found. |
+| High | `fast-uri@3.1.3` advisory reached the audit feed | Locked override to 3.1.4; source and packed consumer now resolve 3.1.4. |
+| Medium | Packed consumer resolves `@hono/node-server@1.19.14` | Source is overridden to 2.0.10, but publication is blocked until a stable dependency range carries the fix. |
+| Medium | No application-boundary defect found | No unsafe shell interpolation, arbitrary command construction, path escape, or default full-text retention found. |
 | Low | None found | Release tarballs reject sources, tests, build info, local state, links, secrets, and machine paths. |
 | Informational | npm scope authority is unverified | Resolve before publication; never work around it with broad credentials. |
 | Informational | Live Codex trust remains manual | Follow `docs/LIVE-CODEX-CERTIFICATION.md`; do not bypass host security. |
@@ -111,9 +112,21 @@ developer path. Checksums are recomputed independently from `SHA256SUMS`.
 
 ## Dependency and supply-chain posture
 
-`pnpm audit --prod --audit-level high` found no known production vulnerability on 2026-07-20. The production
-license set contains MIT, ISC, Apache-2.0, BSD-2-Clause, BSD-3-Clause, and permissive OR expressions; see
-`docs/DEPENDENCY-LICENSE-REVIEW.md`.
+The 2026-07-22 source graph locks `@hono/node-server@2.0.10` and `fast-uri@3.1.4`; full `pnpm audit --prod`
+and the repository audit gate report no known production vulnerabilities. These versions address
+[GHSA-frvp-7c67-39w9](https://github.com/advisories/GHSA-frvp-7c67-39w9),
+[GHSA-9mqv-5hh9-4cgg](https://github.com/advisories/GHSA-9mqv-5hh9-4cgg), and
+[GHSA-v2hh-gcrm-f6hx](https://github.com/advisories/GHSA-v2hh-gcrm-f6hx).
+
+A clean consumer installation of the eight packed packages still resolves `@hono/node-server@1.19.14`
+through `@modelcontextprotocol/sdk@1.29.0`. npm documents that overrides are considered only in the root
+project and that dependency/workspace overrides are ignored when a package is installed; see
+[package.json overrides](https://docs.npmjs.com/cli/v11/configuring-npm/package-json/#overrides). The manual
+release workflow now requires secure packed dependencies and fails before artifact/SBOM creation on all three
+operating systems. A stable upstream SDK range permitting Hono 2.0.10+ is the preferred fix; a shrinkwrap or
+packaging redesign needs separate architecture/security approval.
+
+The production license set remains permissive; see `docs/DEPENDENCY-LICENSE-REVIEW.md`.
 
 `better-sqlite3` is the only native runtime requirement. Frozen-lockfile installation still runs its trusted,
 locked build/install path; a compromised registry package or build runner remains a supply-chain risk.
@@ -131,6 +144,7 @@ locked build/install path; a compromised registry package or build runner remain
 
 ## Final security gate
 
-Security/privacy automated gate: PASS.
+Source security/privacy automated gate: PASS.
+Packed npm dependency security gate: FAIL/BLOCKED.
 npm account/scope gate: BLOCKED.
 Real-host trust gate: MANUAL.

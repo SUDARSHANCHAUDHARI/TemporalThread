@@ -1,6 +1,6 @@
 # SBOM and provenance plan
 
-Status: release-candidate SBOM implemented; publication provenance planned only
+Status: SBOM tooling implemented; prior candidate SBOM superseded; publication provenance planned only
 
 ## SBOM result
 
@@ -12,12 +12,18 @@ pnpm release:sbom -- --output release-artifacts/temporalthread-v0.1.0.spdx.json
 
 The generator reads `pnpm list -r --prod --depth Infinity --json` plus
 `pnpm licenses list --prod --json`, removes installation paths, walks only the eight release packages, and
-emits deterministic package/relationship ordering. The current candidate contains 140 local, direct, and
-transitive package records and 247 relationships.
+emits deterministic package/relationship ordering. The historical commit-`dc2c0b4` candidate contains 140
+local, direct, and transitive package records and 247 relationships.
 
 The SBOM is stored as a 14-day `Release dry run` workflow artifact rather than committed machine-generated
 output. Its namespace binds the version, source commit, and production graph digest. A dirty local source
 tree is explicitly marked and must not be used for publication evidence.
+
+The historical SBOM is no longer an approved release candidate. The 2026-07-22 packed-consumer security gate
+showed that the workspace SBOM/source graph can contain overridden `@hono/node-server@2.0.10` while a registry
+consumer resolves vulnerable 1.19.14. Release dry run `29932142666` stopped before generating or uploading a
+new SBOM. A future candidate must bind the source graph and separately verify the installed packed-consumer
+graph before its SBOM and checksums are accepted.
 
 ## Scope and limitations
 
@@ -115,7 +121,9 @@ published version or rewrite a release tag. Follow `docs/NPM-DISTRIBUTION-PLAN.m
 | SPDX generation | PASS locally |
 | SBOM structural verification | PASS locally |
 | Tarball SHA-256 generation/verification | PASS locally |
-| Clean source association | PASS for exact commit `dc2c0b44f56ec3d21294d2949a8c861238256adc`; no tag created |
+| Historical clean source association | SUPERSEDED for commit `dc2c0b44f56ec3d21294d2949a8c861238256adc`; no tag created |
+| Current packed-consumer dependency gate | FAIL/BLOCKED at Hono 1.19.14 on run `29932142666` |
+| Current release-candidate SBOM | BLOCKED; no artifact generated after the security follow-up |
 | Public repository required for npm provenance | BLOCKED by explicit approval |
 | npm scope ownership/2FA | BLOCKED/unverified |
 | Trusted publisher | Not configured; future public action |

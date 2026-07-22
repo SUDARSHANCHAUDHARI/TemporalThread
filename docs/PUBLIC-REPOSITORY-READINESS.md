@@ -1,6 +1,6 @@
 # Public repository readiness
 
-Audit date: 2026-07-20
+Audit date: 2026-07-20; dependency-security follow-up 2026-07-22
 Current visibility: private
 Visibility changed during Phase 4: no
 
@@ -93,10 +93,12 @@ and [private vulnerability reporting](https://docs.github.com/en/code-security/s
 
 ## Launch blockers
 
+- The packed npm consumer resolves vulnerable `@hono/node-server@1.19.14`; release dry run `29932142666`
+  fails closed before artifact upload on Ubuntu, macOS, and Windows.
 - npm `@temporalthread` scope authority is not established.
 - Real Codex CLI/desktop trust and discovery certification is incomplete.
 - Public visibility, npm publication, tag, and GitHub release each require explicit human approval.
 
-The repository is structurally ready for owner review as public source after green Phase 4 CI and release
-dry-run matrices, but the remaining blockers prevent treating it as a complete v0.1.0 public package launch
-today.
+The repository source is structurally ready for owner review after green source CI run `29931945659`, but the
+current release-dry-run matrix is intentionally red at the distribution security gate. The remaining blockers
+prevent treating it as a complete v0.1.0 public package launch today.
