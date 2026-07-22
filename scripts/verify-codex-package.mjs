@@ -18,6 +18,11 @@ const repositoryRoot = resolve(import.meta.dirname, '..');
 const maximumDiagnosticCharacters = 4_000;
 const pnpmCli = process.env.npm_execpath;
 if (!pnpmCli) throw new Error('Package verification must run through pnpm');
+const verificationArguments = process.argv.slice(2).filter((argument) => argument !== '--');
+if (verificationArguments.some((argument) => argument !== '--require-secure-dependencies')) {
+  throw new Error('Usage: pnpm verify:codex-package -- [--require-secure-dependencies]');
+}
+const requireSecureDependencies = verificationArguments.includes('--require-secure-dependencies');
 
 const packageSpecs = releasePackages.map(({ name, directory, archive }) => [name, directory, archive]);
 
@@ -100,6 +105,35 @@ function allFiles(root, current = root) {
   return files.sort();
 }
 
+function productionVersions(graph, packageName) {
+  const versions = new Set();
+  function visit(dependencies) {
+    for (const [name, dependency] of Object.entries(dependencies ?? {})) {
+      if (name === packageName && typeof dependency.version === 'string') {
+        versions.add(dependency.version);
+      }
+      visit(dependency.dependencies);
+    }
+  }
+  for (const project of graph) visit(project.dependencies);
+  return [...versions].sort();
+}
+
+function hasVersionAtLeast(versions, expectedMajor, expectedMinor, expectedPatch) {
+  return (
+    versions.length > 0 &&
+    versions.every((version) => {
+      const match = /^(\d+)\.(\d+)\.(\d+)$/u.exec(version);
+      if (!match) return false;
+      const [, major, minor, patch] = match.map(Number);
+      return (
+        major === expectedMajor &&
+        (minor > expectedMinor || (minor === expectedMinor && patch >= expectedPatch))
+      );
+    })
+  );
+}
+
 const verificationRoot = mkdtempSync(join(tmpdir(), 'temporalthread-packed-'));
 try {
   const tarballDirectory = join(verificationRoot, 'tarballs');
@@ -153,6 +187,21 @@ try {
     'utf8',
   );
   runPnpm('install packed tarballs', ['install', '--prefer-offline'], installRoot);
+  const packedProductionGraph = JSON.parse(
+    runPnpm(
+      'inspect packed production dependencies',
+      ['list', '--prod', '--depth', 'Infinity', '--json'],
+      installRoot,
+    ),
+  );
+  const resolvedSecurityDependencies = {
+    '@hono/node-server': productionVersions(packedProductionGraph, '@hono/node-server'),
+    'fast-uri': productionVersions(packedProductionGraph, 'fast-uri'),
+  };
+  const packedDependencySecurity =
+    hasVersionAtLeast(resolvedSecurityDependencies['@hono/node-server'], 2, 0, 10) &&
+    hasVersionAtLeast(resolvedSecurityDependencies['fast-uri'], 3, 1, 4);
+  const securityGateFailed = requireSecureDependencies && !packedDependencySecurity;
 
   const integrationRoot = join(installRoot, 'node_modules', '@temporalthread', 'codex-integration');
   const installedIntegration = await import(pathToFileURL(join(integrationRoot, 'dist', 'index.js')).href);
@@ -312,7 +361,7 @@ try {
 
   process.stdout.write(
     `${JSON.stringify({
-      ok: true,
+      ok: !securityGateFailed,
       tarballs: tarballs.length,
       integrationFiles: integrationFiles.length,
       pluginFiles: pluginValidation.files.length,
@@ -329,8 +378,11 @@ try {
       packedUninstall: true,
       databasePreserved: true,
       explicitPurge: true,
+      resolvedSecurityDependencies,
+      packedDependencySecurity,
     })}\n`,
   );
+  if (securityGateFailed) process.exitCode = 1;
 } finally {
   rmSync(verificationRoot, { recursive: true, force: true });
 }

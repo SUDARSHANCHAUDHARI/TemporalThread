@@ -48,6 +48,8 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ### Security
 
+- Override transitive `@hono/node-server` and `fast-uri` resolutions to patched releases after
+  GHSA-frvp-7c67-39w9, GHSA-9mqv-5hh9-4cgg, and GHSA-v2hh-gcrm-f6hx were added to the registry audit feed.
 - Codex hook input is limited to 256 KiB, validated from stdin, never shell-interpolated, and excluded from
   logs/errors; hook output is capped at 7,000 bytes and omits transcripts, internal IDs, hashes, and database
   paths.

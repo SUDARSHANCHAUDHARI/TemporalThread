@@ -62,7 +62,7 @@ jobs:
         run: pnpm build
 
       - name: Validate packed Codex installation
-        run: pnpm verify:codex-package
+        run: pnpm verify:codex-package -- --require-secure-dependencies
 
       - name: Certify isolated clean source installation
         run: pnpm verify:clean-source
