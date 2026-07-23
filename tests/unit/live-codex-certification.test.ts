@@ -151,9 +151,9 @@ describe('live Codex certification safety utilities', () => {
   it('computes the controlled scenario relative to a minute-stable instant', () => {
     const scenario = certification.computeControlledScenario(Date.parse('2026-07-23T12:34:56.789Z'));
 
-    expect(scenario.now).toBe('2026-07-23T12:34:00.000Z');
-    expect(scenario.previous).toBe('2026-07-19T09:34:00.000Z');
-    expect(scenario.due).toBe('2026-07-20T09:34:00.000Z');
+    expect(scenario.now).toBe('2026-07-23T12:34:00Z');
+    expect(scenario.previous).toBe('2026-07-19T09:34:00Z');
+    expect(scenario.due).toBe('2026-07-20T09:34:00Z');
     expect(Date.parse(scenario.now) - Date.parse(scenario.previous)).toBe(99 * 60 * 60 * 1_000);
     expect(Date.parse(scenario.due) - Date.parse(scenario.previous)).toBe(24 * 60 * 60 * 1_000);
   });

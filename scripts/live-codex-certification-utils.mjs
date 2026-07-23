@@ -291,10 +291,11 @@ export function assertExactToolDiscovery(tools) {
 export function computeControlledScenario(nowMilliseconds = Date.now()) {
   const minuteStable = Math.floor(nowMilliseconds / 60_000) * 60_000;
   const previous = minuteStable - 99 * 60 * 60 * 1_000;
+  const canonicalInstant = (milliseconds) => new Date(milliseconds).toISOString().replace('.000Z', 'Z');
   return {
-    now: new Date(minuteStable).toISOString(),
-    previous: new Date(previous).toISOString(),
-    due: new Date(previous + 24 * 60 * 60 * 1_000).toISOString(),
+    now: canonicalInstant(minuteStable),
+    previous: canonicalInstant(previous),
+    due: canonicalInstant(previous + 24 * 60 * 60 * 1_000),
   };
 }
 
