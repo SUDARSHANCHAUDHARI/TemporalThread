@@ -29,6 +29,8 @@ describe('live Codex certification safety utilities', () => {
       certification.isPathInside('C:\\Temp\\Cert Root Ω', 'c:\\temp\\cert root Ω\\Project space', win32),
     ).toBe(true);
     expect(certification.isPathInside('C:\\Temp\\Cert', 'C:\\Temp\\Cert-escape', win32)).toBe(false);
+    expect(certification.isPathInside('\\\\?\\C:\\Temp\\Cert', 'C:\\Temp\\Cert\\Project', win32)).toBe(true);
+    expect(certification.isPathInside('\\\\?\\C:\\Temp\\Cert', 'C:\\Work\\Repository', win32)).toBe(false);
   });
 
   it('creates a fully isolated non-host environment and keeps the existing PATH', () => {
@@ -239,7 +241,7 @@ describe('live Codex certification safety utilities', () => {
         cwd: root,
         env: process.env,
         replacements: { temporaryRoot: root },
-        timeoutMs: 2_000,
+        timeoutMs: 5_000,
       });
     } catch (error) {
       message = error instanceof Error ? error.message : String(error);
@@ -249,7 +251,7 @@ describe('live Codex certification safety utilities', () => {
     expect(message).toContain('<temporary>');
     expect(message).not.toContain(root);
     expect(() => process.kill(childPid, 0)).toThrow();
-  });
+  }, 10_000);
 
   it('validates a content-free manifest and rejects unknown fields or unsafe paths', () => {
     const root = temporaryRoot('manifest');

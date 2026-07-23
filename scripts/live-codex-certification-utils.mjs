@@ -65,7 +65,17 @@ const manifestFields = new Set([
 ]);
 
 function comparablePath(pathApi, value) {
-  const normalized = pathApi.resolve(value);
+  let comparableValue = value;
+  if (pathApi === win32) {
+    const extendedPrefix = `${win32.sep}${win32.sep}?${win32.sep}`;
+    const extendedUncPrefix = `${extendedPrefix}UNC${win32.sep}`;
+    if (value.toLowerCase().startsWith(extendedUncPrefix.toLowerCase())) {
+      comparableValue = `${win32.sep}${win32.sep}${value.slice(extendedUncPrefix.length)}`;
+    } else if (value.startsWith(extendedPrefix)) {
+      comparableValue = value.slice(extendedPrefix.length);
+    }
+  }
+  const normalized = pathApi.resolve(comparableValue);
   return pathApi === win32 ? normalized.toLowerCase() : normalized;
 }
 
