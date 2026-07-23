@@ -12,6 +12,7 @@ import {
   certificationPaths,
   cleanupCertificationRoot,
   computeControlledScenario,
+  createCertificationConsumerManifest,
   createCertificationManifest,
   createCertificationRoot,
   ensureCertificationDirectories,
@@ -122,19 +123,13 @@ function writeConsumer(paths) {
   const localPackages = Object.fromEntries(
     releasePackages.map((spec) => [spec.name, `file:../functional-packages-NOT-FOR-RELEASE/${spec.archive}`]),
   );
+  const sourceManifest = JSON.parse(readFileSync(join(repositoryRoot, 'package.json'), 'utf8'));
+  const mcpSdkVersion =
+    sourceManifest.devDependencies?.['@modelcontextprotocol/sdk'] ??
+    sourceManifest.dependencies?.['@modelcontextprotocol/sdk'];
   writeFileSync(
     join(paths.consumerRoot, 'package.json'),
-    `${JSON.stringify(
-      {
-        name: 'temporalthread-live-codex-certification-consumer',
-        private: true,
-        version: '0.0.0-functional-only',
-        packageManager: 'pnpm@11.9.0',
-        dependencies: localPackages,
-      },
-      null,
-      2,
-    )}\n`,
+    `${JSON.stringify(createCertificationConsumerManifest(localPackages, mcpSdkVersion), null, 2)}\n`,
     { encoding: 'utf8', mode: 0o600 },
   );
   writeFileSync(

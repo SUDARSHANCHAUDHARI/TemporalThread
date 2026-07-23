@@ -34,6 +34,16 @@ export function buildIsolatedEnvironment(
   baseEnvironment?: NodeJS.ProcessEnv,
   platform?: NodeJS.Platform,
 ): NodeJS.ProcessEnv;
+export function createCertificationConsumerManifest(
+  localPackages: Record<string, string>,
+  mcpSdkVersion: string,
+): {
+  name: string;
+  private: boolean;
+  version: string;
+  packageManager: string;
+  dependencies: Record<string, string>;
+};
 export function assertSafeCertificationParent(options: {
   parent: string;
   userHome: string;

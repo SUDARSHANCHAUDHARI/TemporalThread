@@ -192,6 +192,25 @@ export function buildIsolatedEnvironment(paths, baseEnvironment = process.env, p
   return environment;
 }
 
+export function createCertificationConsumerManifest(localPackages, mcpSdkVersion) {
+  if (!localPackages || typeof localPackages !== 'object' || Array.isArray(localPackages)) {
+    throw new Error('Certification consumer packages are invalid');
+  }
+  if (typeof mcpSdkVersion !== 'string' || !mcpSdkVersion) {
+    throw new Error('Certification consumer MCP SDK version is invalid');
+  }
+  return {
+    name: 'temporalthread-live-codex-certification-consumer',
+    private: true,
+    version: '0.0.0-functional-only',
+    packageManager: 'pnpm@11.9.0',
+    dependencies: {
+      ...localPackages,
+      '@modelcontextprotocol/sdk': mcpSdkVersion,
+    },
+  };
+}
+
 export function initializeCertificationRoot(root, certificationId) {
   assertUuid(certificationId);
   const markerPath = join(root, ROOT_MARKER_FILE);

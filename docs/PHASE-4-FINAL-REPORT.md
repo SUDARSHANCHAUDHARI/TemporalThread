@@ -249,7 +249,7 @@ automated lifecycle checks, uninstall/purge stage verification, and marker/UUID-
 launches Codex or approves trust. See `docs/PHASE-4.2-OWNER-RUNBOOK.md` and the uncompleted result template
 `docs/LIVE-CODEX-CERTIFICATION-RESULTS.md`.
 
-The updated suite contains 25 files and 135 tests, including 17 focused certification-kit safety tests.
+The updated suite contains 25 files and 136 tests, including 18 focused certification-kit safety tests.
 
 The Phase 4.2 npm review safely verified CLI account access for `sudarshanchaudhari` and reverified that all
 eight package names lack registry entries. It did not establish access to the `@temporalthread` scope, and

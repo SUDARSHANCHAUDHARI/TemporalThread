@@ -63,6 +63,18 @@ describe('live Codex certification safety utilities', () => {
     expect(environment['npm_config_//registry.npmjs.org/:_authToken']).toBeUndefined();
   });
 
+  it('declares the MCP SDK as a direct certification-harness dependency', () => {
+    const manifest = certification.createCertificationConsumerManifest(
+      { temporalthread: 'file:../temporalthread-0.1.0.tgz' },
+      '1.29.0',
+    );
+
+    expect(manifest.dependencies).toEqual({
+      temporalthread: 'file:../temporalthread-0.1.0.tgz',
+      '@modelcontextprotocol/sdk': '1.29.0',
+    });
+  });
+
   it('refuses the real home, repository root, and a non-temporary parent', () => {
     const root = temporaryRoot('refusal');
     expect(() =>
