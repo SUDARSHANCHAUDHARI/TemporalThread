@@ -82,6 +82,7 @@ function comparablePath(pathApi, value) {
 export function isPathInside(root, candidate, pathApi = process.platform === 'win32' ? win32 : posix) {
   const normalizedRoot = comparablePath(pathApi, root);
   const normalizedCandidate = comparablePath(pathApi, candidate);
+  if (pathApi.parse(normalizedRoot).root !== pathApi.parse(normalizedCandidate).root) return false;
   const pathFromRoot = pathApi.relative(normalizedRoot, normalizedCandidate);
   return Boolean(pathFromRoot) && pathFromRoot !== '..' && !pathFromRoot.startsWith(`..${pathApi.sep}`);
 }

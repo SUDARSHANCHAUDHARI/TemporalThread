@@ -31,6 +31,7 @@ describe('live Codex certification safety utilities', () => {
     expect(certification.isPathInside('C:\\Temp\\Cert', 'C:\\Temp\\Cert-escape', win32)).toBe(false);
     expect(certification.isPathInside('\\\\?\\C:\\Temp\\Cert', 'C:\\Temp\\Cert\\Project', win32)).toBe(true);
     expect(certification.isPathInside('\\\\?\\C:\\Temp\\Cert', 'C:\\Work\\Repository', win32)).toBe(false);
+    expect(certification.isPathInside('C:\\Temp\\Cert', 'D:\\Temp\\Cert\\Project', win32)).toBe(false);
   });
 
   it('creates a fully isolated non-host environment and keeps the existing PATH', () => {
