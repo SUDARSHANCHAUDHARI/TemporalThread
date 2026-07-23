@@ -63,11 +63,11 @@ The authenticated npm CLI identifies the current account as `sudarshanchaudhari`
 returned `E404` on 2026-07-20, meaning no public package was visible at check time. This is a point-in-time
 observation, not a reservation.
 
-The npm organization lookup for `temporalthread` returned `E403`, and the account profile endpoint also
-returned `E403`. Therefore:
+The Phase 4.2 npm organization and access lookups returned no visible `temporalthread` role or readable scope
+record. A narrow profile 2FA-field query was inconclusive and no broader profile was printed. Therefore:
 
 - control of the `@temporalthread` scope is not established;
-- npm two-factor-authentication status is not verifiable with the current credential;
+- npm two-factor-authentication status and recovery readiness remain manual;
 - all scoped publication is BLOCKED;
 - no package name has been reserved.
 
@@ -96,6 +96,10 @@ after configuring trusted publishing for all eight packages. Do not use a classi
 Official references: [trusted publishing](https://docs.npmjs.com/trusted-publishers/),
 [provenance](https://docs.npmjs.com/generating-provenance-statements/), and
 [public scoped packages](https://docs.npmjs.com/creating-and-publishing-scoped-public-packages/).
+
+The owner-only sequence, recovery boundaries, role review, and current trusted-publishing prerequisites are
+documented in `docs/NPM-SCOPE-HUMAN-ACTIONS.md`; tracked statuses are in
+`docs/NPM-AUTHORITY-AND-2FA-CHECKLIST.md`.
 
 ## Future publication commands
 

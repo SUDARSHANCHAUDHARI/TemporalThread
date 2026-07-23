@@ -1,6 +1,6 @@
 # Live Codex certification for v0.1.0
 
-Status: automated contract evidence complete; real-host certification MANUAL
+Status: Phase 4.2 certification kit prepared; real-host certification MANUAL
 
 This plan never modifies the maintainer's real TemporalThread database or real project configuration. Use a
 temporary, non-sensitive project and the packed release candidate. Do not weaken project or hook trust, copy
@@ -8,7 +8,7 @@ credentials, or test with a real conversation.
 
 ## Automated evidence
 
-The release-candidate scripts and 114 deterministic tests currently prove:
+The automated suite and Phase 4.2 certification safety tests prove:
 
 - the real MCP stdio process starts and discovers exactly nine tools;
 - all eight intended tarballs install together, including native `better-sqlite3` loading;
@@ -59,47 +59,38 @@ The release owner must record:
 
 ## Safe test preparation
 
-1. Download one operating-system artifact from a successful `Release dry run` workflow and verify its
-   `SHA256SUMS` file before use.
-2. Create a disposable directory outside any real project. Give it a name containing spaces and Unicode.
-3. Inside that directory, create a private consumer `package.json` whose dependencies map all eight package
-   names to their downloaded `file:` tarballs. Use the same `allowBuilds`/override layout exercised by
-   `scripts/verify-codex-package.mjs`.
-4. Run `pnpm install --frozen-lockfile` if the fixture has a generated lockfile, otherwise perform the first
-   isolated install and preserve that lockfile with the certification evidence.
-5. Add only the consumer's `node_modules/.bin` directory to PATH for the test shell.
-6. Point `TEMPORALTHREAD_HOME` to a new directory under the disposable root.
-7. Confirm `temporalthread --version` returns `0.1.0` and run `temporalthread doctor`.
+From the clean Phase 4.2 commit on Node.js 24:
 
-Do not install globally over an existing `temporalthread` command. Do not alter the real user-level Codex
-configuration.
+```sh
+pnpm run certify:codex:prepare
+```
+
+The script creates a new system-temp root, isolated setup/Codex/TemporalThread homes, isolated npm/pnpm
+cache/store/temp directories, a project containing spaces and Unicode, and an eight-package functional
+consumer. It builds and packs current behavior only for disposable testing, labels every archive
+`NOT-FOR-RELEASE`, installs the project-scoped integration, runs doctor/MCP/nine-tool/privacy checks, seeds
+relative controlled data, and prints an exact cleanup command.
+
+It refuses a dirty source tree, real home, repository root, path escape, or symlink. It does not globally
+install a package, launch Codex, approve trust, or modify real user data. The functional packages retain the
+SDK/Hono blocker and are prohibited from publication.
 
 ## Project-scoped live test
 
-From a new temporary test project:
-
-```sh
-temporalthread init --yes --timezone Asia/Bangkok --integration codex --json
-temporalthread integrate codex install --scope project --dry-run --json
-temporalthread integrate codex install --scope project --yes --json
-temporalthread integrate codex doctor --scope project --json
-```
-
-Review the generated `.codex/config.toml`, `.codex/hooks.json`, and
-`.agents/skills/temporal-awareness/SKILL.md`. Launch the real Codex CLI from the same test shell so it inherits
-the temporary PATH and `TEMPORALTHREAD_HOME`. Approve only the expected temporary project's trust prompt and
-the exact TemporalThread hook commands after reviewing them. Do not bypass trust or change Codex security
-settings.
+Review the generated instruction file, `.codex/config.toml`, `.codex/hooks.json`, ownership manifest, and
+`.agents/skills/temporal-awareness/SKILL.md`. Launch Codex manually with the generated platform launcher. It
+uses the supported isolated `CODEX_HOME` and temporary executable/data paths. Approve only the expected
+temporary project's trust prompt and exact TemporalThread hook commands after reviewing them. Do not bypass
+trust or change Codex security settings.
 
 Then verify in the host:
 
 1. The `temporal-thread` MCP server is healthy and exactly nine expected tools are present.
 2. The `temporal-awareness` skill is discoverable.
-3. Record a synthetic user interaction anchored at `2026-07-15T20:00:00+07:00` containing “continue
-   tomorrow,” then record a separate explicit commitment with the same anchor.
-4. Ask the tools to resolve `tomorrow` at that anchor and calculate elapsed time through
-   `2026-07-19T23:00:00+07:00`. Confirm July 16 resolution, four days/three hours exact elapsed time, and three
-   calendar days overdue at the controlled return point.
+3. Use the seeded interaction at `T_NOW - 4 days - 3 hours` containing “Let's continue tomorrow” and the one
+   explicit commitment due 24 hours later.
+4. Ask how long it has been. Confirm approximately four days/three hours exact elapsed time and approximately
+   three calendar days overdue in the detected local timezone.
 5. Start or resume a new host session. Confirm the SessionStart bookkeeping row does not become the reported
    prior meaningful conversation.
 6. Confirm Stop returns neutral behavior and never asks Codex to continue a turn.
@@ -107,29 +98,21 @@ Then verify in the host:
    SQLite database, and confirm the complete marker is absent while the matched temporal reference may be
    present.
 
-The deterministic fake-clock version of this scenario is already automated. The manual host step certifies
-Codex discovery, trust, activation, and real lifecycle delivery—not a new parser result.
+Run the automated checker after the host scenario:
+
+```sh
+pnpm run certify:codex:check -- --manifest "<temporary-manifest-path>" --stage installed --exercise-lifecycle
+```
+
+The deterministic adapter/storage exercise is not evidence of Codex UI or model behavior. Those fields stay
+manual in `docs/LIVE-CODEX-CERTIFICATION-RESULTS.md`.
 
 ## Uninstall and cleanup
 
-From the same temporary project and environment:
-
-```sh
-temporalthread integrate codex uninstall --scope project --yes --json
-temporalthread status --json
-```
-
-Confirm managed project MCP, hook, skill, and manifest content is removed, unrelated project configuration
-is preserved, and the database still exists. Only after recording preservation evidence, test explicit data
-deletion:
-
-```sh
-temporalthread purge --yes --json
-temporalthread status --json
-```
-
-Remove the disposable project, consumer, npm prefix, and TemporalThread test home after closing Codex and all
-MCP processes. Do not purge or delete the real TemporalThread home.
+Use the generated `run-temporalthread-certification` wrapper to uninstall, then check `--stage uninstalled`.
+Use the same wrapper for explicit `purge --yes`, then check `--stage purged`. Finally run the exact
+marker/UUID-bound cleanup command printed by preparation. Full commands and risk labels are in
+`docs/PHASE-4.2-OWNER-RUNBOOK.md`.
 
 ## Desktop and IDE fallback
 
@@ -140,6 +123,6 @@ IDE extension; that surface uses direct MCP and skills.
 
 ## Certification record
 
-Attach a text-only, privacy-reviewed record to the release decision with versions, commands, trust prompts,
-observed tool names, expected/actual results, checksum, and cleanup result. Screenshots, session recordings,
-real prompts, databases, and auth/config files are neither required nor appropriate evidence.
+Complete `docs/LIVE-CODEX-CERTIFICATION-RESULTS.md` with privacy-safe labels, versions, trust prompts,
+observed tools, expected/actual results, and cleanup result. Screenshots, logs, session recordings, real
+prompts, databases, and auth/config files must remain private and are not required repository evidence.

@@ -42,6 +42,10 @@ and `@hono/node-server: ^1.19.9`. `@hono/node-server@2.0.11` is current, MIT, an
 TemporalThread requires Node.js 24, but it cannot unilaterally widen the SDK's support contract. Upstream
 issue [`#2531`](https://github.com/modelcontextprotocol/typescript-sdk/issues/2531) remains open.
 
+Phase 4.2 rechecked these sources read-only on 2026-07-23. SDK 1.29.0 is still `latest`, its Hono range is
+still `^1.19.9`, Hono 2.0.11 remains current with 2.0.5 as the first advisory fix, and issue #2531 remains
+open. No dependency or lockfile was changed. See `docs/UPSTREAM-DEPENDENCY-WATCH.md`.
+
 ## Root cause and exact graph
 
 Both SDK-bearing publishable manifests declare SDK 1.29.0:

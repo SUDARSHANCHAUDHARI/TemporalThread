@@ -25,6 +25,9 @@ All notable changes to TemporalThread will be documented in this file. The forma
   checksums, SPDX 2.3 SBOM generation, and 14-day release-candidate artifacts on all three platforms.
 - Privacy-aware bug/feature issue forms, pull request template, npm distribution plan, live Codex
   certification plan, public-repository audit, dependency-license review, and v0.1.0 release gate documents.
+- Phase 4.2 manual-certification tooling with a proven disposable temp root, isolated package/Codex/data
+  homes, relative controlled scenario, automated stage checks, guarded cleanup, privacy-safe result template,
+  npm authority/2FA guides, and explicit release-authorization checklist.
 
 ### Changed
 
@@ -61,3 +64,6 @@ All notable changes to TemporalThread will be documented in this file. The forma
 - Release artifact verification rejects links, path traversal, sources/tests/build metadata, local state,
   databases/logs, secret patterns, machine paths, invalid metadata, local-only dependencies, and a non-portable
   CLI entry point.
+- Live-certification setup and cleanup refuse real home/repository targets, symlink escapes, and unmarked
+  roots; functional tarballs remain explicitly blocked from release while SDK 1.29.0 resolves vulnerable
+  Hono 1.19.14 in clean consumers.

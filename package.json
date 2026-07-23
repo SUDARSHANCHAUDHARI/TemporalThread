@@ -13,6 +13,9 @@
   "scripts": {
     "audit": "pnpm audit --prod --audit-level high",
     "build": "tsc -b",
+    "certify:codex:check": "node scripts/check-live-codex-certification.mjs",
+    "certify:codex:cleanup": "node scripts/cleanup-live-codex-certification.mjs",
+    "certify:codex:prepare": "node scripts/prepare-live-codex-certification.mjs",
     "clean": "tsc -b --clean",
     "format": "biome format --write .",
     "format:check": "biome format .",

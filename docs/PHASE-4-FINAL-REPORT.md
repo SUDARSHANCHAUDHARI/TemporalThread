@@ -1,6 +1,7 @@
 # Phase 4 final report
 
-Report status: final Phase 4 audit evidence recorded; Phase 4.1 evidence added 2026-07-23
+Report status: final Phase 4 audit evidence recorded; Phase 4.1 and Phase 4.2 preparation evidence added
+2026-07-23
 Decision: **NO-GO** for the complete public v0.1.0 launch
 
 ## Baseline and repository state
@@ -241,12 +242,25 @@ Automated tests do not certify a current real Codex host. `codex-cli 0.144.5` wa
 project/hook trust, real MCP/skill visibility, SessionStart/Stop delivery, controlled temporal behavior,
 desktop/IDE fallback, terminal-restart PATH, real-host uninstall, and database preservation remain MANUAL.
 
+Phase 4.2 adds a safe owner-run certification kit with Node 24 enforcement, a newly created system-temp root,
+isolated `HOME`/`USERPROFILE`/`CODEX_HOME`/TemporalThread/cache/store/temp paths, functional-only tarballs,
+project-scoped installation, relative controlled timestamps, exact nine-tool discovery, privacy checks,
+automated lifecycle checks, uninstall/purge stage verification, and marker/UUID-guarded cleanup. It never
+launches Codex or approves trust. See `docs/PHASE-4.2-OWNER-RUNBOOK.md` and the uncompleted result template
+`docs/LIVE-CODEX-CERTIFICATION-RESULTS.md`.
+
+The updated suite contains 25 files and 135 tests, including 17 focused certification-kit safety tests.
+
+The Phase 4.2 npm review safely verified CLI account access for `sudarshanchaudhari` and reverified that all
+eight package names lack registry entries. It did not establish access to the `@temporalthread` scope, and
+write 2FA/recovery readiness remain manual. No account state changed.
+
 ## Blockers and decision
 
 1. The packed npm consumer resolves vulnerable `@hono/node-server@1.19.14`; the current stable
    `@modelcontextprotocol/sdk@1.29.0` range does not carry the source workspace override.
 2. `@temporalthread` npm organization ownership and npm 2FA/recovery access are BLOCKED/unverified.
-3. Real current Codex certification is MANUAL and incomplete.
+3. The certification kit is ready, but real current Codex certification is MANUAL and incomplete.
 4. Visibility, publication, tag, GitHub release, and announcement approvals are absent by design.
 
 Decision: **NO-GO** for the complete public v0.1.0 launch. The repository source is green for owner review,

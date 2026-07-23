@@ -35,8 +35,9 @@ Lifecycle-generated SessionStart bookkeeping cannot mask the prior meaningful us
 Hooks are best effort: they can be disabled, untrusted, interrupted, timed out, or absent after abnormal
 termination. Firm commitments still require an explicit `record_commitment` tool call.
 
-Automated package/contract tests pass, but real current Codex CLI/desktop trust, discovery, and lifecycle
-delivery remain a manual release gate. ChatGPT web cannot access TemporalThread's local stdio process.
+Automated package/contract tests and the Phase 4.2 isolated certification-kit safety suite pass, but real
+current Codex CLI/desktop trust, discovery, and lifecycle delivery remain a manual release gate. The kit
+never launches Codex or approves trust. ChatGPT web cannot access TemporalThread's local stdio process.
 
 ## Privacy and security model
 
@@ -90,6 +91,8 @@ deletion action. Stop clients before copying or inspecting SQLite/WAL/SHM files.
   remains blocked until a stable dependency update carries Hono 2.0.10 or newer.
 - Phase 4.1 reproduced the blocked graph in isolated npm and pnpm consumers. The release verifier now audits
   both managers and rejects any mixed or vulnerable nested Hono copy without relying on workspace overrides.
+- Phase 4.2 prepares functional-only live Codex setup/check/cleanup tooling and npm authority checklists; it
+  does not clear the dependency blocker or constitute live-host/account approval.
 
 ## Upgrade notes
 
