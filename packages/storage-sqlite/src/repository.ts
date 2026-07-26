@@ -62,15 +62,18 @@ export class SqliteStorage {
     this.databasePath = databasePath;
     if (databasePath !== ':memory:') mkdirSync(dirname(databasePath), { recursive: true, mode: 0o700 });
 
+    let opened: Database.Database | undefined;
     try {
-      this.database = new Database(databasePath, { timeout: 5_000 });
-      this.database.pragma('foreign_keys = ON');
-      this.database.pragma('busy_timeout = 5000');
-      this.database.pragma('synchronous = NORMAL');
-      if (databasePath !== ':memory:') this.database.pragma('journal_mode = WAL');
-      migrate(this.database);
+      opened = new Database(databasePath, { timeout: 5_000 });
+      opened.pragma('foreign_keys = ON');
+      opened.pragma('busy_timeout = 5000');
+      opened.pragma('synchronous = NORMAL');
+      if (databasePath !== ':memory:') opened.pragma('journal_mode = WAL');
+      migrate(opened);
       if (databasePath !== ':memory:' && existsSync(databasePath)) chmodSync(databasePath, 0o600);
+      this.database = opened;
     } catch (error) {
+      if (opened?.open) opened.close();
       throw new Error('Unable to open or migrate the TemporalThread database', { cause: error });
     }
   }
@@ -111,10 +114,11 @@ export class SqliteStorage {
            last_seen_at = MAX(agents.last_seen_at, excluded.last_seen_at)`,
       )
       .run(input);
-    const row = this.database
-      .prepare('SELECT * FROM agents WHERE name = ? AND platform = ?')
-      .get(input.name, input.platform) as SqlRow;
-    return mapAgent(row);
+    return mapAgent(
+      this.database
+        .prepare('SELECT * FROM agents WHERE name = ? AND platform = ?')
+        .get(input.name, input.platform) as SqlRow,
+    );
   }
 
   findAgent(selector: AgentSelector): Agent | null {
@@ -161,397 +165,485 @@ export class SqliteStorage {
     return row ? mapProject(row as SqlRow) : null;
   }
 
-  findExternalSession(agentId: string, projectId: string | null, externalSessionId: string): Session | null {
-    const row = this.database
-      .prepare(
-        `SELECT * FROM sessions
-         WHERE agent_id = ? AND IFNULL(project_id, '') = IFNULL(?, '') AND external_session_id = ?`,
-      )
-      .get(agentId, projectId, externalSessionId);
-    return row ? mapSession(row as SqlRow) : null;
-  }
-
-  findSessionsByExternalId(externalSessionId: string): Session[] {
-    return this.database
-      .prepare(
-        `SELECT * FROM sessions
-         WHERE external_session_id = ?
-         ORDER BY last_interaction_at DESC, id DESC`,
-      )
-      .all(externalSessionId)
-      .map((row) => mapSession(row as SqlRow));
-  }
-
-  findGeneratedSession(
-    agentId: string,
-    projectId: string | null,
-    occurredAt: string,
-    earliestAllowed: string,
-  ): Session | null {
-    const row = this.database
-      .prepare(
-        `SELECT * FROM sessions
-         WHERE agent_id = ?
-           AND IFNULL(project_id, '') = IFNULL(?, '')
-           AND generated_session = 1
-           AND last_interaction_at <= ?
-           AND last_interaction_at >= ?
-         ORDER BY last_interaction_at DESC
-         LIMIT 1`,
-      )
-      .get(agentId, projectId, occurredAt, earliestAllowed);
-    return row ? mapSession(row as SqlRow) : null;
-  }
-
   createSession(input: NewSession): Session {
     this.database
       .prepare(
         `INSERT INTO sessions (
-          id, external_session_id, agent_id, project_id, started_at, ended_at,
-          last_interaction_at, generated_session, metadata_json
-        ) VALUES (@id, @externalSessionId, @agentId, @projectId, @occurredAt, NULL,
-          @occurredAt, @generated, @metadataJson)`,
+           id, external_session_id, agent_id, project_id, started_at, ended_at,
+           last_interaction_at, generated_session, metadata_json
+         ) VALUES (
+           @id, @externalSessionId, @agentId, @projectId, @occurredAt, NULL,
+           @occurredAt, @generated, @metadataJson
+         )`,
       )
       .run({
         ...input,
         generated: input.generated ? 1 : 0,
         metadataJson: JSON.stringify(input.metadata),
       });
-    return mapSession(this.database.prepare('SELECT * FROM sessions WHERE id = ?').get(input.id) as SqlRow);
+    return this.getSession(input.id) as Session;
   }
 
-  touchSession(sessionId: string, occurredAt: string): void {
-    this.database
-      .prepare(
-        `UPDATE sessions SET
-          started_at = MIN(started_at, ?),
-          last_interaction_at = MAX(last_interaction_at, ?),
-          ended_at = CASE
-            WHEN ended_at IS NOT NULL AND ended_at <= ? THEN NULL
-            ELSE ended_at
-          END
-         WHERE id = ?`,
-      )
-      .run(occurredAt, occurredAt, occurredAt, sessionId);
-  }
-
-  endSession(sessionId: string, endedAt: string): Session | null {
-    const result = this.database
-      .prepare(
-        `UPDATE sessions SET
-          ended_at = MAX(COALESCE(ended_at, @endedAt), last_interaction_at, @endedAt),
-          last_interaction_at = MAX(last_interaction_at, @endedAt)
-         WHERE id = @sessionId`,
-      )
-      .run({ sessionId, endedAt });
-    return result.changes === 0 ? null : this.getSession(sessionId);
-  }
-
-  getSession(sessionId: string): Session | null {
-    const row = this.database.prepare('SELECT * FROM sessions WHERE id = ?').get(sessionId);
+  getSession(id: string): Session | null {
+    const row = this.database.prepare('SELECT * FROM sessions WHERE id = ?').get(id);
     return row ? mapSession(row as SqlRow) : null;
   }
 
-  getPreviousSession(current: Session): Session | null {
+  findSessionsByExternalId(externalSessionId: string): Session[] {
+    return (
+      this.database
+        .prepare('SELECT * FROM sessions WHERE external_session_id = ? ORDER BY last_interaction_at DESC')
+        .all(externalSessionId) as SqlRow[]
+    ).map(mapSession);
+  }
+
+  findExternalSession(
+    agentId: string,
+    projectId: string | null,
+    externalSessionId: string,
+  ): Session | null {
     const row = this.database
       .prepare(
         `SELECT * FROM sessions
-         WHERE id <> ?
-           AND agent_id = ?
-           AND IFNULL(project_id, '') = IFNULL(?, '')
-           AND last_interaction_at < ?
-         ORDER BY last_interaction_at DESC, id DESC
-         LIMIT 1`,
+         WHERE agent_id = ? AND project_id IS ? AND external_session_id = ?`,
       )
-      .get(current.id, current.agentId, current.projectId, current.startedAt);
+      .get(agentId, projectId, externalSessionId);
     return row ? mapSession(row as SqlRow) : null;
   }
 
-  getAgentById(agentId: string): Agent | null {
-    const row = this.database.prepare('SELECT * FROM agents WHERE id = ?').get(agentId);
-    return row ? mapAgent(row as SqlRow) : null;
+  findGeneratedSession(
+    agentId: string,
+    projectId: string | null,
+    occurredAt: string,
+    lowerBound: string,
+  ): Session | null {
+    const row = this.database
+      .prepare(
+        `SELECT * FROM sessions
+         WHERE agent_id = ?
+           AND project_id IS ?
+           AND generated_session = 1
+           AND ended_at IS NULL
+           AND last_interaction_at <= ?
+           AND last_interaction_at >= ?
+         ORDER BY last_interaction_at DESC
+         LIMIT 1`,
+      )
+      .get(agentId, projectId, occurredAt, lowerBound);
+    return row ? mapSession(row as SqlRow) : null;
   }
 
-  getProjectById(projectId: string): Project | null {
-    const row = this.database.prepare('SELECT * FROM projects WHERE id = ?').get(projectId);
-    return row ? mapProject(row as SqlRow) : null;
+  updateSessionLastInteraction(sessionId: string, occurredAt: string): void {
+    this.database
+      .prepare(
+        `UPDATE sessions
+         SET last_interaction_at = MAX(last_interaction_at, ?)
+         WHERE id = ?`,
+      )
+      .run(occurredAt, sessionId);
   }
 
-  getInteraction(interactionId: string): Interaction | null {
-    const row = this.database.prepare('SELECT * FROM interactions WHERE id = ?').get(interactionId);
+  endSession(sessionId: string, endedAt: string): Session | null {
+    this.database
+      .prepare(
+        `UPDATE sessions
+         SET ended_at = CASE
+           WHEN ended_at IS NULL THEN MAX(last_interaction_at, ?)
+           ELSE MAX(ended_at, last_interaction_at, ?)
+         END
+         WHERE id = ?`,
+      )
+      .run(endedAt, endedAt, sessionId);
+    return this.getSession(sessionId);
+  }
+
+  insertInteraction(bundle: NewInteractionBundle): {
+    interaction: Interaction;
+    duplicate: boolean;
+  } {
+    const transaction = this.database.transaction((value: NewInteractionBundle) => {
+      const existing = this.getInteractionByIdempotencyKey(value.interaction.idempotencyKey);
+      if (existing) return { interaction: existing, duplicate: true };
+      const interaction = value.interaction;
+      this.database
+        .prepare(
+          `INSERT INTO interactions (
+             id, idempotency_key, session_id, agent_id, project_id, role, occurred_at_utc,
+             timezone, utc_offset_minutes, message_hash, text_preview, raw_text, privacy_mode, created_at
+           ) VALUES (
+             @id, @idempotencyKey, @sessionId, @agentId, @projectId, @role, @occurredAtUtc,
+             @timezone, @utcOffsetMinutes, @messageHash, @textPreview, @rawText, @privacyMode, @createdAt
+           )`,
+        )
+        .run(interaction);
+      const referenceStatement = this.database.prepare(
+        `INSERT INTO temporal_references (
+           id, interaction_id, original_expression, normalized_expression, reference_type,
+           anchor_time_utc, anchor_timezone, resolved_start_utc, resolved_end_utc,
+           resolution_type, confidence, parser_version, explanation, ambiguity, created_at
+         ) VALUES (
+           @id, @interactionId, @originalExpression, @normalizedExpression, @referenceType,
+           @anchorTimeUtc, @anchorTimezone, @resolvedStartUtc, @resolvedEndUtc,
+           @resolutionType, @confidence, @parserVersion, @explanation, @ambiguity, @createdAt
+         )`,
+      );
+      for (const reference of value.temporalReferences) referenceStatement.run(reference);
+      this.updateSessionLastInteraction(interaction.sessionId, interaction.occurredAtUtc);
+      return { interaction, duplicate: false };
+    });
+    return transaction(bundle);
+  }
+
+  getInteraction(id: string): Interaction | null {
+    const row = this.database.prepare('SELECT * FROM interactions WHERE id = ?').get(id);
     return row ? mapInteraction(row as SqlRow) : null;
   }
 
   getInteractionByIdempotencyKey(idempotencyKey: string): Interaction | null {
-    const row = this.database
-      .prepare('SELECT * FROM interactions WHERE idempotency_key = ?')
-      .get(idempotencyKey);
+    const row = this.database.prepare('SELECT * FROM interactions WHERE idempotency_key = ?').get(idempotencyKey);
     return row ? mapInteraction(row as SqlRow) : null;
   }
 
-  insertInteraction(bundle: NewInteractionBundle): { interaction: Interaction; duplicate: boolean } {
-    const insert = this.database.transaction(() => {
-      const existing = this.getInteractionByIdempotencyKey(bundle.interaction.idempotencyKey);
-      if (existing) return { interaction: existing, duplicate: true };
-
-      const interaction = bundle.interaction;
-      this.database
-        .prepare(
-          `INSERT INTO interactions (
-            id, idempotency_key, session_id, agent_id, project_id, role, occurred_at_utc,
-            timezone, utc_offset_minutes, message_hash, text_preview, raw_text, privacy_mode, created_at
-          ) VALUES (
-            @id, @idempotencyKey, @sessionId, @agentId, @projectId, @role, @occurredAtUtc,
-            @timezone, @utcOffsetMinutes, @messageHash, @textPreview, @rawText, @privacyMode, @createdAt
-          )`,
-        )
-        .run(interaction);
-
-      const referenceStatement = this.database.prepare(
-        `INSERT INTO temporal_references (
-          id, interaction_id, original_expression, normalized_expression, reference_type,
-          anchor_time_utc, anchor_timezone, resolved_start_utc, resolved_end_utc,
-          resolution_type, confidence, parser_version, explanation, ambiguity, created_at
-        ) VALUES (
-          @id, @interactionId, @originalExpression, @normalizedExpression, @referenceType,
-          @anchorTimeUtc, @anchorTimezone, @resolvedStartUtc, @resolvedEndUtc,
-          @resolutionType, @confidence, @parserVersion, @explanation, @ambiguity, @createdAt
-        )`,
-      );
-      for (const reference of bundle.temporalReferences) referenceStatement.run(reference);
-      this.touchSession(interaction.sessionId, interaction.occurredAtUtc);
-      return { interaction, duplicate: false };
-    });
-    return insert();
-  }
-
   getTemporalReferences(interactionId: string): TemporalReference[] {
-    return this.database
-      .prepare('SELECT * FROM temporal_references WHERE interaction_id = ? ORDER BY created_at, id')
-      .all(interactionId)
-      .map((row) => mapTemporalReference(row as SqlRow));
+    return (
+      this.database
+        .prepare('SELECT * FROM temporal_references WHERE interaction_id = ? ORDER BY created_at')
+        .all(interactionId) as SqlRow[]
+    ).map(mapTemporalReference);
   }
 
-  private interactionWhere(
-    filters: InteractionFilters,
-    tableAlias = '',
-  ): {
-    clause: string;
-    parameters: Array<string | number | null>;
-  } {
-    const prefix = tableAlias ? `${tableAlias}.` : '';
-    const conditions: string[] = [];
-    const parameters: Array<string | number | null> = [];
-    if (filters.agentId) {
-      conditions.push(`${prefix}agent_id = ?`);
-      parameters.push(filters.agentId);
-    }
-    if (Object.hasOwn(filters, 'projectId')) {
-      if (filters.projectId === null) conditions.push(`${prefix}project_id IS NULL`);
-      else {
-        conditions.push(`${prefix}project_id = ?`);
-        parameters.push(filters.projectId ?? null);
-      }
-    }
-    if (filters.sessionId) {
-      conditions.push(`${prefix}session_id = ?`);
-      parameters.push(filters.sessionId);
-    }
-    if (filters.role) {
-      conditions.push(`${prefix}role = ?`);
-      parameters.push(filters.role);
-    }
-    return { clause: conditions.length ? `WHERE ${conditions.join(' AND ')}` : '', parameters };
-  }
-
-  getLastInteraction(filters: InteractionFilters = {}): InteractionWithRelations | null {
-    const where = this.interactionWhere(filters);
-    return this.getLatestInteraction(where.clause, where.parameters);
-  }
-
-  getLastConversationalInteraction(
-    filters: Omit<InteractionFilters, 'role'> = {},
-  ): InteractionWithRelations | null {
-    const where = this.interactionWhere(filters);
-    const conversationClause = "role IN ('user', 'assistant')";
-    const clause = where.clause ? `${where.clause} AND ${conversationClause}` : `WHERE ${conversationClause}`;
-    return this.getLatestInteraction(clause, where.parameters);
-  }
-
-  private getLatestInteraction(
-    clause: string,
-    parameters: Array<string | number | null>,
-  ): InteractionWithRelations | null {
+  getLastInteraction(filters: InteractionFilters): InteractionWithRelations | null {
+    const clauses: string[] = [];
+    const parameters: unknown[] = [];
+    this.addInteractionFilterClauses(filters, clauses, parameters);
     const row = this.database
       .prepare(
-        `SELECT * FROM interactions ${clause}
-         ORDER BY occurred_at_utc DESC, id DESC LIMIT 1`,
+        `${this.interactionJoinSql()}
+         ${clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''}
+         ORDER BY i.occurred_at_utc DESC, i.id DESC
+         LIMIT 1`,
       )
       .get(...parameters);
-    if (!row) return null;
-
-    const interaction = mapInteraction(row as SqlRow);
-    const agent = this.getAgentById(interaction.agentId);
-    const project = interaction.projectId ? this.getProjectById(interaction.projectId) : null;
-    const session = this.getSession(interaction.sessionId);
-    if (!agent || !session) throw new Error('Database relationship integrity failure');
-    return { interaction, agent, project, session };
+    return row ? this.mapInteractionWithRelations(row as SqlRow) : null;
   }
 
-  listInteractions(filters: InteractionFilters = {}, limit = 100): InteractionWithRelations[] {
-    const where = this.interactionWhere(filters);
+  getLastConversationalInteraction(filters: InteractionFilters): InteractionWithRelations | null {
+    const clauses = ["i.role IN ('user', 'assistant')"];
+    const parameters: unknown[] = [];
+    this.addInteractionFilterClauses(filters, clauses, parameters);
+    const row = this.database
+      .prepare(
+        `${this.interactionJoinSql()}
+         WHERE ${clauses.join(' AND ')}
+         ORDER BY i.occurred_at_utc DESC, i.id DESC
+         LIMIT 1`,
+      )
+      .get(...parameters);
+    return row ? this.mapInteractionWithRelations(row as SqlRow) : null;
+  }
+
+  listInteractions(filters: InteractionFilters, limit: number): InteractionWithRelations[] {
+    const clauses: string[] = [];
+    const parameters: unknown[] = [];
+    this.addInteractionFilterClauses(filters, clauses, parameters);
+    parameters.push(limit);
     const rows = this.database
       .prepare(
-        `SELECT * FROM interactions ${where.clause}
-         ORDER BY occurred_at_utc DESC, id DESC LIMIT ?`,
+        `${this.interactionJoinSql()}
+         ${clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''}
+         ORDER BY i.occurred_at_utc DESC, i.id DESC
+         LIMIT ?`,
       )
-      .all(...where.parameters, limit);
-    return rows.map((row) => {
-      const interaction = mapInteraction(row as SqlRow);
-      const agent = this.getAgentById(interaction.agentId);
-      const project = interaction.projectId ? this.getProjectById(interaction.projectId) : null;
-      const session = this.getSession(interaction.sessionId);
-      if (!agent || !session) throw new Error('Database relationship integrity failure');
-      return { interaction, agent, project, session };
-    });
+      .all(...parameters) as SqlRow[];
+    return rows.map((row) => this.mapInteractionWithRelations(row));
   }
 
-  listUnresolvedTemporalReferences(filters: InteractionFilters = {}, limit = 5): TemporalReference[] {
-    const where = this.interactionWhere(filters, 'i');
-    const unresolvedCondition = "r.resolution_type IN ('unresolved', 'fuzzy')";
-    const clause = where.clause
-      ? `${where.clause} AND ${unresolvedCondition}`
-      : `WHERE ${unresolvedCondition}`;
-    return this.database
+  getPreviousSession(session: Session): Session | null {
+    const row = this.database
       .prepare(
-        `SELECT r.* FROM temporal_references r
-         INNER JOIN interactions i ON i.id = r.interaction_id
-         ${clause}
-         ORDER BY i.occurred_at_utc DESC, r.id DESC LIMIT ?`,
+        `SELECT * FROM sessions
+         WHERE agent_id = ?
+           AND project_id IS ?
+           AND id <> ?
+           AND last_interaction_at <= ?
+         ORDER BY last_interaction_at DESC
+         LIMIT 1`,
       )
-      .all(...where.parameters, limit)
-      .map((row) => mapTemporalReference(row as SqlRow));
+      .get(session.agentId, session.projectId, session.id, session.startedAt);
+    return row ? mapSession(row as SqlRow) : null;
+  }
+
+  listUnresolvedTemporalReferences(filters: InteractionFilters, limit: number): TemporalReference[] {
+    const clauses = ["tr.resolution_type IN ('fuzzy', 'unresolved')"];
+    const parameters: unknown[] = [];
+    if (filters.agentId) {
+      clauses.push('i.agent_id = ?');
+      parameters.push(filters.agentId);
+    }
+    if (filters.projectId !== undefined) {
+      clauses.push('i.project_id IS ?');
+      parameters.push(filters.projectId);
+    }
+    if (filters.sessionId) {
+      clauses.push('i.session_id = ?');
+      parameters.push(filters.sessionId);
+    }
+    parameters.push(limit);
+    const rows = this.database
+      .prepare(
+        `SELECT tr.* FROM temporal_references tr
+         JOIN interactions i ON i.id = tr.interaction_id
+         WHERE ${clauses.join(' AND ')}
+         ORDER BY i.occurred_at_utc DESC, tr.created_at DESC
+         LIMIT ?`,
+      )
+      .all(...parameters) as SqlRow[];
+    return rows.map(mapTemporalReference);
   }
 
   insertCommitment(commitment: Commitment): Commitment {
     this.database
       .prepare(
         `INSERT INTO commitments (
-          id, source_interaction_id, project_id, session_id, title, original_text,
-          due_start_utc, due_end_utc, timezone, status, completed_at, cancelled_at,
-          created_at, updated_at
-        ) VALUES (
-          @id, @sourceInteractionId, @projectId, @sessionId, @title, @originalText,
-          @dueStartUtc, @dueEndUtc, @timezone, @status, @completedAt, @cancelledAt,
-          @createdAt, @updatedAt
-        )`,
+           id, source_interaction_id, project_id, session_id, title, original_text,
+           due_start_utc, due_end_utc, timezone, status, completed_at, cancelled_at, created_at, updated_at
+         ) VALUES (
+           @id, @sourceInteractionId, @projectId, @sessionId, @title, @originalText,
+           @dueStartUtc, @dueEndUtc, @timezone, @status, @completedAt, @cancelledAt, @createdAt, @updatedAt
+         )`,
       )
       .run(commitment);
     return this.getCommitment(commitment.id) as Commitment;
   }
 
-  getCommitment(commitmentId: string): Commitment | null {
-    const row = this.database.prepare('SELECT * FROM commitments WHERE id = ?').get(commitmentId);
+  getCommitment(id: string): Commitment | null {
+    const row = this.database.prepare('SELECT * FROM commitments WHERE id = ?').get(id);
     return row ? mapCommitment(row as SqlRow) : null;
   }
 
   updateCommitment(commitment: Commitment): Commitment {
-    const result = this.database
+    this.database
       .prepare(
         `UPDATE commitments SET
-          source_interaction_id = @sourceInteractionId,
-          project_id = @projectId,
-          session_id = @sessionId,
-          title = @title,
-          original_text = @originalText,
-          due_start_utc = @dueStartUtc,
-          due_end_utc = @dueEndUtc,
-          timezone = @timezone,
-          status = @status,
-          completed_at = @completedAt,
-          cancelled_at = @cancelledAt,
-          updated_at = @updatedAt
+           due_start_utc = @dueStartUtc,
+           due_end_utc = @dueEndUtc,
+           timezone = @timezone,
+           status = @status,
+           completed_at = @completedAt,
+           cancelled_at = @cancelledAt,
+           original_text = @originalText,
+           updated_at = @updatedAt
          WHERE id = @id`,
       )
       .run(commitment);
-    if (result.changes !== 1) throw new Error('Commitment not found');
     return this.getCommitment(commitment.id) as Commitment;
   }
 
-  listCommitments(filters: CommitmentFilters = {}, limit = 100): Commitment[] {
-    const conditions: string[] = [];
-    const parameters: Array<string | number | null> = [];
-    if (Object.hasOwn(filters, 'projectId')) {
-      if (filters.projectId === null) conditions.push('project_id IS NULL');
-      else {
-        conditions.push('project_id = ?');
-        parameters.push(filters.projectId ?? null);
-      }
+  listCommitments(filters: CommitmentFilters, limit: number): Commitment[] {
+    const clauses: string[] = [];
+    const parameters: unknown[] = [];
+    if (filters.projectId !== undefined) {
+      clauses.push('project_id IS ?');
+      parameters.push(filters.projectId);
     }
     if (filters.dueBefore) {
-      conditions.push('COALESCE(due_start_utc, due_end_utc) <= ?');
+      clauses.push('due_start_utc <= ?');
       parameters.push(filters.dueBefore);
     }
     if (filters.dueAfter) {
-      conditions.push('COALESCE(due_end_utc, due_start_utc) >= ?');
+      clauses.push('due_end_utc >= ?');
       parameters.push(filters.dueAfter);
     }
-    const where = conditions.length ? `WHERE ${conditions.join(' AND ')}` : '';
-    return this.database
+    parameters.push(limit);
+    const rows = this.database
       .prepare(
-        `SELECT * FROM commitments ${where}
-         ORDER BY COALESCE(due_start_utc, '9999-12-31T23:59:59Z'), created_at
+        `SELECT * FROM commitments
+         ${clauses.length ? `WHERE ${clauses.join(' AND ')}` : ''}
+         ORDER BY
+           CASE WHEN due_start_utc IS NULL THEN 1 ELSE 0 END,
+           due_start_utc ASC,
+           created_at ASC
          LIMIT ?`,
       )
-      .all(...parameters, limit)
-      .map((row) => mapCommitment(row as SqlRow));
+      .all(...parameters) as SqlRow[];
+    return rows.map(mapCommitment);
   }
 
   exportAll(exportedAt: string): ExportBundle {
-    const all = (table: string): SqlRow[] =>
-      this.database.prepare(`SELECT * FROM ${table} ORDER BY id`).all() as SqlRow[];
     return {
       exportedAt,
       formatVersion: 1,
       privacyNotice:
-        'This export contains only data permitted by the privacy mode used for each interaction.',
-      agents: all('agents').map(mapAgent),
-      projects: all('projects').map(mapProject),
-      sessions: all('sessions').map(mapSession),
-      interactions: all('interactions').map(mapInteraction),
-      temporalReferences: all('temporal_references').map(mapTemporalReference),
-      commitments: all('commitments').map(mapCommitment),
-    };
-  }
-
-  tableCounts(): PurgeResult['deleted'] {
-    const count = (table: string): number =>
-      Number(
-        (this.database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get() as { count: number }).count,
-      );
-    return {
-      agents: count('agents'),
-      projects: count('projects'),
-      sessions: count('sessions'),
-      interactions: count('interactions'),
-      temporalReferences: count('temporal_references'),
-      commitments: count('commitments'),
+        'This export contains only data allowed by each interaction privacy mode. Treat it as private local data.',
+      agents: (this.database.prepare('SELECT * FROM agents ORDER BY created_at').all() as SqlRow[]).map(
+        mapAgent,
+      ),
+      projects: (this.database.prepare('SELECT * FROM projects ORDER BY created_at').all() as SqlRow[]).map(
+        mapProject,
+      ),
+      sessions: (this.database.prepare('SELECT * FROM sessions ORDER BY started_at').all() as SqlRow[]).map(
+        mapSession,
+      ),
+      interactions: (
+        this.database.prepare('SELECT * FROM interactions ORDER BY occurred_at_utc').all() as SqlRow[]
+      ).map(mapInteraction),
+      temporalReferences: (
+        this.database
+          .prepare('SELECT * FROM temporal_references ORDER BY created_at')
+          .all() as SqlRow[]
+      ).map(mapTemporalReference),
+      commitments: (
+        this.database.prepare('SELECT * FROM commitments ORDER BY created_at').all() as SqlRow[]
+      ).map(mapCommitment),
     };
   }
 
   purgeAll(): PurgeResult {
-    const purge = this.database.transaction(() => {
-      const deleted = this.tableCounts();
+    const before = this.tableCounts();
+    this.database.transaction(() => {
       this.database.exec(`
-        DELETE FROM commitments;
         DELETE FROM temporal_references;
+        DELETE FROM commitments;
         DELETE FROM interactions;
         DELETE FROM sessions;
-        DELETE FROM agents;
         DELETE FROM projects;
+        DELETE FROM agents;
       `);
-      return { deleted };
+    })();
+    return { deleted: before };
+  }
+
+  tableCounts(): PurgeResult['deleted'] {
+    const tables = [
+      'agents',
+      'projects',
+      'sessions',
+      'interactions',
+      'temporal_references',
+      'commitments',
+    ] as const;
+    return Object.fromEntries(
+      tables.map((table) => {
+        const row = this.database.prepare(`SELECT COUNT(*) AS count FROM ${table}`).get() as {
+          count: number;
+        };
+        return [table === 'temporal_references' ? 'temporalReferences' : table, row.count];
+      }),
+    ) as PurgeResult['deleted'];
+  }
+
+  private addInteractionFilterClauses(
+    filters: InteractionFilters,
+    clauses: string[],
+    parameters: unknown[],
+  ): void {
+    if (filters.agentId) {
+      clauses.push('i.agent_id = ?');
+      parameters.push(filters.agentId);
+    }
+    if (filters.projectId !== undefined) {
+      clauses.push('i.project_id IS ?');
+      parameters.push(filters.projectId);
+    }
+    if (filters.sessionId) {
+      clauses.push('i.session_id = ?');
+      parameters.push(filters.sessionId);
+    }
+    if (filters.role) {
+      clauses.push('i.role = ?');
+      parameters.push(filters.role);
+    }
+  }
+
+  private interactionJoinSql(): string {
+    return `SELECT
+      i.id AS interaction_id,
+      i.idempotency_key,
+      i.session_id,
+      i.agent_id,
+      i.project_id,
+      i.role,
+      i.occurred_at_utc,
+      i.timezone,
+      i.utc_offset_minutes,
+      i.message_hash,
+      i.text_preview,
+      i.raw_text,
+      i.privacy_mode,
+      i.created_at AS interaction_created_at,
+      a.id AS joined_agent_id,
+      a.name AS agent_name,
+      a.platform AS agent_platform,
+      a.version AS agent_version,
+      a.created_at AS agent_created_at,
+      a.last_seen_at AS agent_last_seen_at,
+      p.id AS joined_project_id,
+      p.name AS project_name,
+      p.normalized_path,
+      p.repository_remote,
+      p.created_at AS project_created_at,
+      p.updated_at AS project_updated_at,
+      s.id AS joined_session_id,
+      s.external_session_id,
+      s.agent_id AS session_agent_id,
+      s.project_id AS session_project_id,
+      s.started_at,
+      s.ended_at,
+      s.last_interaction_at,
+      s.generated_session,
+      s.metadata_json
+      FROM interactions i
+      JOIN agents a ON a.id = i.agent_id
+      LEFT JOIN projects p ON p.id = i.project_id
+      JOIN sessions s ON s.id = i.session_id`;
+  }
+
+  private mapInteractionWithRelations(row: SqlRow): InteractionWithRelations {
+    const interaction = mapInteraction({
+      id: row.interaction_id,
+      idempotency_key: row.idempotency_key,
+      session_id: row.session_id,
+      agent_id: row.agent_id,
+      project_id: row.project_id,
+      role: row.role,
+      occurred_at_utc: row.occurred_at_utc,
+      timezone: row.timezone,
+      utc_offset_minutes: row.utc_offset_minutes,
+      message_hash: row.message_hash,
+      text_preview: row.text_preview,
+      raw_text: row.raw_text,
+      privacy_mode: row.privacy_mode,
+      created_at: row.interaction_created_at,
     });
-    return purge();
+    const agent = mapAgent({
+      id: row.joined_agent_id,
+      name: row.agent_name,
+      platform: row.agent_platform,
+      version: row.agent_version,
+      created_at: row.agent_created_at,
+      last_seen_at: row.agent_last_seen_at,
+    });
+    const project = row.joined_project_id
+      ? mapProject({
+          id: row.joined_project_id,
+          name: row.project_name,
+          normalized_path: row.normalized_path,
+          repository_remote: row.repository_remote,
+          created_at: row.project_created_at,
+          updated_at: row.project_updated_at,
+        })
+      : null;
+    const session = mapSession({
+      id: row.joined_session_id,
+      external_session_id: row.external_session_id,
+      agent_id: row.session_agent_id,
+      project_id: row.session_project_id,
+      started_at: row.started_at,
+      ended_at: row.ended_at,
+      last_interaction_at: row.last_interaction_at,
+      generated_session: row.generated_session,
+      metadata_json: row.metadata_json,
+    });
+    return { interaction, agent, project, session };
   }
 }
