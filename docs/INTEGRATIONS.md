@@ -4,7 +4,7 @@ MCP exposes tools; it does not universally intercept host conversations. Automat
 
 | Integration | MCP tools | Automatic capture | Status |
 | --- | --- | --- | --- |
-| Codex | User/project config and official plugin | Documented session, prompt, and stop hooks | **Supported configuration**: direct installer and packed artifact tested; live host trust remains manual |
+| Codex | User/project config and official plugin | Documented session, prompt, and stop hooks | **Automated-test coverage only**: direct installer, package, MCP, skill, and hook behavior are tested; owner skipped live host trust/UI/model certification |
 | Claude Code | Project `.mcp.json` | `UserPromptSubmit.prompt` and `Stop.last_assistant_message` | **Partially supported**: adapter tested; installation is manual |
 | OpenCode | Local MCP configuration | Typed plugin events | **Experimental** until live host verification |
 | Ollama | Through example client | Example client records its own messages | **Partially supported**: mocked API tested; Ollama itself is not an MCP host |
@@ -27,9 +27,10 @@ transaction, preserves unrelated content, and refuses uncertain ownership.
 
 The official plugin lives at `integrations/codex/plugin`, with repository marketplace metadata at
 `.agents/plugins/marketplace.json`. It packages the same MCP map, skill, and hooks, but cannot install the
-`temporalthread` executable or approve hook trust. Plugin-capable desktop/CLI surfaces are supported; the IDE
-extension uses direct MCP and skill installation instead. ChatGPT web cannot reach this local stdio server,
-and mobile is unsupported.
+`temporalthread` executable or approve hook trust. Plugin-capable desktop/CLI surfaces are configuration
+targets; the owner skipped the Phase 4.2A live host test, so real Codex trust prompts, UI visibility, skill
+discovery, lifecycle delivery, and model use are not certified. The IDE extension uses direct MCP and skill
+installation instead. ChatGPT web cannot reach this local stdio server, and mobile is unsupported.
 
 Codex hooks record documented `prompt` and `last_assistant_message` fields and inject compact context only
 when relevant. Lifecycle-generated `SessionStart` rows remain operational history but cannot replace the
@@ -72,4 +73,4 @@ Pipe one JSON object, an array, or JSONL:
 temporalthread ingest --file integrations/generic/events.example.jsonl --json
 ```
 
-Custom agents can implement [`TemporalThreadAdapter`](../integrations/generic/adapter.ts) or call `record_interaction` and `get_temporal_context` directly. Preserve the host timestamp with its offset, IANA timezone, agent/project identity, external session ID, and a stable idempotency key whenever available. See the [manual embedded example](../examples/manual-event-recording/src/index.ts).
+Custom agents can implement [`TemporalThreadAdapter`](../integrations/generic/adapter.ts) or call `record_interaction` and `get_temporal_context` directly. Preserve the host timestamp with its offset, IANA timezone, agent/project identity, external session ID, and a stable idempotency key whenever available. See [the manual embedded example](../examples/manual-event-recording/src/index.ts).
