@@ -1,6 +1,6 @@
 # Upstream dependency watch
 
-Last read-only check: 2026-07-23
+Last read-only check: 2026-07-26
 
 ## Current status
 
@@ -11,7 +11,7 @@ Last read-only check: 2026-07-23
 | `@hono/node-server` stable release | npm `latest` is 2.0.11 | READ-ONLY VERIFIED |
 | Patched Hono line | GHSA lists 2.0.5 as the first patched release; affected versions are `<2.0.5` | READ-ONLY VERIFIED |
 | Advisory | `GHSA-frvp-7c67-39w9`, GitHub-reviewed, moderate severity | OPEN/ACTIVE |
-| MCP TypeScript SDK issue | `modelcontextprotocol/typescript-sdk#2531` remains open; last updated 2026-07-22 | OPEN |
+| MCP TypeScript SDK issue | `modelcontextprotocol/typescript-sdk#2531` remains open at the check time | OPEN |
 
 Authoritative sources:
 
@@ -22,8 +22,8 @@ Authoritative sources:
 
 ## Decision
 
-No secure stable SDK upgrade is available in Phase 4.2. SDK 1.29.0 cannot resolve Hono 2.x from its declared
-range, and Hono 1.19.14 remains vulnerable under the advisory. TemporalThread therefore keeps:
+No secure stable SDK upgrade is available as of this check. SDK 1.29.0 cannot resolve Hono 2.x from its
+declared range, and Hono 1.19.14 remains vulnerable under the advisory. TemporalThread therefore keeps:
 
 - SDK 1.29.0 unchanged;
 - its source-workspace override unchanged;
@@ -31,8 +31,8 @@ range, and Hono 1.19.14 remains vulnerable under the advisory. TemporalThread th
 - the secure release gate fail-closed; and
 - v0.1.0 at **NO-GO**.
 
-The Phase 4.2 functional tarballs are disposable local-test inputs only. They are not release candidates and
-must not be published.
+The functional tarballs are disposable local-test inputs only. They are not release candidates and must not be
+published.
 
 ## Phase 4.3 trigger
 
