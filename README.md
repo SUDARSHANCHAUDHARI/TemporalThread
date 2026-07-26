@@ -11,8 +11,10 @@ It is more than a clock tool. If a user said “Let’s continue tomorrow” at 
 - Persists agent, project, session, interaction, temporal-reference, and commitment metadata in local SQLite.
 - Exposes nine strictly validated tools over local MCP stdio.
 - Handles timezone offsets, DST gaps and overlaps, midnight, leap days, vague expressions, out-of-order events, and idempotent retries.
+- Enforces explicit commitment completion, cancellation, reopening, and rescheduling transitions.
 - Defaults to storing only metadata plus matched temporal expressions—not full messages.
-- Provides export, purge, diagnostics, timeline, commitment, and generic ingestion commands.
+- Provides export, verified SQLite backup, purge, diagnostics, timeline, commitment, and generic ingestion commands.
+- Verifies SQLite integrity, relationships, and immutable migration history during runtime startup.
 - Supplies host configuration, skills, and best-effort capture adapters.
 
 ## What it does not do
@@ -23,6 +25,7 @@ It is more than a clock tool. If a user said “Let’s continue tomorrow” at 
 - A skill or hook improves reliability but cannot guarantee that an agent will always call a tool.
 - It does not treat Ollama itself as an MCP host or modify every Ollama client.
 - It does not fabricate exact times for vague phrases such as “later.”
+- It does not automatically repair, replace, or downgrade a damaged or newer SQLite database.
 
 ## Architecture
 
@@ -34,11 +37,13 @@ flowchart LR
     C --> S
     S --> P["Deterministic parser"]
     S --> K["Injectable clock"]
+    S --> L["Commitment lifecycle"]
     S --> R["SQLite repository"]
     R --> D[("Private local database")]
+    R --> B[("Verified recovery snapshot")]
 ```
 
-The clock, parser, storage, service, transport, CLI, and integrations are explicit boundaries. See [Architecture](docs/ARCHITECTURE.md) and [Data model](docs/DATA-MODEL.md).
+The clock, parser, lifecycle, storage, service, transport, CLI, and integrations are explicit boundaries. See [Architecture](docs/ARCHITECTURE.md) and [Data model](docs/DATA-MODEL.md).
 
 ## Installation from source
 
@@ -52,7 +57,7 @@ npm link
 temporalthread init
 ```
 
-`npm link` exposes the built local `temporalthread` binary. Remove it later with `npm unlink --global temporalthread`. Initialization asks which integrations to prepare when attached to a terminal, detects the operating system and IANA timezone, creates the config/database, applies migrations, and prints every created or preserved path. It never edits host configuration silently.
+`npm link` exposes the built local `temporalthread` binary. Remove it later with `npm unlink --global temporalthread`. Initialization asks which integrations to prepare when attached to a terminal, detects the operating system and IANA timezone, creates the config/database, applies and verifies migrations, and prints every created or preserved path. It never edits host configuration silently.
 
 For a non-interactive isolated setup:
 
@@ -80,6 +85,12 @@ The generic CLI accepts JSON, arrays, or JSONL:
 ```sh
 temporalthread ingest --file integrations/generic/events.example.jsonl --json
 temporalthread timeline
+```
+
+Create a private verified SQLite recovery snapshot:
+
+```sh
+temporalthread backup --output /private/path/temporalthread-backup.sqlite
 ```
 
 ## Host setup
@@ -123,6 +134,9 @@ For the July example, `record_interaction` anchors “tomorrow” to July 15 in 
 days elapsed and a due date three calendar days in the past. Under the default
 `temporal-references-only` mode, the complete prompt is not retained.
 
+The Codex package, installer, schemas, hooks, and MCP behavior have automated coverage. Real Codex trust, UI,
+skill discovery, and model behavior remain **not tested** after the owner deferred live-host certification.
+
 Remove only managed Codex files while preserving the database:
 
 ```sh
@@ -161,7 +175,8 @@ See [Integrations](docs/INTEGRATIONS.md) for the support matrix and generic fall
 | `full-local-history` | metadata, matched references, preview, and full text |
 
 Full history is never enabled automatically. TemporalThread makes no outbound network request; connected MCP
-hosts receive only explicitly requested, privacy-permitted results. See [Privacy](docs/PRIVACY.md).
+hosts receive only explicitly requested, privacy-permitted results. Commitment rescheduling cannot create
+stored original text when the existing commitment is privacy-redacted. See [Privacy](docs/PRIVACY.md).
 
 ## MCP tools
 
@@ -175,9 +190,19 @@ hosts receive only explicitly requested, privacy-permitted results. See [Privacy
 | `resolve_relative_time` | Resolve a phrase against an explicit historical anchor |
 | `record_commitment` | Store an explicit follow-up with resolved or fuzzy due range |
 | `list_commitments` | List pending, due, overdue, completed, or cancelled items |
-| `update_commitment` | Complete, cancel, reopen, or reschedule an item |
+| `update_commitment` | Complete, cancel, reopen, or reschedule an item through lifecycle rules |
 
-Every tool has strict input/output schemas and rejects unknown input fields.
+Every tool has strict input/output schemas and rejects unknown input fields. The host-neutral end-to-end
+certification launches the real stdio server, exercises all nine tools, checks strict errors and privacy,
+restarts the process, and verifies persisted continuity without relying on a specific agent host.
+
+## Commitment lifecycle
+
+- Repeated completion, cancellation, or reopening is idempotent.
+- Completed and cancelled commitments must be reopened before crossing to the other terminal state.
+- Rescheduling is an action that writes a new due resolution and returns the commitment to `pending`.
+- Rescheduling clears prior terminal timestamps while retaining identity, project/session scope, and privacy.
+- SQLite checks reject rows whose status contradicts completion or cancellation timestamps.
 
 ## CLI reference
 
@@ -191,11 +216,15 @@ temporalthread timeline      list compact interaction metadata
 temporalthread commitments   list commitments and derived status
 temporalthread ingest        ingest JSON, an array, or JSONL
 temporalthread export        export all privacy-permitted stored data
+temporalthread backup        create and verify a private SQLite recovery snapshot
 temporalthread purge         delete all domain data after confirmation
 temporalthread integrate codex ...  install, inspect, diagnose, or remove the Codex integration
 ```
 
 Use `temporalthread <command> --help` for options. `TEMPORALTHREAD_HOME`, `TEMPORALTHREAD_CONFIG_PATH`, `TEMPORALTHREAD_DATABASE_PATH`, timezone, locale, privacy, thresholds, text-size, and log-level environment overrides are available for isolated or advanced use.
+
+`backup` is a complete SQLite point-in-time snapshot. `export` is privacy-permitted logical JSON; the current
+MVP does not implement import. See [SQLite backup and recovery](docs/SQLITE-RECOVERY.md).
 
 ## Troubleshooting
 
@@ -203,7 +232,8 @@ Use `temporalthread <command> --help` for options. `TEMPORALTHREAD_HOME`, `TEMPO
 - If the command is missing after a source build, rerun `npm link` inside `apps/cli` and ensure the npm global binary directory is on `PATH`.
 - If MCP does not appear, restart the host and review its project trust and MCP status.
 - If hooks do not capture, inspect the host’s hook status and use `record_interaction` or `temporalthread ingest` as the supported fallback.
-- If SQLite cannot open, stop all clients, preserve the database plus WAL/SHM files, and follow [Security and recovery](docs/SECURITY.md).
+- Before upgrades or recovery work, create a verified snapshot with `temporalthread backup --output <new-path>`.
+- If SQLite cannot open or health checks fail, stop all clients, preserve the database plus WAL/SHM files, and follow [SQLite backup and recovery](docs/SQLITE-RECOVERY.md).
 - A host showing tools does not prove automatic capture; MCP and hook/plugin status are separate.
 
 ## Known limitations
@@ -211,7 +241,7 @@ Use `temporalthread <command> --help` for options. `TEMPORALTHREAD_HOME`, `TEMPO
 - The deterministic English parser covers the documented MVP expressions, not unrestricted natural language.
 - `next Friday` is defined as the next Friday strictly after the anchor date and reports that ambiguity policy.
 - Fuzzy expressions remain fuzzy or unresolved.
-- No import command exists yet; export is a logical backup and portability format for future work.
+- No import command exists yet; export is a logical portability format, while verified SQLite snapshots provide exact recovery.
 - OpenCode automatic capture has type and adapter tests but no live host certification.
 - Codex and Claude Code hook capture is best effort and requires local trust/configuration.
 - The default stdio architecture is local-only; Streamable HTTP is a future opt-in design.
@@ -223,12 +253,14 @@ pnpm lint
 pnpm typecheck
 pnpm test
 pnpm build
+pnpm verify:host-neutral-mcp
+pnpm verify:sqlite-recovery
 pnpm verify:codex-package
 pnpm verify:clean-source
 pnpm audit --prod --audit-level high
 ```
 
-Tests use a deterministic fake clock and cover DST, leap day, midnight, timezone change, privacy, sessions, migrations, malformed storage, all tools, a real stdio process restart, CLI operations, installers, hooks, and the Ollama loop. CI runs the gates on Linux, macOS, and Windows.
+Tests use a deterministic fake clock and cover DST, leap day, midnight, timezone change, privacy, sessions, checksummed migrations, malformed storage, commitment lifecycle transitions, all tools, real stdio process restarts, SQLite point-in-time recovery, CLI operations, installers, hooks, and the Ollama loop. CI runs the gates on Linux, macOS, and Windows.
 
 For a non-publishing release dry run, start with an empty ignored `release-artifacts/` directory:
 
@@ -239,6 +271,7 @@ pnpm verify:release-artifacts
 ```
 
 These commands build eight tarballs, `SHA256SUMS`, a release manifest, and an SPDX 2.3 SBOM. They never
-publish, tag, create a release, change repository visibility, or modify real Codex configuration.
+publish, tag, create a release, change repository visibility, or modify real Codex configuration. Current
+functional packages remain prohibited for release while the documented dependency-security gate is blocked.
 
 Read [Contributing](CONTRIBUTING.md), [Security policy](SECURITY.md), the [Roadmap](docs/ROADMAP.md), and the [Changelog](CHANGELOG.md). TemporalThread is available under the [MIT License](LICENSE).
