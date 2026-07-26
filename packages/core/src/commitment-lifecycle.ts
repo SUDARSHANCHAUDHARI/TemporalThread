@@ -1,4 +1,3 @@
-import { Temporal } from '@js-temporal/polyfill';
 import type { Commitment, CommitmentStatus, TemporalResolution } from '@temporalthread/shared-types';
 
 export type CommitmentUpdateAction = 'completed' | 'cancelled' | 'pending' | 'rescheduled';
@@ -47,14 +46,6 @@ function validateStoredCommitment(commitment: Commitment): void {
   }
 }
 
-function ensureCompletionTimeIsValid(existing: Commitment, completedAt: string): void {
-  const completed = Temporal.Instant.from(completedAt);
-  const created = Temporal.Instant.from(existing.createdAt);
-  if (Temporal.Instant.compare(completed, created) < 0) {
-    throw new Error('Invalid commitment transition: completedAt cannot be before commitment creation');
-  }
-}
-
 export function applyCommitmentTransition(input: CommitmentTransitionInput): CommitmentTransitionResult {
   const { existing, action, now } = input;
   validateStoredCommitment(existing);
@@ -89,7 +80,6 @@ export function applyCommitmentTransition(input: CommitmentTransitionInput): Com
       throw new Error('Invalid commitment transition: reopen a cancelled commitment before completing it');
     }
     const completedAt = input.completedAt ?? now;
-    ensureCompletionTimeIsValid(existing, completedAt);
     if (existing.status === 'completed') {
       if (input.completedAt && input.completedAt !== existing.completedAt) {
         throw new Error('Invalid commitment transition: completedAt cannot be rewritten');
