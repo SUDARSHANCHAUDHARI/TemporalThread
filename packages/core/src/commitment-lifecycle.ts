@@ -1,6 +1,9 @@
-import type { Commitment, CommitmentStatus, TemporalResolution } from '@temporalthread/shared-types';
-
-export type CommitmentUpdateAction = 'completed' | 'cancelled' | 'pending' | 'rescheduled';
+import type {
+  Commitment,
+  CommitmentStatus,
+  CommitmentUpdateAction,
+  TemporalResolution,
+} from '@temporalthread/shared-types';
 
 export interface CommitmentTransitionInput {
   existing: Commitment;
