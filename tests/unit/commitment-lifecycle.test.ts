@@ -67,7 +67,11 @@ describe('applyCommitmentTransition', () => {
 
   it('treats repeated completion as idempotent', () => {
     const existing = commitment({ status: 'completed', completedAt: now, updatedAt: now });
-    const result = applyCommitmentTransition({ existing, action: 'completed', now: '2026-07-27T00:00:00Z' });
+    const result = applyCommitmentTransition({
+      existing,
+      action: 'completed',
+      now: '2026-07-27T00:00:00Z',
+    });
 
     expect(result).toEqual({ commitment: existing, changed: false });
   });
@@ -87,7 +91,11 @@ describe('applyCommitmentTransition', () => {
 
   it('cancels a pending commitment and treats repeated cancellation as idempotent', () => {
     const first = applyCommitmentTransition({ existing: commitment(), action: 'cancelled', now });
-    expect(first.commitment).toMatchObject({ status: 'cancelled', cancelledAt: now, completedAt: null });
+    expect(first.commitment).toMatchObject({
+      status: 'cancelled',
+      cancelledAt: now,
+      completedAt: null,
+    });
 
     const second = applyCommitmentTransition({
       existing: first.commitment,
