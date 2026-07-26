@@ -57,4 +57,20 @@ describe('migration metadata compatibility', () => {
       database.close();
     }
   });
+
+  it('refuses a future SQLite user version before changing schema metadata', () => {
+    const database = new Database(':memory:');
+    try {
+      database.pragma(`user_version = ${latestMigrationVersion + 1}`);
+
+      expect(() => migrate(database)).toThrow('user version');
+      const migrationTable = database
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'")
+        .get();
+      expect(migrationTable).toBeUndefined();
+      expect(database.pragma('user_version', { simple: true })).toBe(latestMigrationVersion + 1);
+    } finally {
+      database.close();
+    }
+  });
 });
