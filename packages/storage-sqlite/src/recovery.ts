@@ -67,6 +67,11 @@ function publishWithoutOverwrite(temporary: string, destination: string): void {
   copyFileSync(temporary, destination, constants.COPYFILE_EXCL);
 }
 
+function activeDatabasePaths(databasePath: string): Set<string> {
+  const active = resolve(databasePath);
+  return new Set([active, `${active}-wal`, `${active}-shm`, `${active}-journal`]);
+}
+
 export function inspectDatabaseHealth(database: Database.Database): DatabaseHealth {
   const integrity = pragmaText(database, 'integrity_check');
   const quickCheck = pragmaText(database, 'quick_check');
@@ -121,8 +126,11 @@ export async function createVerifiedBackup(
   destinationPath: string,
 ): Promise<DatabaseBackupResult> {
   const destination = resolve(destinationPath);
-  if (storage.databasePath !== ':memory:' && resolve(storage.databasePath) === destination) {
-    throw new Error('Backup destination must be different from the active database');
+  if (
+    storage.databasePath !== ':memory:' &&
+    activeDatabasePaths(storage.databasePath).has(destination)
+  ) {
+    throw new Error('Backup destination must not use the active database or its sidecar paths');
   }
   if (existsSync(destination)) {
     const existing = lstatSync(destination);
