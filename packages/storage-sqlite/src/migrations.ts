@@ -180,7 +180,9 @@ function validateMigrationDefinitions(): void {
   let previousVersion = 0;
   for (const migration of migrations) {
     if (!Number.isInteger(migration.version) || migration.version <= previousVersion) {
-      throw new Error('TemporalThread migration definitions must use strictly increasing positive versions');
+      throw new Error(
+        'TemporalThread migration definitions must use strictly increasing positive versions',
+      );
     }
     if (!migration.name || names.has(migration.name) || versions.has(migration.version)) {
       throw new Error('TemporalThread migration definitions contain a duplicate version or name');
@@ -214,10 +216,14 @@ function validateAppliedMigrations(database: Database.Database): Set<number> {
     }
     const expectedChecksum = migrationChecksum(migration);
     if (row.name !== migration.name) {
-      throw new Error(`TemporalThread database migration ${row.version} has an unexpected name`);
+      throw new Error(
+        `TemporalThread database migration ${row.version} has an unexpected name`,
+      );
     }
     if (row.checksum !== null && row.checksum !== expectedChecksum) {
-      throw new Error(`TemporalThread database migration ${row.version} checksum does not match`);
+      throw new Error(
+        `TemporalThread database migration ${row.version} checksum does not match`,
+      );
     }
     if (row.checksum === null) {
       database
@@ -257,7 +263,12 @@ export function migrate(database: Database.Database): number {
       .prepare(
         'INSERT INTO schema_migrations (version, name, applied_at, checksum) VALUES (?, ?, ?, ?)',
       )
-      .run(migration.version, migration.name, new Date().toISOString(), migrationChecksum(migration));
+      .run(
+        migration.version,
+        migration.name,
+        new Date().toISOString(),
+        migrationChecksum(migration),
+      );
   });
 
   for (const migration of migrations) {
