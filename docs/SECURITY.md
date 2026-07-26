@@ -14,7 +14,7 @@ TemporalThread protects local conversation timing and privacy-permitted content 
 - Migration records include immutable names and SHA-256 checksums. Unknown future versions and changed history are refused.
 - Configuration, database, and verified backup files use mode `0600`, and their directories use `0700`, where supported.
 - Configuration and installer edits use same-directory temporary files and atomic rename. Existing files receive timestamped backups.
-- The SQLite backup command writes to a temporary file, verifies it independently, then atomically renames it; it never overwrites an existing destination.
+- The SQLite backup command writes to a temporary file, verifies it independently, then publishes the verified inode with an exclusive same-directory link; it cannot replace a destination that appears during backup creation.
 - Host adapters use fixed executable names and argument arrays with `shell: false`; interaction text is JSON on stdin.
 - MCP failures and hook logs use allow-listed messages and do not echo private text.
 - CI has read-only repository permissions, pins third-party actions to full commit SHAs, audits production dependencies, and runs source tests, host-neutral MCP certification, SQLite recovery checks, and packed verification on three operating systems.
