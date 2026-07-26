@@ -139,19 +139,41 @@ export const UpdateCommitmentInputSchema = z
   })
   .strict()
   .superRefine((value, context) => {
-    if (value.status === 'rescheduled' && !value.newDueExpression) {
+    const addIssue = (path: 'completedAt' | 'newDueExpression' | 'anchorTime' | 'timezone', message: string) => {
       context.addIssue({
         code: 'custom',
-        path: ['newDueExpression'],
-        message: 'A rescheduled commitment requires newDueExpression',
+        path: [path],
+        message,
       });
+    };
+
+    if (value.status === 'rescheduled') {
+      if (!value.newDueExpression) {
+        addIssue('newDueExpression', 'A rescheduled commitment requires newDueExpression');
+      }
+      if (!value.anchorTime) {
+        addIssue('anchorTime', 'A rescheduled commitment requires anchorTime');
+      }
+      if (!value.timezone) {
+        addIssue('timezone', 'A rescheduled commitment requires timezone');
+      }
+      if (value.completedAt !== undefined) {
+        addIssue('completedAt', 'completedAt is only valid when status is completed');
+      }
+      return;
     }
-    if (value.newDueExpression && (!value.anchorTime || !value.timezone)) {
-      context.addIssue({
-        code: 'custom',
-        path: ['anchorTime'],
-        message: 'Rescheduling requires anchorTime and timezone',
-      });
+
+    if (value.newDueExpression !== undefined) {
+      addIssue('newDueExpression', 'newDueExpression is only valid when status is rescheduled');
+    }
+    if (value.anchorTime !== undefined) {
+      addIssue('anchorTime', 'anchorTime is only valid when status is rescheduled');
+    }
+    if (value.timezone !== undefined) {
+      addIssue('timezone', 'timezone is only valid when status is rescheduled');
+    }
+    if (value.status !== 'completed' && value.completedAt !== undefined) {
+      addIssue('completedAt', 'completedAt is only valid when status is completed');
     }
   });
 
