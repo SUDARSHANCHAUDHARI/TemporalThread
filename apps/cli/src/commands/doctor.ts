@@ -4,7 +4,7 @@ import { isValidTimezone, loadConfig, resolveTemporalThreadPaths } from '@tempor
 import { SystemClock, TemporalThreadService } from '@temporalthread/core';
 import { createMcpServer } from '@temporalthread/mcp-server';
 import type { DoctorCheck } from '@temporalthread/shared-types';
-import { SqliteStorage } from '@temporalthread/storage-sqlite';
+import { inspectDatabaseHealth, SqliteStorage } from '@temporalthread/storage-sqlite';
 import type { Command } from 'commander';
 import { expectedIntegrationExample } from '../integration-examples.js';
 import { printJson, printLines } from '../output.js';
@@ -142,17 +142,32 @@ export function registerDoctorCommand(program: Command): void {
       }
       if (storage) {
         const openedStorage = storage;
+        const health = inspectDatabaseHealth(openedStorage.database);
         checks.push(
           check('Database migration', () => {
-            const current = openedStorage.getMigrationVersion();
-            const latest = openedStorage.getLatestMigrationVersion();
-            if (current !== latest) throw new Error(`migration ${current}; expected ${latest}`);
-            return `migration ${current}`;
+            if (health.migrationVersion !== health.latestMigrationVersion) {
+              throw new Error(
+                `migration ${health.migrationVersion}; expected ${health.latestMigrationVersion}`,
+              );
+            }
+            if (health.userVersion !== health.latestMigrationVersion) {
+              throw new Error(
+                `SQLite user version ${health.userVersion}; expected ${health.latestMigrationVersion}`,
+              );
+            }
+            return `migration ${health.migrationVersion}`;
           }),
           check('Database integrity', () => {
-            const integrity = openedStorage.integrityCheck();
-            if (integrity !== 'ok') throw new Error(integrity);
-            return integrity;
+            if (health.integrity !== 'ok' || health.quickCheck !== 'ok') {
+              throw new Error(`integrity=${health.integrity}; quick=${health.quickCheck}`);
+            }
+            return 'integrity and quick checks passed';
+          }),
+          check('Database relationships', () => {
+            if (health.foreignKeyViolations !== 0) {
+              throw new Error(`${health.foreignKeyViolations} foreign-key violation(s)`);
+            }
+            return 'foreign-key check passed';
           }),
           check('MCP server startup', () => {
             createMcpServer(
