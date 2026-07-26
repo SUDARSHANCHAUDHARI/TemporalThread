@@ -30,6 +30,7 @@ const baseEnvironment = {
 delete baseEnvironment.OPENAI_API_KEY;
 delete baseEnvironment.ANTHROPIC_API_KEY;
 delete baseEnvironment.NODE_AUTH_TOKEN;
+delete baseEnvironment['npm_config_//registry.npmjs.org/:_authToken'];
 
 function sanitized(value) {
   return String(value)
@@ -74,19 +75,26 @@ function event(idempotencyKey, occurredAt) {
 }
 
 try {
-  if (!existsSync(cliEntry)) throw new Error('Build the workspace before SQLite recovery verification');
+  if (!existsSync(cliEntry)) {
+    throw new Error('Build the workspace before SQLite recovery verification');
+  }
 
   const initialized = JSON.parse(
-    runCli(['init', '--yes', '--timezone', 'UTC', '--integration', 'generic', '--json']).stdout,
+    runCli(['init', '--yes', '--timezone', 'UTC', '--integration', 'generic', '--json'])
+      .stdout,
   );
-  if (!existsSync(initialized.databasePath)) throw new Error('Recovery source database was not created');
+  if (!existsSync(initialized.databasePath)) {
+    throw new Error('Recovery source database was not created');
+  }
 
   const firstIngest = JSON.parse(
     runCli(['ingest', '--json'], {
       input: event('recovery-first', '2026-07-20T10:00:00Z'),
     }).stdout,
   );
-  if (firstIngest.ingested !== 1) throw new Error('Recovery source event was not ingested');
+  if (firstIngest.ingested !== 1) {
+    throw new Error('Recovery source event was not ingested');
+  }
 
   const backup = JSON.parse(runCli(['backup', '--output', backupPath, '--json']).stdout);
   if (
@@ -98,7 +106,9 @@ try {
     throw new Error('Verified recovery snapshot was not created correctly');
   }
 
-  const duplicateBackup = runCli(['backup', '--output', backupPath, '--json'], { expectedStatus: 1 });
+  const duplicateBackup = runCli(['backup', '--output', backupPath, '--json'], {
+    expectedStatus: 1,
+  });
   if (!duplicateBackup.stderr.includes('Backup destination already exists')) {
     throw new Error('Existing recovery snapshot was not refused safely');
   }
@@ -108,20 +118,34 @@ try {
       input: event('recovery-second', '2026-07-21T10:00:00Z'),
     }).stdout,
   );
-  if (secondIngest.ingested !== 1) throw new Error('Post-backup source event was not ingested');
+  if (secondIngest.ingested !== 1) {
+    throw new Error('Post-backup source event was not ingested');
+  }
 
   const sourceStatus = JSON.parse(runCli(['status', '--json']).stdout);
-  if (sourceStatus.integrity !== 'ok' || sourceStatus.counts.interactions !== 2) {
-    throw new Error('Recovery source database failed its final status check');
+  if (
+    sourceStatus.healthy !== true ||
+    sourceStatus.integrity !== 'ok' ||
+    sourceStatus.counts.interactions !== 2
+  ) {
+    throw new Error('Recovery source database failed its final health or persistence check');
   }
 
   const restoredEnvironment = {
     ...baseEnvironment,
     TEMPORALTHREAD_DATABASE_PATH: backupPath,
   };
-  const restoredStatus = JSON.parse(runCli(['status', '--json'], { env: restoredEnvironment }).stdout);
-  if (restoredStatus.integrity !== 'ok' || restoredStatus.counts.interactions !== 1) {
-    throw new Error('Verified snapshot did not reopen as an independent point-in-time recovery database');
+  const restoredStatus = JSON.parse(
+    runCli(['status', '--json'], { env: restoredEnvironment }).stdout,
+  );
+  if (
+    restoredStatus.healthy !== true ||
+    restoredStatus.integrity !== 'ok' ||
+    restoredStatus.counts.interactions !== 1
+  ) {
+    throw new Error(
+      'Verified snapshot did not reopen as an independent healthy point-in-time database',
+    );
   }
 
   process.stdout.write(
