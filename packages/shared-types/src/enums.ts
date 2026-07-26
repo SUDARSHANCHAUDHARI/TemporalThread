@@ -12,8 +12,19 @@ export type ResolutionType = z.infer<typeof ResolutionTypeSchema>;
 export const ReferenceTypeSchema = z.enum(['relative', 'calendar', 'duration', 'day-part', 'fuzzy']);
 export type ReferenceType = z.infer<typeof ReferenceTypeSchema>;
 
-export const CommitmentStatusSchema = z.enum(['pending', 'completed', 'cancelled', 'rescheduled']);
-export type CommitmentStatus = z.infer<typeof CommitmentStatusSchema>;
+export const CommitmentPersistedStatusSchema = z.enum(['pending', 'completed', 'cancelled']);
+export type CommitmentPersistedStatus = z.infer<typeof CommitmentPersistedStatusSchema>;
+
+export const CommitmentUpdateActionSchema = z.enum([
+  'pending',
+  'completed',
+  'cancelled',
+  'rescheduled',
+]);
+export type CommitmentUpdateAction = z.infer<typeof CommitmentUpdateActionSchema>;
+
+export const CommitmentStatusSchema = CommitmentPersistedStatusSchema;
+export type CommitmentStatus = CommitmentPersistedStatus;
 
 export const CommitmentDisplayStatusSchema = z.enum(['pending', 'due', 'overdue', 'completed', 'cancelled']);
 export type CommitmentDisplayStatus = z.infer<typeof CommitmentDisplayStatusSchema>;
