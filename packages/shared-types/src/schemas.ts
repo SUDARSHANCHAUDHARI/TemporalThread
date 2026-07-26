@@ -139,7 +139,10 @@ export const UpdateCommitmentInputSchema = z
   })
   .strict()
   .superRefine((value, context) => {
-    const addIssue = (path: 'completedAt' | 'newDueExpression' | 'anchorTime' | 'timezone', message: string) => {
+    const addIssue = (
+      path: 'completedAt' | 'newDueExpression' | 'anchorTime' | 'timezone',
+      message: string,
+    ) => {
       context.addIssue({
         code: 'custom',
         path: [path],
