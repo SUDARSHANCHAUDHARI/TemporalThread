@@ -71,7 +71,8 @@ All notable changes to TemporalThread will be documented in this file. The forma
 ### Security
 
 - Verified SQLite backups use the online backup API, private temporary files, independent health validation,
-  and atomic rename; existing and symbolic-link destinations are refused.
+  exclusive no-overwrite publication, and a second verification of the published file. Same-directory hard
+  links are atomic where supported; other filesystems use an exclusive-copy fallback.
 - Runtime database health now fails closed for structural corruption, failed quick checks, foreign-key
   violations, altered migration history, unknown future migrations, and inconsistent schema versions.
 - Commitment lifecycle errors are bounded and allow-listed at the MCP boundary without exposing private data.
