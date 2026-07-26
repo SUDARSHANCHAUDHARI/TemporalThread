@@ -61,8 +61,8 @@ Opening a runtime applies pending migrations and then requires all of the follow
 - the migration table reaches the latest known version; and
 - SQLite `user_version` matches that migration version.
 
-Unknown future migrations, changed migration names, and checksum mismatches are refused. This prevents an older or altered build from silently opening an incompatible database.
+Unknown future migration rows or `user_version` values, changed migration names, and checksum mismatches are refused. This prevents an older or altered build from silently opening an incompatible database.
 
 ## Concurrency and recovery
 
-SQLite foreign keys, WAL mode, a five-second busy timeout, and transactional writes support multiple local processes. Migrations are ordered, checksummed, versioned, and atomic. `temporalthread backup --output <path>` uses SQLite’s online backup mechanism, verifies the snapshot independently, and atomically places it at a new private destination. See [SQLite recovery](SQLITE-RECOVERY.md) and [Security](SECURITY.md); downgrades and automatic repair are intentionally not performed.
+SQLite foreign keys, WAL mode, a five-second busy timeout, and transactional writes support multiple local processes. Migrations are ordered, checksummed, versioned, and atomic. `temporalthread backup --output <path>` uses SQLite’s online backup mechanism, verifies the temporary snapshot, publishes it through an exclusive no-overwrite operation, and verifies the published private destination again. See [SQLite recovery](SQLITE-RECOVERY.md) and [Security](SECURITY.md); downgrades and automatic repair are intentionally not performed.
