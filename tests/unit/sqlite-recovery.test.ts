@@ -74,13 +74,15 @@ describe('SQLite migrations and recovery', () => {
   it('rejects changed migration names and checksums', () => {
     const database = new Database(':memory:');
     try {
+      const firstMigration = migrations[0];
+      if (!firstMigration) throw new Error('Expected the initial migration');
       migrate(database);
       database.prepare('UPDATE schema_migrations SET name = ? WHERE version = 1').run('tampered-name');
       expect(() => migrate(database)).toThrow('unexpected name');
 
       database
         .prepare('UPDATE schema_migrations SET name = ?, checksum = ? WHERE version = 1')
-        .run(migrations[0]?.name, 'tampered-checksum');
+        .run(firstMigration.name, 'tampered-checksum');
       expect(() => migrate(database)).toThrow('checksum does not match');
     } finally {
       database.close();
@@ -193,7 +195,7 @@ describe('SQLite migrations and recovery', () => {
       expect(existsSync(backupPath)).toBe(true);
       expect(verifyDatabaseFile(backupPath).healthy).toBe(true);
       await expect(createVerifiedBackup(storage, backupPath)).rejects.toThrow(
-        'Unable to create a verified TemporalThread database backup',
+        'Backup destination already exists',
       );
     } finally {
       storage.close();
