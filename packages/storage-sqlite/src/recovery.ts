@@ -1,9 +1,9 @@
 import {
   chmodSync,
   existsSync,
+  linkSync,
   lstatSync,
   mkdirSync,
-  renameSync,
   rmSync,
   statSync,
 } from 'node:fs';
@@ -109,16 +109,23 @@ export async function createVerifiedBackup(
   const parent = dirname(destination);
   mkdirSync(parent, { recursive: true, mode: 0o700 });
   const temporary = `${destination}.temporary-${process.pid}-${Date.now()}`;
+  let published = false;
   try {
     storage.database.pragma('wal_checkpoint(PASSIVE)');
     await storage.database.backup(temporary);
     chmodSync(temporary, 0o600);
     const health = verifyDatabaseFile(temporary);
-    renameSync(temporary, destination);
+
+    // A same-directory hard link atomically publishes the verified inode and fails if the destination
+    // appeared after the initial check. This avoids rename-overwrite behavior on POSIX filesystems.
+    linkSync(temporary, destination);
+    published = true;
     chmodSync(destination, 0o600);
+    rmSync(temporary, { force: true });
     return { path: destination, bytes: statSync(destination).size, health };
   } catch (error) {
     rmSync(temporary, { force: true });
+    if (published) rmSync(destination, { force: true });
     throw new Error('Unable to create a verified TemporalThread database backup', { cause: error });
   }
 }
