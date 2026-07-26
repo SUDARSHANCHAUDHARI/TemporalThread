@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   CommitmentDisplayStatusSchema,
   CommitmentStatusSchema,
+  CommitmentUpdateActionSchema,
   InteractionRoleSchema,
   PrivacyModeSchema,
   ReferenceTypeSchema,
@@ -159,7 +160,7 @@ export const RecordedCommitmentOutputSchema = z
   .strict();
 
 export const UpdatedCommitmentOutputSchema = RecordedCommitmentOutputSchema.extend({
-  action: z.enum(['completed', 'cancelled', 'pending', 'rescheduled']),
+  action: CommitmentUpdateActionSchema,
 }).strict();
 
 const TemporalReferenceSummarySchema = z
