@@ -24,7 +24,7 @@ The command:
 4. uses SQLite’s online backup API while the source remains open;
 5. writes to a private temporary file;
 6. opens the snapshot independently and verifies integrity, quick-check, foreign keys, migration version, and `user_version`; and
-7. atomically renames the verified snapshot to the requested destination.
+7. atomically publishes the verified file without replacing a destination that appeared during backup creation.
 
 The resulting file is a point-in-time SQLite recovery snapshot. Store it in a private location with appropriate disk encryption and access control.
 
