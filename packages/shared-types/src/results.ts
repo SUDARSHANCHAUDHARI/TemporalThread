@@ -7,7 +7,7 @@ import type {
   TemporalReference,
   TemporalResolution,
 } from './entities.js';
-import type { CommitmentDisplayStatus } from './enums.js';
+import type { CommitmentDisplayStatus, CommitmentUpdateAction } from './enums.js';
 
 export interface CurrentTimeResult {
   utcTime: string;
@@ -102,7 +102,7 @@ export interface RecordedCommitmentResult {
 }
 
 export interface UpdatedCommitmentResult extends RecordedCommitmentResult {
-  action: 'completed' | 'cancelled' | 'pending' | 'rescheduled';
+  action: CommitmentUpdateAction;
 }
 
 export interface InteractionWithRelations {
