@@ -56,6 +56,9 @@ jobs:
       - name: Certify host-neutral MCP behavior
         run: pnpm verify:host-neutral-mcp
 
+      - name: Verify SQLite recovery
+        run: pnpm verify:sqlite-recovery
+
       - name: Validate packed Codex integration
         run: pnpm verify:codex-package
 
