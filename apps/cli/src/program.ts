@@ -7,6 +7,7 @@ import { registerIngestCommand } from './commands/ingest.js';
 import { registerInitCommand } from './commands/init.js';
 import { registerCodexIntegrationCommands } from './commands/integrate-codex.js';
 import {
+  registerBackupCommand,
   registerCommitmentsCommand,
   registerExportCommand,
   registerPurgeCommand,
@@ -34,6 +35,7 @@ export function createProgram(): Command {
   registerTimelineCommand(program);
   registerCommitmentsCommand(program);
   registerExportCommand(program);
+  registerBackupCommand(program);
   registerPurgeCommand(program);
   registerIngestCommand(program);
   registerHookCommand(program);
