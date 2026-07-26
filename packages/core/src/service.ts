@@ -36,6 +36,7 @@ import type { InteractionFilters, SqliteStorage } from '@temporalthread/storage-
 import { extractTemporalReferences, resolveRelativeTime } from '@temporalthread/temporal-parser';
 import { ulid } from 'ulid';
 import type { Clock } from './clock.js';
+import { applyCommitmentTransition } from './commitment-lifecycle.js';
 import { calculateElapsedTime, getCurrentTime } from './time.js';
 
 interface ResolvedFilters {
@@ -412,7 +413,7 @@ export class TemporalThreadService {
     if (!existing) throw new Error('Commitment not found');
     const now = this.clock.now().toString();
     let resolution: TemporalResolution | null = null;
-    let updated: Commitment;
+    let completedAt: string | undefined;
 
     if (parsed.status === 'rescheduled') {
       resolution = resolveRelativeTime(
@@ -421,33 +422,22 @@ export class TemporalThreadService {
         parsed.timezone as string,
         this.config.locale,
       );
-      updated = {
-        ...existing,
-        dueStartUtc: resolution.resolvedStartUtc,
-        dueEndUtc: resolution.resolvedEndUtc,
-        timezone: parsed.timezone as string,
-        status: 'pending',
-        completedAt: null,
-        cancelledAt: null,
-        originalText: existing.originalText ? (parsed.newDueExpression as string) : null,
-        updatedAt: now,
-      };
-    } else {
-      const completedAt =
-        parsed.status === 'completed'
-          ? parsed.completedAt
-            ? canonicalInstant(parsed.completedAt, 'completedAt').toString()
-            : now
-          : null;
-      updated = {
-        ...existing,
-        status: parsed.status,
-        completedAt,
-        cancelledAt: parsed.status === 'cancelled' ? now : null,
-        updatedAt: now,
-      };
+    } else if (parsed.status === 'completed' && parsed.completedAt) {
+      completedAt = canonicalInstant(parsed.completedAt, 'completedAt').toString();
     }
-    const saved = this.storage.updateCommitment(updated);
+
+    const transition = applyCommitmentTransition({
+      existing,
+      action: parsed.status,
+      now,
+      ...(completedAt ? { completedAt } : {}),
+      ...(resolution ? { resolution } : {}),
+      ...(parsed.timezone ? { timezone: parsed.timezone } : {}),
+      ...(parsed.newDueExpression ? { newDueExpression: parsed.newDueExpression } : {}),
+    });
+    const saved = transition.changed
+      ? this.storage.updateCommitment(transition.commitment)
+      : transition.commitment;
     return { commitment: this.commitmentView(saved), resolution, action: parsed.status };
   }
 
