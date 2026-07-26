@@ -4,7 +4,11 @@ import { isValidTimezone, loadConfig, resolveTemporalThreadPaths } from '@tempor
 import { SystemClock, TemporalThreadService } from '@temporalthread/core';
 import { createMcpServer } from '@temporalthread/mcp-server';
 import type { DoctorCheck } from '@temporalthread/shared-types';
-import { inspectDatabaseHealth, SqliteStorage } from '@temporalthread/storage-sqlite';
+import {
+  type DatabaseHealth,
+  inspectDatabaseHealth,
+  SqliteStorage,
+} from '@temporalthread/storage-sqlite';
 import type { Command } from 'commander';
 import { expectedIntegrationExample } from '../integration-examples.js';
 import { printJson, printLines } from '../output.js';
@@ -105,6 +109,34 @@ function hostInstallationChecks(integration: string, projectRoot: string): Docto
   ];
 }
 
+function databaseHealthChecks(health: DatabaseHealth): DoctorCheck[] {
+  return [
+    check('Database migration', () => {
+      if (health.migrationVersion !== health.latestMigrationVersion) {
+        throw new Error(`migration ${health.migrationVersion}; expected ${health.latestMigrationVersion}`);
+      }
+      if (health.userVersion !== health.latestMigrationVersion) {
+        throw new Error(
+          `SQLite user version ${health.userVersion}; expected ${health.latestMigrationVersion}`,
+        );
+      }
+      return `migration ${health.migrationVersion}`;
+    }),
+    check('Database integrity', () => {
+      if (health.integrity !== 'ok' || health.quickCheck !== 'ok') {
+        throw new Error(`integrity=${health.integrity}; quick=${health.quickCheck}`);
+      }
+      return 'integrity and quick checks passed';
+    }),
+    check('Database relationships', () => {
+      if (health.foreignKeyViolations !== 0) {
+        throw new Error(`${health.foreignKeyViolations} foreign-key violation(s)`);
+      }
+      return 'foreign-key check passed';
+    }),
+  ];
+}
+
 export function registerDoctorCommand(program: Command): void {
   program
     .command('doctor')
@@ -130,66 +162,59 @@ export function registerDoctorCommand(program: Command): void {
           return config.timezone;
         }),
       ];
+
       try {
-        storage = new SqliteStorage(config.databasePath);
-        checks.push({ name: 'Database accessibility', status: 'pass', detail: 'database opened' });
-      } catch {
-        checks.push({
-          name: 'Database accessibility',
-          status: 'fail',
-          detail: 'unable to open or migrate the configured database',
-        });
-      }
-      if (storage) {
-        const openedStorage = storage;
-        const health = inspectDatabaseHealth(openedStorage.database);
-        checks.push(
-          check('Database migration', () => {
-            if (health.migrationVersion !== health.latestMigrationVersion) {
-              throw new Error(
-                `migration ${health.migrationVersion}; expected ${health.latestMigrationVersion}`,
+        try {
+          storage = new SqliteStorage(config.databasePath);
+          checks.push({ name: 'Database accessibility', status: 'pass', detail: 'database opened' });
+        } catch {
+          checks.push({
+            name: 'Database accessibility',
+            status: 'fail',
+            detail: 'unable to open or migrate the configured database',
+          });
+        }
+
+        if (storage) {
+          let health: DatabaseHealth | undefined;
+          try {
+            health = inspectDatabaseHealth(storage.database);
+          } catch {
+            checks.push({
+              name: 'Database health',
+              status: 'fail',
+              detail: 'unable to complete SQLite health checks',
+            });
+          }
+          if (health) checks.push(...databaseHealthChecks(health));
+
+          const openedStorage = storage;
+          checks.push(
+            check('MCP server startup', () => {
+              createMcpServer(
+                new TemporalThreadService({ storage: openedStorage, config, clock: new SystemClock() }),
               );
-            }
-            if (health.userVersion !== health.latestMigrationVersion) {
-              throw new Error(
-                `SQLite user version ${health.userVersion}; expected ${health.latestMigrationVersion}`,
-              );
-            }
-            return `migration ${health.migrationVersion}`;
-          }),
-          check('Database integrity', () => {
-            if (health.integrity !== 'ok' || health.quickCheck !== 'ok') {
-              throw new Error(`integrity=${health.integrity}; quick=${health.quickCheck}`);
-            }
-            return 'integrity and quick checks passed';
-          }),
-          check('Database relationships', () => {
-            if (health.foreignKeyViolations !== 0) {
-              throw new Error(`${health.foreignKeyViolations} foreign-key violation(s)`);
-            }
-            return 'foreign-key check passed';
-          }),
-          check('MCP server startup', () => {
-            createMcpServer(
-              new TemporalThreadService({ storage: openedStorage, config, clock: new SystemClock() }),
-            );
-            return 'all tool registrations loaded';
-          }),
-        );
+              return 'all tool registrations loaded';
+            }),
+          );
+        }
+
+        for (const integration of config.enabledIntegrations) {
+          checks.push(
+            check(`${integration} configuration example`, () => {
+              const example = expectedIntegrationExample(integration);
+              if (!existsSync(`${paths.integrationExamplesDir}/${example}`)) {
+                throw new Error('run temporalthread init to generate the selected integration example');
+              }
+              return example;
+            }),
+          );
+          checks.push(...hostInstallationChecks(integration, process.cwd()));
+        }
+      } finally {
+        storage?.close();
       }
-      for (const integration of config.enabledIntegrations) {
-        checks.push(
-          check(`${integration} configuration example`, () => {
-            const example = expectedIntegrationExample(integration);
-            if (!existsSync(`${paths.integrationExamplesDir}/${example}`)) {
-              throw new Error('run temporalthread init to generate the selected integration example');
-            }
-            return example;
-          }),
-        );
-        checks.push(...hostInstallationChecks(integration, process.cwd()));
-      }
-      if (storage) storage.close();
+
       const result = { ok: checks.every((item) => item.status !== 'fail'), checks };
       if (options.json) printJson(result);
       else {
