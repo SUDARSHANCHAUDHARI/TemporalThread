@@ -11,7 +11,12 @@ All notable changes to TemporalThread will be documented in this file. The forma
 - Local MCP stdio server with nine strictly validated temporal continuity tools.
 - SQLite persistence, transactional migrations, privacy modes, export, and purge.
 - Deterministic relative-time parsing, elapsed-time calculation, and commitment tracking.
-- Operational CLI with initialization, diagnostics, configuration, timeline, commitments, ingestion, export, and purge commands.
+- Operational CLI with initialization, diagnostics, configuration, timeline, commitments, ingestion, export,
+  verified SQLite backup, and purge commands.
+- Host-neutral MCP end-to-end certification that exercises all nine tools, strict input errors, privacy,
+  idempotency, commitment transitions, process restart, and persistence without a host-specific integration.
+- SQLite point-in-time recovery verification that creates a live snapshot, refuses overwrite, keeps source and
+  restored counts independent, and runs on Linux, macOS, and Windows.
 - Official-format Codex plugin with local marketplace metadata, packaged MCP/skill/hooks, privacy notice,
   compatibility guidance, package validation, and isolated packed install/uninstall verification.
 - Nested `temporalthread integrate codex` install, uninstall, status, doctor, print-config, install-skill, and
@@ -31,8 +36,17 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ### Changed
 
-- Commitment updates now reject fields that do not apply to the requested action: rescheduling requires the
-  new due expression, anchor time, and timezone, while `completedAt` is accepted only for completion.
+- Commitment updates now use an explicit state machine: repeated actions are idempotent, terminal states must
+  be reopened before crossing, rescheduling reopens the item and clears terminal timestamps, and privacy-redacted
+  original text remains redacted.
+- Commitment updates reject fields that do not apply to the requested action: rescheduling requires the new
+  due expression, anchor time, and timezone, while `completedAt` is accepted only for completion.
+- SQLite migration records now include immutable SHA-256 checksums; startup rejects unknown future versions,
+  changed names, checksum mismatches, incomplete migration state, and inconsistent `user_version`.
+- Migration 3 converts legacy persisted `rescheduled` commitments to `pending`, repairs missing legacy
+  terminal timestamps, and adds database checks for status/timestamp consistency.
+- Runtime startup, initialization, status, and doctor now verify integrity, quick-check, foreign keys,
+  migration version, and SQLite `user_version`.
 - Codex integration installation now parses and preserves unrelated TOML/JSON, validates the MCP executable
   and protocol before mutation, creates timestamped backups, writes atomically, tracks ownership/version,
   rolls back validation failures, preserves modified/unowned files, and refuses silent downgrades.
@@ -56,6 +70,11 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ### Security
 
+- Verified SQLite backups use the online backup API, private temporary files, independent health validation,
+  and atomic rename; existing and symbolic-link destinations are refused.
+- Runtime database health now fails closed for structural corruption, failed quick checks, foreign-key
+  violations, altered migration history, unknown future migrations, and inconsistent schema versions.
+- Commitment lifecycle errors are bounded and allow-listed at the MCP boundary without exposing private data.
 - Override transitive `@hono/node-server` and `fast-uri` resolutions to patched releases after
   GHSA-frvp-7c67-39w9, GHSA-9mqv-5hh9-4cgg, and GHSA-v2hh-gcrm-f6hx were added to the registry audit feed.
 - Codex hook input is limited to 256 KiB, validated from stdin, never shell-interpolated, and excluded from
