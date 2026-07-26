@@ -233,6 +233,13 @@ function validateAppliedMigrations(database: Database.Database): Set<number> {
 validateMigrationDefinitions();
 
 export function migrate(database: Database.Database): number {
+  const existingUserVersion = Number(database.pragma('user_version', { simple: true }));
+  if (existingUserVersion > latestMigrationVersion) {
+    throw new Error(
+      `TemporalThread database user version ${existingUserVersion} is newer than this build`,
+    );
+  }
+
   database.exec(`
     CREATE TABLE IF NOT EXISTS schema_migrations (
       version INTEGER PRIMARY KEY,
