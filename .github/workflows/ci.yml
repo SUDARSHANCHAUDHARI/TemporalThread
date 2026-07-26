@@ -53,6 +53,9 @@ jobs:
       - name: Build workspace
         run: pnpm build
 
+      - name: Certify host-neutral MCP behavior
+        run: pnpm verify:host-neutral-mcp
+
       - name: Validate packed Codex integration
         run: pnpm verify:codex-package
 
