@@ -3,7 +3,10 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import { StdioClientTransport, getDefaultEnvironment } from '@modelcontextprotocol/sdk/client/stdio.js';
+import {
+  getDefaultEnvironment,
+  StdioClientTransport,
+} from '@modelcontextprotocol/sdk/client/stdio.js';
 import { expectedMcpTools } from './mcp-release-smoke.mjs';
 
 const repositoryRoot = resolve(import.meta.dirname, '..');
@@ -18,6 +21,7 @@ function sanitized(value) {
   return String(value)
     .replaceAll(repositoryRoot, '<repository>')
     .replaceAll(verificationRoot, '<temporary>')
+    .replaceAll(privateMarker, '<privacy-marker>')
     .slice(0, 4_000);
 }
 
@@ -41,20 +45,42 @@ function runCli(arguments_) {
   return result.stdout;
 }
 
-function resultObject(label, result, expectError = false) {
-  if (expectError !== Boolean(result.isError)) {
-    throw new Error(`${label} returned an unexpected MCP error state`);
-  }
+function resultObject(label, result) {
+  if (result.isError) throw new Error(`${label} returned an unexpected MCP error`);
   if (result.structuredContent && typeof result.structuredContent === 'object') {
     return result.structuredContent;
   }
   const text = result.content?.find((item) => item.type === 'text')?.text;
   if (!text) throw new Error(`${label} returned no structured or text content`);
-  if (expectError) return { message: text };
   try {
     return JSON.parse(text);
   } catch {
     throw new Error(`${label} did not return valid JSON content`);
+  }
+}
+
+async function expectedToolFailure(client, label, request) {
+  let result;
+  try {
+    result = await client.callTool(request);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    if (!message) throw new Error(`${label} threw an empty MCP error`);
+    return message;
+  }
+
+  if (!result.isError) throw new Error(`${label} did not fail as expected`);
+  const text = result.content?.find((item) => item.type === 'text')?.text;
+  if (!text) throw new Error(`${label} returned no bounded MCP error text`);
+  return text;
+}
+
+function assertPrivateValuesAbsent(label, value) {
+  const text = String(value);
+  for (const prohibited of [repositoryRoot, verificationRoot, privateMarker]) {
+    if (text.includes(prohibited)) {
+      throw new Error(`${label} leaked a prohibited private value`);
+    }
   }
 }
 
@@ -99,11 +125,14 @@ const environment = {
 delete environment.OPENAI_API_KEY;
 delete environment.ANTHROPIC_API_KEY;
 delete environment.NODE_AUTH_TOKEN;
+delete environment['npm_config_//registry.npmjs.org/:_authToken'];
 
 let firstClient;
 let secondClient;
 try {
-  if (!existsSync(cliEntry)) throw new Error('Build the workspace before host-neutral MCP verification');
+  if (!existsSync(cliEntry)) {
+    throw new Error('Build the workspace before host-neutral MCP verification');
+  }
 
   const initialized = JSON.parse(
     runCli(['init', '--yes', '--timezone', 'Asia/Bangkok', '--integration', 'generic', '--json']),
@@ -127,7 +156,9 @@ try {
       arguments: { timezone: 'Asia/Bangkok' },
     }),
   );
-  if (currentTime.timezone !== 'Asia/Bangkok') throw new Error('Current-time timezone was not preserved');
+  if (currentTime.timezone !== 'Asia/Bangkok') {
+    throw new Error('Current-time timezone was not preserved');
+  }
 
   const elapsed = resultObject(
     'calculate_elapsed_time',
@@ -140,7 +171,10 @@ try {
       },
     }),
   );
-  if (elapsed.totalMilliseconds !== 99 * 60 * 60 * 1_000 || elapsed.calendarDayDifference !== 4) {
+  if (
+    elapsed.totalMilliseconds !== 99 * 60 * 60 * 1_000 ||
+    elapsed.calendarDayDifference !== 4
+  ) {
     throw new Error('Elapsed-time calculation failed the controlled scenario');
   }
 
@@ -173,14 +207,24 @@ try {
   };
   const interaction = resultObject(
     'record_interaction',
-    await firstClient.callTool({ name: 'record_interaction', arguments: interactionArguments }),
+    await firstClient.callTool({
+      name: 'record_interaction',
+      arguments: interactionArguments,
+    }),
   );
-  if (interaction.duplicate !== false || interaction.privacyMode !== 'temporal-references-only') {
+  if (
+    interaction.duplicate !== false ||
+    interaction.privacyMode !== 'temporal-references-only'
+  ) {
     throw new Error('Initial interaction recording failed');
   }
+
   const duplicate = resultObject(
     'record_interaction duplicate',
-    await firstClient.callTool({ name: 'record_interaction', arguments: interactionArguments }),
+    await firstClient.callTool({
+      name: 'record_interaction',
+      arguments: interactionArguments,
+    }),
   );
   if (duplicate.duplicate !== true || duplicate.interactionId !== interaction.interactionId) {
     throw new Error('Interaction idempotency did not preserve the original record');
@@ -197,7 +241,10 @@ try {
       },
     }),
   );
-  if (last.interaction?.interactionId !== interaction.interactionId || 'rawText' in (last.interaction ?? {})) {
+  if (
+    last.interaction?.interactionId !== interaction.interactionId ||
+    'rawText' in (last.interaction ?? {})
+  ) {
     throw new Error('Last-interaction lookup violated identity or default privacy expectations');
   }
 
@@ -218,7 +265,9 @@ try {
   );
   const commitmentId = commitment.commitment?.id;
   if (!commitmentId || commitment.commitment.originalText !== null) {
-    throw new Error('Commitment creation failed or retained original text under the default privacy mode');
+    throw new Error(
+      'Commitment creation failed or retained original text under the default privacy mode',
+    );
   }
 
   const commitments = resultObject(
@@ -294,6 +343,7 @@ try {
   );
   const cancelledId = cancelledCommitment.commitment?.id;
   if (!cancelledId) throw new Error('Second commitment creation failed');
+
   resultObject(
     'cancel second commitment',
     await firstClient.callTool({
@@ -301,29 +351,25 @@ try {
       arguments: { commitmentId: cancelledId, status: 'cancelled' },
     }),
   );
-  const invalidTransition = resultObject(
+
+  const invalidTransition = await expectedToolFailure(
+    firstClient,
     'reject cancelled-to-completed transition',
-    await firstClient.callTool({
+    {
       name: 'update_commitment',
       arguments: { commitmentId: cancelledId, status: 'completed' },
-    }),
-    true,
+    },
   );
-  if (!String(invalidTransition.message).startsWith('Invalid commitment transition:')) {
+  assertPrivateValuesAbsent('Invalid lifecycle transition', invalidTransition);
+  if (!invalidTransition.startsWith('Invalid commitment transition:')) {
     throw new Error('Invalid lifecycle transition did not return a bounded safe MCP error');
   }
 
-  const invalidInput = resultObject(
-    'reject unknown input field',
-    await firstClient.callTool({
-      name: 'get_current_time',
-      arguments: { timezone: 'UTC', unexpected: true },
-    }),
-    true,
-  );
-  if (invalidInput.message !== 'Invalid tool input') {
-    throw new Error('Strict input validation did not return the expected safe error');
-  }
+  const invalidInput = await expectedToolFailure(firstClient, 'reject unknown input field', {
+    name: 'get_current_time',
+    arguments: { timezone: 'UTC', unexpected: true },
+  });
+  assertPrivateValuesAbsent('Invalid tool input', invalidInput);
 
   const context = resultObject(
     'get_temporal_context',
@@ -368,7 +414,9 @@ try {
   secondClient = undefined;
 
   const databasePath = initialized.databasePath;
-  if (!existsSync(databasePath)) throw new Error('Host-neutral verification database was not created');
+  if (!existsSync(databasePath)) {
+    throw new Error('Host-neutral verification database was not created');
+  }
   if (readFileSync(databasePath).includes(privateMarker)) {
     throw new Error('Default privacy mode retained the complete host-neutral prompt');
   }
@@ -377,8 +425,13 @@ try {
   }
 
   const status = JSON.parse(runCli(['status', '--json']));
-  if (status.integrity !== 'ok' || status.counts.interactions !== 1 || status.counts.commitments !== 2) {
-    throw new Error('Host-neutral final status failed integrity or persistence checks');
+  if (
+    status.healthy !== true ||
+    status.integrity !== 'ok' ||
+    status.counts.interactions !== 1 ||
+    status.counts.commitments !== 2
+  ) {
+    throw new Error('Host-neutral final status failed health, integrity, or persistence checks');
   }
 
   process.stdout.write(
