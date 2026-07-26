@@ -98,7 +98,7 @@ The Phase 4.2C test declarations cover:
 - privacy preservation; and
 - detection of internally inconsistent stored rows.
 
-The final repository is expected to contain 29 test files and 164 tests after Phases 4.2C–4.2E. That count is derived from the committed test declarations and must not be treated as a verified CI result until the final workflow run is observed.
+The final repository is expected to contain 29 test files and 166 tests after Phases 4.2C–4.2E. That count is derived from the committed test declarations and must not be treated as a verified CI result until the final workflow run is observed.
 
 ## Remaining limitations
 
