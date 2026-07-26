@@ -26,7 +26,8 @@ Migration startup:
 - validates strictly increasing unique migration definitions;
 - adds the checksum column to legacy migration tables;
 - backfills checksums for known legacy rows;
-- rejects unknown/future migration versions;
+- rejects unknown/future migration rows;
+- rejects a future SQLite `user_version` before changing schema metadata;
 - rejects changed names;
 - rejects changed checksums;
 - applies pending migrations transactionally; and
@@ -70,7 +71,7 @@ temporalthread backup --output /private/path/temporalthread-backup.sqlite
 
 The backup path:
 
-1. rejects the active database;
+1. rejects the active database and its `-wal`, `-shm`, and `-journal` sidecar paths;
 2. refuses an existing or symbolic-link destination;
 3. performs a passive WAL checkpoint;
 4. creates an online SQLite backup at a private temporary path;
@@ -102,7 +103,8 @@ The normal CI workflow runs the scenario on Ubuntu, macOS, and Windows.
 Phase 4.2E test declarations cover:
 
 - latest migration and `user_version` health;
-- unknown future migration rejection;
+- unknown future migration-row rejection;
+- future SQLite `user_version` refusal before schema mutation;
 - migration name and checksum tamper rejection;
 - legacy migration-table checksum-column creation/backfill;
 - repeated migration idempotency;
@@ -111,6 +113,7 @@ Phase 4.2E test declarations cover:
 - foreign-key violation detection;
 - verified backup creation;
 - existing-destination refusal;
+- active database sidecar-path refusal;
 - independent snapshot opening; and
 - corrupted-file rejection.
 
