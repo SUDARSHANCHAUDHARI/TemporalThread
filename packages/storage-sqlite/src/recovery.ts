@@ -1,4 +1,12 @@
-import { chmodSync, existsSync, lstatSync, mkdirSync, renameSync, rmSync } from 'node:fs';
+import {
+  chmodSync,
+  existsSync,
+  lstatSync,
+  mkdirSync,
+  renameSync,
+  rmSync,
+  statSync,
+} from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import Database from 'better-sqlite3';
 import { latestMigrationVersion } from './migrations.js';
@@ -103,12 +111,12 @@ export async function createVerifiedBackup(
   const temporary = `${destination}.temporary-${process.pid}-${Date.now()}`;
   try {
     storage.database.pragma('wal_checkpoint(PASSIVE)');
-    const backup = await storage.database.backup(temporary);
+    await storage.database.backup(temporary);
     chmodSync(temporary, 0o600);
     const health = verifyDatabaseFile(temporary);
     renameSync(temporary, destination);
     chmodSync(destination, 0o600);
-    return { path: destination, bytes: backup.totalPages * backup.pageSize, health };
+    return { path: destination, bytes: statSync(destination).size, health };
   } catch (error) {
     rmSync(temporary, { force: true });
     throw new Error('Unable to create a verified TemporalThread database backup', { cause: error });
