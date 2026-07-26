@@ -24,6 +24,7 @@
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc --noEmit -p tsconfig.typecheck.json",
     "verify:codex-package": "node scripts/verify-codex-package.mjs",
+    "verify:host-neutral-mcp": "node scripts/verify-host-neutral-mcp.mjs",
     "release:artifacts": "node scripts/build-release-artifacts.mjs",
     "release:sbom": "node scripts/generate-release-sbom.mjs",
     "verify:release-artifacts": "node scripts/verify-release-artifacts.mjs",
