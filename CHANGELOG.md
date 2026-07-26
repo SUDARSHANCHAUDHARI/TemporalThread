@@ -31,6 +31,8 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ### Changed
 
+- Commitment updates now reject fields that do not apply to the requested action: rescheduling requires the
+  new due expression, anchor time, and timezone, while `completedAt` is accepted only for completion.
 - Codex integration installation now parses and preserves unrelated TOML/JSON, validates the MCP executable
   and protocol before mutation, creates timestamped backups, writes atomically, tracks ownership/version,
   rolls back validation failures, preserves modified/unowned files, and refuses silent downgrades.
