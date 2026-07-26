@@ -35,7 +35,7 @@ erDiagram
 
 ## Privacy fields
 
-Every interaction stores a SHA-256 message hash when text is supplied. `text_preview` and `raw_text` are null unless that individual interaction uses `full-local-history`. Temporal references are absent in `metadata-only`; the default `temporal-references-only` retains only matched phrases and resolutions. Commitment `original_text` follows the source interaction’s privacy permission.
+Every interaction stores a SHA-256 message hash when text is supplied. `text_preview` and `raw_text` are null unless that individual interaction uses `full-local-history`. Temporal references are absent in `metadata-only`; the default `temporal-references-only` retains only matched phrases and resolutions. Commitment `original_text` follows the source interaction’s privacy permission. Rescheduling never creates commitment original text when the existing row has none.
 
 ## Conversation context
 
@@ -52,8 +52,23 @@ relying on lifecycle message content.
 
 ## Commitment status
 
-Persisted status is `pending`, `completed`, `cancelled`, or `rescheduled`. `due` and `overdue` are query-time display states derived from a pending commitment’s due range and current clock. Rescheduling records a new due resolution while retaining the commitment identity.
+Persisted status is `pending`, `completed`, or `cancelled`. `due` and `overdue` are query-time display states derived from a pending commitment’s due range and current clock. `rescheduled` is an update action, not a persisted terminal state: it writes the new due resolution, clears completion/cancellation timestamps, and returns the commitment to `pending` while retaining its identity and scope.
+
+Lifecycle invariants are enforced in both the service and SQLite schema:
+
+- `pending` has no completion or cancellation timestamp;
+- `completed` has `completed_at` and no `cancelled_at`;
+- `cancelled` has `cancelled_at` and no `completed_at`;
+- repeated completion, cancellation, or reopening is idempotent;
+- crossing directly between completed and cancelled is rejected until the commitment is reopened; and
+- rescheduling from any valid state reopens the commitment and preserves privacy restrictions.
 
 ## Migrations
 
-`schema_migrations` records each version and application time. Version 1 creates the domain schema; version 2 adds temporal query indexes. Each migration executes transactionally. The application does not implement down migrations because an automated downgrade could discard newer data.
+`schema_migrations` records each version, name, application time, and SHA-256 checksum. Migration definitions are strictly ordered and immutable after application. Startup refuses unknown future versions, changed names, and checksum mismatches rather than silently downgrading or accepting an altered history.
+
+- Version 1 creates the domain schema.
+- Version 2 adds temporal query indexes.
+- Version 3 rebuilds commitments with lifecycle consistency checks, converts the legacy persisted `rescheduled` status to `pending`, and repairs missing terminal timestamps on legacy completed/cancelled rows.
+
+Each migration executes transactionally. SQLite `user_version` is synchronized with the latest migration. The application does not implement down migrations because an automated downgrade could discard newer data; restore a verified backup with its matching application version instead.
