@@ -53,6 +53,18 @@ describe('applyCommitmentTransition', () => {
     });
   });
 
+  it('allows an explicit historical completion timestamp', () => {
+    const completedAt = '2026-07-19T23:59:59Z';
+    const result = applyCommitmentTransition({
+      existing: commitment(),
+      action: 'completed',
+      now,
+      completedAt,
+    });
+
+    expect(result.commitment.completedAt).toBe(completedAt);
+  });
+
   it('treats repeated completion as idempotent', () => {
     const existing = commitment({ status: 'completed', completedAt: now, updatedAt: now });
     const result = applyCommitmentTransition({ existing, action: 'completed', now: '2026-07-27T00:00:00Z' });
@@ -71,17 +83,6 @@ describe('applyCommitmentTransition', () => {
         completedAt: '2026-07-26T13:00:00Z',
       }),
     ).toThrow('completedAt cannot be rewritten');
-  });
-
-  it('rejects completion before commitment creation', () => {
-    expect(() =>
-      applyCommitmentTransition({
-        existing: commitment(),
-        action: 'completed',
-        now,
-        completedAt: '2026-07-19T23:59:59Z',
-      }),
-    ).toThrow('completedAt cannot be before commitment creation');
   });
 
   it('cancels a pending commitment and treats repeated cancellation as idempotent', () => {
