@@ -1,5 +1,7 @@
 import {
   chmodSync,
+  constants,
+  copyFileSync,
   existsSync,
   linkSync,
   lstatSync,
@@ -41,6 +43,28 @@ function migrationVersion(database: Database.Database): number {
     version: number | null;
   };
   return row.version ?? 0;
+}
+
+function errorCode(error: unknown): string | undefined {
+  return error instanceof Error && 'code' in error ? String(error.code) : undefined;
+}
+
+function publishWithoutOverwrite(temporary: string, destination: string): void {
+  try {
+    // Same-directory hard-link publication is atomic and fails when the destination already exists.
+    linkSync(temporary, destination);
+    return;
+  } catch (error) {
+    const code = errorCode(error);
+    if (code === 'EEXIST') throw error;
+    if (!['EACCES', 'EPERM', 'EXDEV', 'ENOSYS', 'ENOTSUP', 'EOPNOTSUPP'].includes(code ?? '')) {
+      throw error;
+    }
+  }
+
+  // Some filesystems do not support hard links. COPYFILE_EXCL preserves the no-overwrite guarantee; the
+  // copied destination is verified again before the temporary source is removed.
+  copyFileSync(temporary, destination, constants.COPYFILE_EXCL);
 }
 
 export function inspectDatabaseHealth(database: Database.Database): DatabaseHealth {
@@ -114,13 +138,12 @@ export async function createVerifiedBackup(
     storage.database.pragma('wal_checkpoint(PASSIVE)');
     await storage.database.backup(temporary);
     chmodSync(temporary, 0o600);
-    const health = verifyDatabaseFile(temporary);
+    verifyDatabaseFile(temporary);
 
-    // A same-directory hard link atomically publishes the verified inode and fails if the destination
-    // appeared after the initial check. This avoids rename-overwrite behavior on POSIX filesystems.
-    linkSync(temporary, destination);
+    publishWithoutOverwrite(temporary, destination);
     published = true;
     chmodSync(destination, 0o600);
+    const health = verifyDatabaseFile(destination);
     rmSync(temporary, { force: true });
     return { path: destination, bytes: statSync(destination).size, health };
   } catch (error) {
