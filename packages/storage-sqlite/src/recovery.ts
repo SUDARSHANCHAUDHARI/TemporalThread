@@ -36,7 +36,9 @@ function pragmaText(database: Database.Database, pragma: string): string {
 
 function migrationVersion(database: Database.Database): number {
   const table = database
-    .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'")
+    .prepare(
+      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'",
+    )
     .get();
   if (!table) return 0;
   const row = database.prepare('SELECT MAX(version) AS version FROM schema_migrations').get() as {
@@ -57,7 +59,9 @@ function publishWithoutOverwrite(temporary: string, destination: string): void {
   } catch (error) {
     const code = errorCode(error);
     if (code === 'EEXIST') throw error;
-    if (!['EACCES', 'EPERM', 'EXDEV', 'ENOSYS', 'ENOTSUP', 'EOPNOTSUPP'].includes(code ?? '')) {
+    if (
+      !['EACCES', 'EPERM', 'EXDEV', 'ENOSYS', 'ENOTSUP', 'EOPNOTSUPP'].includes(code ?? '')
+    ) {
       throw error;
     }
   }
@@ -157,6 +161,8 @@ export async function createVerifiedBackup(
   } catch (error) {
     rmSync(temporary, { force: true });
     if (published) rmSync(destination, { force: true });
-    throw new Error('Unable to create a verified TemporalThread database backup', { cause: error });
+    throw new Error('Unable to create a verified TemporalThread database backup', {
+      cause: error,
+    });
   }
 }
