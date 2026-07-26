@@ -131,12 +131,18 @@ describe('SQLite migrations and recovery', () => {
         );
 
       expect(migrate(database)).toBe(latestMigrationVersion);
-      const migrated = database.prepare('SELECT * FROM commitments WHERE id = ?').get('legacy-rescheduled') as {
+      const migrated = database
+        .prepare('SELECT * FROM commitments WHERE id = ?')
+        .get('legacy-rescheduled') as {
         status: string;
         completed_at: string | null;
         cancelled_at: string | null;
       };
-      expect(migrated).toMatchObject({ status: 'pending', completed_at: null, cancelled_at: null });
+      expect(migrated).toMatchObject({
+        status: 'pending',
+        completed_at: null,
+        cancelled_at: null,
+      });
 
       expect(() =>
         database
@@ -171,7 +177,12 @@ describe('SQLite migrations and recovery', () => {
             last_interaction_at, generated_session, metadata_json
           ) VALUES (?, NULL, ?, NULL, ?, NULL, ?, 1, '{}')`,
         )
-        .run('orphan-session', 'missing-agent', '2026-07-20T00:00:00Z', '2026-07-20T00:00:00Z');
+        .run(
+          'orphan-session',
+          'missing-agent',
+          '2026-07-20T00:00:00Z',
+          '2026-07-20T00:00:00Z',
+        );
       database.pragma('foreign_keys = ON');
 
       const health = inspectDatabaseHealth(database);
