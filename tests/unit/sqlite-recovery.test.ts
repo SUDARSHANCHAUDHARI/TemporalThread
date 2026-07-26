@@ -202,6 +202,21 @@ describe('SQLite migrations and recovery', () => {
     }
   });
 
+  it('rejects active database sidecar names as backup destinations', async () => {
+    const root = temporaryRoot('sidecars');
+    const sourcePath = join(root, 'source.sqlite');
+    const storage = new SqliteStorage(sourcePath);
+    try {
+      for (const suffix of ['-wal', '-shm', '-journal']) {
+        await expect(createVerifiedBackup(storage, `${sourcePath}${suffix}`)).rejects.toThrow(
+          'active database or its sidecar paths',
+        );
+      }
+    } finally {
+      storage.close();
+    }
+  });
+
   it('rejects a corrupted database file during verification', () => {
     const root = temporaryRoot('corrupt');
     const databasePath = join(root, 'corrupt.sqlite');
