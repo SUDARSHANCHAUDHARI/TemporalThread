@@ -51,6 +51,7 @@ function safeErrorMessage(error: unknown): string {
   const safePrefixes = [
     'Invalid IANA timezone:',
     'Invalid local time in relative expression',
+    'Invalid commitment transition:',
     'Interaction text exceeds',
     'Project not found',
     'Session not found',
