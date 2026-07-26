@@ -2,6 +2,7 @@ import { existsSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import { createRuntime } from '@temporalthread/mcp-server';
 import type { InteractionRole } from '@temporalthread/shared-types';
+import { createVerifiedBackup } from '@temporalthread/storage-sqlite';
 import type { Command } from 'commander';
 import { printJson, printLines } from '../output.js';
 
@@ -112,6 +113,24 @@ export function registerExportCommand(program: Command): void {
         flag: options.force ? 'w' : 'wx',
       });
       printLines([`Exported TemporalThread data to ${options.output}`]);
+    });
+}
+
+export function registerBackupCommand(program: Command): void {
+  program
+    .command('backup')
+    .description('Create and verify a private SQLite recovery snapshot')
+    .requiredOption('-o, --output <path>', 'new backup file path')
+    .option('--json', 'print machine-readable output')
+    .action(async (options: { output: string; json?: boolean }) => {
+      const runtime = createRuntime();
+      try {
+        const result = await createVerifiedBackup(runtime.storage, options.output);
+        if (options.json) printJson(result);
+        else printLines([`Created verified TemporalThread backup at ${result.path}`]);
+      } finally {
+        runtime.storage.close();
+      }
     });
 }
 
