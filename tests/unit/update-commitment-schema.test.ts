@@ -1,9 +1,18 @@
-import { UpdateCommitmentInputSchema } from '@temporalthread/shared-types';
+import {
+  CommitmentStatusSchema,
+  CommitmentUpdateActionSchema,
+  UpdateCommitmentInputSchema,
+} from '@temporalthread/shared-types';
 import { describe, expect, it } from 'vitest';
 
 const commitmentId = '01K123456789ABCDEFGHJKMNPQ';
 
 describe('UpdateCommitmentInputSchema', () => {
+  it('keeps rescheduled as an action rather than a persisted status', () => {
+    expect(CommitmentUpdateActionSchema.safeParse('rescheduled').success).toBe(true);
+    expect(CommitmentStatusSchema.safeParse('rescheduled').success).toBe(false);
+  });
+
   it('accepts completion with an optional completion timestamp', () => {
     expect(
       UpdateCommitmentInputSchema.safeParse({
