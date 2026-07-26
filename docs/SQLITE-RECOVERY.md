@@ -22,9 +22,9 @@ The command:
 2. refuses an existing destination rather than overwriting it;
 3. refuses a symbolic-link destination;
 4. uses SQLite’s online backup API while the source remains open;
-5. writes to a private temporary file;
-6. opens the snapshot independently and verifies integrity, quick-check, foreign keys, migration version, and `user_version`; and
-7. atomically publishes the verified file without replacing a destination that appeared during backup creation.
+5. writes to and verifies a private temporary file;
+6. publishes with an exclusive no-overwrite operation—an atomic same-directory hard link where supported, or an exclusive-copy fallback on filesystems without hard links; and
+7. opens the published snapshot independently and repeats integrity, quick-check, foreign-key, migration, and `user_version` verification.
 
 The resulting file is a point-in-time SQLite recovery snapshot. Store it in a private location with appropriate disk encryption and access control.
 
