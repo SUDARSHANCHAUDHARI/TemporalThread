@@ -2,6 +2,7 @@ import { z } from 'zod';
 import {
   CommitmentDisplayStatusSchema,
   CommitmentStatusSchema,
+  CommitmentUpdateActionSchema,
   InteractionRoleSchema,
   PrivacyModeSchema,
 } from './enums.js';
@@ -131,7 +132,7 @@ export const ListCommitmentsInputSchema = z
 export const UpdateCommitmentInputSchema = z
   .object({
     commitmentId: z.string().trim().min(1).max(64),
-    status: CommitmentStatusSchema,
+    status: CommitmentUpdateActionSchema,
     completedAt: TimestampSchema.optional(),
     newDueExpression: z.string().trim().min(1).max(500).optional(),
     anchorTime: TimestampSchema.optional(),
