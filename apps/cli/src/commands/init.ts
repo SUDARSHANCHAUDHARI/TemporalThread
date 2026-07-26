@@ -10,7 +10,7 @@ import {
   TemporalThreadConfigSchema,
   writeConfig,
 } from '@temporalthread/config';
-import { SqliteStorage } from '@temporalthread/storage-sqlite';
+import { assertDatabaseHealthy, SqliteStorage } from '@temporalthread/storage-sqlite';
 import type { Command } from 'commander';
 import { generateIntegrationExamples } from '../integration-examples.js';
 import { printJson, printLines } from '../output.js';
@@ -70,8 +70,13 @@ export function registerInitCommand(program: Command): void {
           ? { configPath: paths.configPath, backupPath: null, created: false }
           : writeConfig(config, paths);
       const storage = new SqliteStorage(config.databasePath);
-      const migrationVersion = storage.getMigrationVersion();
-      storage.close();
+      let migrationVersion: number;
+      try {
+        assertDatabaseHealthy(storage.database);
+        migrationVersion = storage.getMigrationVersion();
+      } finally {
+        storage.close();
+      }
       const generated = generateIntegrationExamples(paths, config.enabledIntegrations);
       const result = {
         configPath: write.configPath,
