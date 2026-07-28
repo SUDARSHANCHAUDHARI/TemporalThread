@@ -4,6 +4,11 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ## [Unreleased]
 
+### Changed
+
+- Upgrade `@modelcontextprotocol/sdk` to 1.30.0 and remove the Hono workspace override now that the
+  SDK's supported range resolves patched `@hono/node-server` 2.x releases in clean npm and pnpm consumers.
+
 ### Fixed
 
 - Codex status and doctor now inspect the configured database path, including validated environment
@@ -84,7 +89,7 @@ All notable changes to TemporalThread will be documented in this file. The forma
 - Runtime database health now fails closed for structural corruption, failed quick checks, foreign-key
   violations, altered migration history, unknown future migrations, and inconsistent schema versions.
 - Commitment lifecycle errors are bounded and allow-listed at the MCP boundary without exposing private data.
-- Override transitive `@hono/node-server` and `fast-uri` resolutions to patched releases after
+- Override transitive `fast-uri` resolution to a patched release after
   GHSA-frvp-7c67-39w9, GHSA-9mqv-5hh9-4cgg, and GHSA-v2hh-gcrm-f6hx were added to the registry audit feed.
 - Codex hook input is limited to 256 KiB, validated from stdin, never shell-interpolated, and excluded from
   logs/errors; hook output is capped at 7,000 bytes and omits transcripts, internal IDs, hashes, and database
@@ -95,5 +100,4 @@ All notable changes to TemporalThread will be documented in this file. The forma
   databases/logs, secret patterns, machine paths, invalid metadata, local-only dependencies, and a non-portable
   CLI entry point.
 - Live-certification setup and cleanup refuse real home/repository targets, symlink escapes, and unmarked
-  roots; functional tarballs remain explicitly blocked from release while SDK 1.29.0 resolves vulnerable
-  Hono 1.19.14 in clean consumers.
+  roots.

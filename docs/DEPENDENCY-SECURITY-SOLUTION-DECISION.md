@@ -1,24 +1,23 @@
 # Dependency security solution decision
 
-Decision date: 2026-07-22
+Decision date: 2026-07-22; outcome verified 2026-07-28
 
-Status: **Wait for a supported upstream range; preserve NO-GO**
+Status: **Selected upstream upgrade verified; preserve release NO-GO**
 
 ## Decision
 
-There is no current supportable metadata-only change that gives both npm and pnpm consumers a patched Hono
-node-server without leaving a vulnerable nested copy. TemporalThread will not publish v0.1.0 until an
-official stable MCP TypeScript SDK permits the secure Hono 2.x line, or a separately approved architecture
-and security review selects another distribution model.
+SDK 1.30.0 is the supported upstream solution: its published range permits patched Hono 2.x releases without
+leaving a vulnerable nested copy. TemporalThread will still not publish v0.1.0 without the remaining owner
+and account-security approvals.
 
-The release gate remains authoritative. The selected action for Phase 4.1 is to strengthen its clean npm and
-pnpm evidence, retain the blocker, and monitor the upstream fix.
+The release gate remains authoritative. SDK 1.30.0 now provides the selected supported range and passes the
+clean npm and pnpm evidence. This closes the technical dependency blocker without authorizing publication.
 
 ## Decision matrix
 
 | Option | Secure consumer graph | npm compatible | pnpm compatible | Cross-platform | Maintenance risk | Architecture impact | Decision |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| Stable SDK upgrade | Not currently; 1.29.0 is latest and still uses `^1.19.9` | Yes when released | Yes when released | Expected; must retest | Low | Minimal | **Selected trigger, unavailable today** |
+| Stable SDK upgrade | Yes; 1.30.0 permits patched Hono 2.x | Yes; verified | Yes; verified | Local source and packed checks pass | Low | Minimal | **Selected and implemented** |
 | Direct Hono dependency | No; secure direct copy plus vulnerable nested 1.19.14 | No reliable dedupe | No reliable dedupe | Irrelevant while nested copy remains | Medium | Low | Reject |
 | npm `overrides` | Only when the consumer adds it at its root | Root-only | Not portable policy | Resolver-dependent | High consumer burden | Low | Reject |
 | pnpm `overrides` | Only in a pnpm root/workspace | Not an npm fix | Root-only | Resolver-dependent | High consumer burden | Low | Reject |
@@ -80,9 +79,9 @@ A local patch does not survive publication unless TemporalThread vendors or publ
 Doing so would transfer upstream compatibility and security maintenance to this project. No emergency
 exploitability or explicit maintenance approval justifies that cost.
 
-## Upstream monitoring and acceptance criteria
+## Upstream acceptance criteria
 
-Monitor the npm stable tag and upstream issue #2531. Reconsider the decision when a stable SDK release:
+The selected stable SDK release had to:
 
 1. permits `@hono/node-server@2.0.10` or newer in published metadata;
 2. supports Node.js 24 and the existing MCP client/server/stdio APIs;
@@ -91,8 +90,15 @@ Monitor the npm stable tag and upstream issue #2531. Reconsider the decision whe
 5. passes both production audits with no known vulnerability;
 6. passes the secure packed verifier and Ubuntu/macOS/Windows release dry run.
 
-When that trigger occurs, update both SDK declarations consistently, refresh the lockfile, reevaluate the
-root Hono override, and regenerate artifacts only after the security gate passes.
+The 1.30.0 upgrade meets criteria 1–5 locally. Criterion 6 included a historical three-platform release
+dry run; GitHub Actions are now intentionally absent, so the current repository uses the documented local
+source and packed-consumer gates instead. No release artifacts were regenerated.
 
-Until then, do not install or publish the superseded npm tarballs. The secured source workspace may be used
-for development from a trusted checkout, but it is not an approved npm release substitute.
+The historical 1.29.0 tarballs remain superseded and must not be published.
+
+## Verified outcome
+
+On 2026-07-28, SDK 1.30.0 declared `@hono/node-server: ^1.19.9 || ^2.0.5`. TemporalThread removed its root
+Hono override. Independent clean npm and pnpm packed consumers both resolved SDK 1.30.0, Hono 2.0.12, and
+`fast-uri` 3.1.4; both production audits reported zero vulnerabilities. All source gates and packed functional
+checks also passed. Publication remains owner-authorized work outside this decision.
