@@ -36,9 +36,7 @@ function pragmaText(database: Database.Database, pragma: string): string {
 
 function migrationVersion(database: Database.Database): number {
   const table = database
-    .prepare(
-      "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'",
-    )
+    .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'")
     .get();
   if (!table) return 0;
   const row = database.prepare('SELECT MAX(version) AS version FROM schema_migrations').get() as {
@@ -59,9 +57,7 @@ function publishWithoutOverwrite(temporary: string, destination: string): void {
   } catch (error) {
     const code = errorCode(error);
     if (code === 'EEXIST') throw error;
-    if (
-      !['EACCES', 'EPERM', 'EXDEV', 'ENOSYS', 'ENOTSUP', 'EOPNOTSUPP'].includes(code ?? '')
-    ) {
+    if (!['EACCES', 'EPERM', 'EXDEV', 'ENOSYS', 'ENOTSUP', 'EOPNOTSUPP'].includes(code ?? '')) {
       throw error;
     }
   }
@@ -130,10 +126,7 @@ export async function createVerifiedBackup(
   destinationPath: string,
 ): Promise<DatabaseBackupResult> {
   const destination = resolve(destinationPath);
-  if (
-    storage.databasePath !== ':memory:' &&
-    activeDatabasePaths(storage.databasePath).has(destination)
-  ) {
+  if (storage.databasePath !== ':memory:' && activeDatabasePaths(storage.databasePath).has(destination)) {
     throw new Error('Backup destination must not use the active database or its sidecar paths');
   }
   if (existsSync(destination)) {

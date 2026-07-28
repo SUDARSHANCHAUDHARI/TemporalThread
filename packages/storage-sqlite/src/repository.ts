@@ -197,11 +197,7 @@ export class SqliteStorage {
     ).map(mapSession);
   }
 
-  findExternalSession(
-    agentId: string,
-    projectId: string | null,
-    externalSessionId: string,
-  ): Session | null {
+  findExternalSession(agentId: string, projectId: string | null, externalSessionId: string): Session | null {
     const row = this.database
       .prepare(
         `SELECT * FROM sessions
@@ -237,10 +233,15 @@ export class SqliteStorage {
     this.database
       .prepare(
         `UPDATE sessions
-         SET last_interaction_at = MAX(last_interaction_at, ?)
+         SET started_at = MIN(started_at, ?),
+             last_interaction_at = MAX(last_interaction_at, ?),
+             ended_at = CASE
+               WHEN ended_at IS NOT NULL AND ended_at <= ? THEN NULL
+               ELSE ended_at
+             END
          WHERE id = ?`,
       )
-      .run(occurredAt, sessionId);
+      .run(occurredAt, occurredAt, occurredAt, sessionId);
   }
 
   endSession(sessionId: string, endedAt: string): Session | null {
@@ -300,7 +301,9 @@ export class SqliteStorage {
   }
 
   getInteractionByIdempotencyKey(idempotencyKey: string): Interaction | null {
-    const row = this.database.prepare('SELECT * FROM interactions WHERE idempotency_key = ?').get(idempotencyKey);
+    const row = this.database
+      .prepare('SELECT * FROM interactions WHERE idempotency_key = ?')
+      .get(idempotencyKey);
     return row ? mapInteraction(row as SqlRow) : null;
   }
 
@@ -312,7 +315,7 @@ export class SqliteStorage {
     ).map(mapTemporalReference);
   }
 
-  getLastInteraction(filters: InteractionFilters): InteractionWithRelations | null {
+  getLastInteraction(filters: InteractionFilters = {}): InteractionWithRelations | null {
     const clauses: string[] = [];
     const parameters: unknown[] = [];
     this.addInteractionFilterClauses(filters, clauses, parameters);
@@ -342,7 +345,7 @@ export class SqliteStorage {
     return row ? this.mapInteractionWithRelations(row as SqlRow) : null;
   }
 
-  listInteractions(filters: InteractionFilters, limit: number): InteractionWithRelations[] {
+  listInteractions(filters: InteractionFilters = {}, limit = 100): InteractionWithRelations[] {
     const clauses: string[] = [];
     const parameters: unknown[] = [];
     this.addInteractionFilterClauses(filters, clauses, parameters);
@@ -439,7 +442,7 @@ export class SqliteStorage {
     return this.getCommitment(commitment.id) as Commitment;
   }
 
-  listCommitments(filters: CommitmentFilters, limit: number): Commitment[] {
+  listCommitments(filters: CommitmentFilters = {}, limit = 100, offset = 0): Commitment[] {
     const clauses: string[] = [];
     const parameters: unknown[] = [];
     if (filters.projectId !== undefined) {
@@ -454,7 +457,7 @@ export class SqliteStorage {
       clauses.push('due_end_utc >= ?');
       parameters.push(filters.dueAfter);
     }
-    parameters.push(limit);
+    parameters.push(limit, offset);
     const rows = this.database
       .prepare(
         `SELECT * FROM commitments
@@ -462,8 +465,9 @@ export class SqliteStorage {
          ORDER BY
            CASE WHEN due_start_utc IS NULL THEN 1 ELSE 0 END,
            due_start_utc ASC,
-           created_at ASC
-         LIMIT ?`,
+           created_at ASC,
+           id ASC
+         LIMIT ? OFFSET ?`,
       )
       .all(...parameters) as SqlRow[];
     return rows.map(mapCommitment);
@@ -488,9 +492,7 @@ export class SqliteStorage {
         this.database.prepare('SELECT * FROM interactions ORDER BY occurred_at_utc').all() as SqlRow[]
       ).map(mapInteraction),
       temporalReferences: (
-        this.database
-          .prepare('SELECT * FROM temporal_references ORDER BY created_at')
-          .all() as SqlRow[]
+        this.database.prepare('SELECT * FROM temporal_references ORDER BY created_at').all() as SqlRow[]
       ).map(mapTemporalReference),
       commitments: (
         this.database.prepare('SELECT * FROM commitments ORDER BY created_at').all() as SqlRow[]

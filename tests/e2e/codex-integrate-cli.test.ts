@@ -1,5 +1,13 @@
 import { spawnSync } from 'node:child_process';
-import { existsSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs';
+import {
+  existsSync,
+  mkdtempSync,
+  readFileSync,
+  realpathSync,
+  renameSync,
+  rmSync,
+  writeFileSync,
+} from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -145,7 +153,7 @@ describe('temporalthread integrate codex CLI', () => {
       installed: true,
       integrationVersion: '0.1.0',
       configuredPrivacyMode: 'temporal-references-only',
-      database: { accessible: true, schemaVersion: 2 },
+      database: { accessible: true, schemaVersion: 3 },
       skill: { installed: true },
     });
 
@@ -162,6 +170,37 @@ describe('temporalthread integrate codex CLI', () => {
     expect(JSON.parse(removed.stdout)).toMatchObject({ databasePreserved: true });
     expect(existsSync(join(project, '.agents', 'skills', 'temporal-awareness', 'SKILL.md'))).toBe(false);
     expect(existsSync(join(home, 'temporalthread.sqlite'))).toBe(true);
+  });
+
+  it('reports health for the configured database path', () => {
+    const home = temporaryRoot('home');
+    const project = temporaryRoot('project');
+    expect(
+      runCli(home, project, [
+        'integrate',
+        'codex',
+        'install',
+        '--scope',
+        'project',
+        '--skill-only',
+        '--yes',
+        '--json',
+      ]).status,
+    ).toBe(0);
+
+    const defaultDatabase = join(home, 'temporalthread.sqlite');
+    const configuredDatabase = join(home, 'custom.sqlite');
+    renameSync(defaultDatabase, configuredDatabase);
+    const configPath = join(home, 'config.json');
+    const config = JSON.parse(readFileSync(configPath, 'utf8')) as Record<string, unknown>;
+    writeFileSync(configPath, `${JSON.stringify({ ...config, databasePath: configuredDatabase })}\n`, 'utf8');
+
+    const status = runCli(home, project, ['integrate', 'codex', 'status', '--scope', 'project', '--json']);
+    expect(status.status).toBe(0);
+    expect(JSON.parse(status.stdout)).toMatchObject({
+      database: { path: configuredDatabase, accessible: true, schemaVersion: 3 },
+    });
+    expect(existsSync(defaultDatabase)).toBe(false);
   });
 
   it('provides JSON and human-readable doctor output with recommended fixes', () => {

@@ -51,7 +51,7 @@ describe('temporalthread CLI', () => {
       expect.objectContaining({
         configCreated: true,
         privacyMode: 'temporal-references-only',
-        migrationVersion: 2,
+        migrationVersion: 3,
         hostConfigurationsModified: false,
       }),
     );

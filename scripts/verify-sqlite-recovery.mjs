@@ -80,8 +80,7 @@ try {
   }
 
   const initialized = JSON.parse(
-    runCli(['init', '--yes', '--timezone', 'UTC', '--integration', 'generic', '--json'])
-      .stdout,
+    runCli(['init', '--yes', '--timezone', 'UTC', '--integration', 'generic', '--json']).stdout,
   );
   if (!existsSync(initialized.databasePath)) {
     throw new Error('Recovery source database was not created');
@@ -135,17 +134,13 @@ try {
     ...baseEnvironment,
     TEMPORALTHREAD_DATABASE_PATH: backupPath,
   };
-  const restoredStatus = JSON.parse(
-    runCli(['status', '--json'], { env: restoredEnvironment }).stdout,
-  );
+  const restoredStatus = JSON.parse(runCli(['status', '--json'], { env: restoredEnvironment }).stdout);
   if (
     restoredStatus.healthy !== true ||
     restoredStatus.integrity !== 'ok' ||
     restoredStatus.counts.interactions !== 1
   ) {
-    throw new Error(
-      'Verified snapshot did not reopen as an independent healthy point-in-time database',
-    );
+    throw new Error('Verified snapshot did not reopen as an independent healthy point-in-time database');
   }
 
   process.stdout.write(

@@ -3,10 +3,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync } from 'node:f
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
-import {
-  getDefaultEnvironment,
-  StdioClientTransport,
-} from '@modelcontextprotocol/sdk/client/stdio.js';
+import { getDefaultEnvironment, StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import { expectedMcpTools } from './mcp-release-smoke.mjs';
 
 const repositoryRoot = resolve(import.meta.dirname, '..');
@@ -171,10 +168,7 @@ try {
       },
     }),
   );
-  if (
-    elapsed.totalMilliseconds !== 99 * 60 * 60 * 1_000 ||
-    elapsed.calendarDayDifference !== 4
-  ) {
+  if (elapsed.totalMilliseconds !== 99 * 60 * 60 * 1_000 || elapsed.calendarDayDifference !== 4) {
     throw new Error('Elapsed-time calculation failed the controlled scenario');
   }
 
@@ -212,10 +206,7 @@ try {
       arguments: interactionArguments,
     }),
   );
-  if (
-    interaction.duplicate !== false ||
-    interaction.privacyMode !== 'temporal-references-only'
-  ) {
+  if (interaction.duplicate !== false || interaction.privacyMode !== 'temporal-references-only') {
     throw new Error('Initial interaction recording failed');
   }
 
@@ -265,9 +256,7 @@ try {
   );
   const commitmentId = commitment.commitment?.id;
   if (!commitmentId || commitment.commitment.originalText !== null) {
-    throw new Error(
-      'Commitment creation failed or retained original text under the default privacy mode',
-    );
+    throw new Error('Commitment creation failed or retained original text under the default privacy mode');
   }
 
   const commitments = resultObject(

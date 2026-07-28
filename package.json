@@ -37,6 +37,7 @@
     "@opencode-ai/plugin": "1.1.33",
     "@types/better-sqlite3": "7.6.13",
     "@types/node": "24.13.3",
+    "better-sqlite3": "12.11.1",
     "tsx": "4.23.1",
     "typescript": "7.0.2",
     "vitest": "4.1.10"

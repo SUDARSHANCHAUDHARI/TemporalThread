@@ -327,17 +327,16 @@ async function installAction(options: InstallOptions, forcedComponents?: Array<'
   );
 }
 
-function databaseStatus(): {
+function databaseStatus(databasePath: string): {
   path: string;
   accessible: boolean;
   schemaVersion: number | null;
   latestSchemaVersion: number | null;
   lastSuccessfulInteraction: { timestamp: string; role: string } | null;
 } {
-  const paths = resolveTemporalThreadPaths();
-  if (!existsSync(paths.databasePath)) {
+  if (!existsSync(databasePath)) {
     return {
-      path: paths.databasePath,
+      path: databasePath,
       accessible: false,
       schemaVersion: null,
       latestSchemaVersion: null,
@@ -346,10 +345,10 @@ function databaseStatus(): {
   }
   let storage: SqliteStorage | undefined;
   try {
-    storage = new SqliteStorage(paths.databasePath);
+    storage = new SqliteStorage(databasePath);
     const last = storage.getLastInteraction();
     return {
-      path: paths.databasePath,
+      path: databasePath,
       accessible: true,
       schemaVersion: storage.getMigrationVersion(),
       latestSchemaVersion: storage.getLatestMigrationVersion(),
@@ -359,7 +358,7 @@ function databaseStatus(): {
     };
   } catch {
     return {
-      path: paths.databasePath,
+      path: databasePath,
       accessible: false,
       schemaVersion: null,
       latestSchemaVersion: null,
@@ -417,7 +416,9 @@ async function statusAction(options: ScopeOptions) {
   const scope = await resolveScope(options.scope);
   const status = getCodexIntegrationStatus({ scope, projectRoot: process.cwd() });
   const temporalConfiguration = temporalConfigurationStatus();
-  const database = databaseStatus();
+  const database = databaseStatus(
+    temporalConfiguration.config?.databasePath ?? resolveTemporalThreadPaths().databasePath,
+  );
   const probe = database.accessible ? await probeInstalledMcp(status, 3_000) : null;
   const result = {
     ...status,
@@ -460,7 +461,7 @@ async function doctorAction(options: ScopeOptions) {
   const temporalPaths = resolveTemporalThreadPaths();
   const temporalConfiguration = temporalConfigurationStatus();
   const configured = temporalConfiguration.config;
-  const database = databaseStatus();
+  const database = databaseStatus(configured?.databasePath ?? temporalPaths.databasePath);
   const surface = detectCodexSurface();
   const checks: DoctorCheck[] = [];
   const nodeMajor = Number(process.versions.node.split('.')[0]);
