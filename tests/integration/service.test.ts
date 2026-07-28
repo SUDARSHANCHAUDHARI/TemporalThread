@@ -502,6 +502,26 @@ describe('TemporalThreadService commitment and data lifecycle', () => {
     });
   });
 
+  it('applies commitment status filtering before the requested limit', () => {
+    const { service } = trackedHarness();
+    service.recordCommitment({
+      title: 'Earlier pending item',
+      originalExpression: 'tomorrow',
+      anchorTime: '2026-07-19T13:00:00Z',
+      timezone: 'UTC',
+    });
+    const completed = service.recordCommitment({
+      title: 'Completed item without a due date',
+      anchorTime: '2026-07-19T13:00:00Z',
+      timezone: 'UTC',
+    });
+    service.updateCommitment({ commitmentId: completed.commitment.id, status: 'completed' });
+
+    expect(service.listCommitments({ status: 'completed', limit: 1 }).commitments).toEqual([
+      expect.objectContaining({ id: completed.commitment.id, displayStatus: 'completed' }),
+    ]);
+  });
+
   it('exports only the persisted privacy representation and purges all domain data', () => {
     const { service, storage } = trackedHarness();
     service.recordInteraction({

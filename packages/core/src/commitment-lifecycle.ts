@@ -49,9 +49,7 @@ function validateStoredCommitment(commitment: Commitment): void {
   }
 }
 
-export function applyCommitmentTransition(
-  input: CommitmentTransitionInput,
-): CommitmentTransitionResult {
+export function applyCommitmentTransition(input: CommitmentTransitionInput): CommitmentTransitionResult {
   const { existing, action, now } = input;
   validateStoredCommitment(existing);
 
@@ -82,9 +80,7 @@ export function applyCommitmentTransition(
     };
   } else if (action === 'completed') {
     if (existing.status === 'cancelled') {
-      throw new Error(
-        'Invalid commitment transition: reopen a cancelled commitment before completing it',
-      );
+      throw new Error('Invalid commitment transition: reopen a cancelled commitment before completing it');
     }
     const completedAt = input.completedAt ?? now;
     if (existing.status === 'completed') {
@@ -102,9 +98,7 @@ export function applyCommitmentTransition(
     };
   } else {
     if (existing.status === 'completed') {
-      throw new Error(
-        'Invalid commitment transition: reopen a completed commitment before cancelling it',
-      );
+      throw new Error('Invalid commitment transition: reopen a completed commitment before cancelling it');
     }
     if (existing.status === 'cancelled') {
       return { commitment: existing, changed: false };

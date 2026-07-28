@@ -4,6 +4,14 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ## [Unreleased]
 
+### Fixed
+
+- Codex status and doctor now inspect the configured database path, including validated environment
+  overrides, instead of assuming the default data path.
+- Commitment status filters are applied before the requested result limit.
+- Later interactions reopen ended sessions and preserve out-of-order session start timestamps.
+- Storage query helpers retain their no-filter defaults after the repository refactor.
+
 ## [0.1.0] - UNRELEASED
 
 ### Added

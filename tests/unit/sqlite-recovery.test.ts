@@ -60,9 +60,7 @@ describe('SQLite migrations and recovery', () => {
         );
       `);
       database
-        .prepare(
-          'INSERT INTO schema_migrations (version, name, applied_at, checksum) VALUES (?, ?, ?, ?)',
-        )
+        .prepare('INSERT INTO schema_migrations (version, name, applied_at, checksum) VALUES (?, ?, ?, ?)')
         .run(999, 'future-migration', '2026-07-26T00:00:00Z', 'future');
 
       expect(() => migrate(database)).toThrow('newer than or unknown to this build');
@@ -103,15 +101,8 @@ describe('SQLite migrations and recovery', () => {
       for (const migration of migrations.slice(0, 2)) {
         database.exec(migration.sql);
         database
-          .prepare(
-            'INSERT INTO schema_migrations (version, name, applied_at, checksum) VALUES (?, ?, ?, ?)',
-          )
-          .run(
-            migration.version,
-            migration.name,
-            '2026-07-26T00:00:00Z',
-            migrationChecksum(migration),
-          );
+          .prepare('INSERT INTO schema_migrations (version, name, applied_at, checksum) VALUES (?, ?, ?, ?)')
+          .run(migration.version, migration.name, '2026-07-26T00:00:00Z', migrationChecksum(migration));
       }
       database
         .prepare(
@@ -177,12 +168,7 @@ describe('SQLite migrations and recovery', () => {
             last_interaction_at, generated_session, metadata_json
           ) VALUES (?, NULL, ?, NULL, ?, NULL, ?, 1, '{}')`,
         )
-        .run(
-          'orphan-session',
-          'missing-agent',
-          '2026-07-20T00:00:00Z',
-          '2026-07-20T00:00:00Z',
-        );
+        .run('orphan-session', 'missing-agent', '2026-07-20T00:00:00Z', '2026-07-20T00:00:00Z');
       database.pragma('foreign_keys = ON');
 
       const health = inspectDatabaseHealth(database);

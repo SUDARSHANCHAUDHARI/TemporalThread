@@ -386,19 +386,28 @@ export class TemporalThreadService {
       ? canonicalInstant(parsed.dueBefore, 'dueBefore').toString()
       : undefined;
     const dueAfter = parsed.dueAfter ? canonicalInstant(parsed.dueAfter, 'dueAfter').toString() : undefined;
-    const commitments = this.storage
-      .listCommitments(
-        {
-          ...(parsed.project ? { projectId: project?.id ?? null } : {}),
-          ...(dueBefore ? { dueBefore } : {}),
-          ...(dueAfter ? { dueAfter } : {}),
-        },
-        parsed.limit ?? 100,
-      )
-      .map((item) => this.commitmentView(item))
-      .filter(
-        (item) => !parsed.status || item.status === parsed.status || item.displayStatus === parsed.status,
+    const filters = {
+      ...(parsed.project ? { projectId: project?.id ?? null } : {}),
+      ...(dueBefore ? { dueBefore } : {}),
+      ...(dueAfter ? { dueAfter } : {}),
+    };
+    const limit = parsed.limit ?? 100;
+    const commitments: CommitmentView[] = [];
+    const pageSize = parsed.status ? 500 : limit;
+    let offset = 0;
+    while (commitments.length < limit) {
+      const page = this.storage.listCommitments(filters, pageSize, offset);
+      commitments.push(
+        ...page
+          .map((item) => this.commitmentView(item))
+          .filter(
+            (item) => !parsed.status || item.status === parsed.status || item.displayStatus === parsed.status,
+          )
+          .slice(0, limit - commitments.length),
       );
+      if (page.length < pageSize || !parsed.status) break;
+      offset += page.length;
+    }
     const counts = Object.fromEntries(commitmentStatuses.map((status) => [status, 0])) as Record<
       CommitmentDisplayStatus,
       number

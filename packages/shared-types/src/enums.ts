@@ -15,12 +15,7 @@ export type ReferenceType = z.infer<typeof ReferenceTypeSchema>;
 export const CommitmentPersistedStatusSchema = z.enum(['pending', 'completed', 'cancelled']);
 export type CommitmentPersistedStatus = z.infer<typeof CommitmentPersistedStatusSchema>;
 
-export const CommitmentUpdateActionSchema = z.enum([
-  'pending',
-  'completed',
-  'cancelled',
-  'rescheduled',
-]);
+export const CommitmentUpdateActionSchema = z.enum(['pending', 'completed', 'cancelled', 'rescheduled']);
 export type CommitmentUpdateAction = z.infer<typeof CommitmentUpdateActionSchema>;
 
 export const CommitmentStatusSchema = CommitmentPersistedStatusSchema;

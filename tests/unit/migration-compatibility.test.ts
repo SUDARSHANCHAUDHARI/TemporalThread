@@ -65,14 +65,10 @@ describe('migration metadata compatibility', () => {
 
       expect(() => migrate(database)).toThrow('user version');
       const migrationTable = database
-        .prepare(
-          "SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'",
-        )
+        .prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'schema_migrations'")
         .get();
       expect(migrationTable).toBeUndefined();
-      expect(database.pragma('user_version', { simple: true })).toBe(
-        latestMigrationVersion + 1,
-      );
+      expect(database.pragma('user_version', { simple: true })).toBe(latestMigrationVersion + 1);
     } finally {
       database.close();
     }

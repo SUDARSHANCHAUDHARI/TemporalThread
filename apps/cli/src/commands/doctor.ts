@@ -4,11 +4,7 @@ import { isValidTimezone, loadConfig, resolveTemporalThreadPaths } from '@tempor
 import { SystemClock, TemporalThreadService } from '@temporalthread/core';
 import { createMcpServer } from '@temporalthread/mcp-server';
 import type { DoctorCheck } from '@temporalthread/shared-types';
-import {
-  type DatabaseHealth,
-  inspectDatabaseHealth,
-  SqliteStorage,
-} from '@temporalthread/storage-sqlite';
+import { type DatabaseHealth, inspectDatabaseHealth, SqliteStorage } from '@temporalthread/storage-sqlite';
 import type { Command } from 'commander';
 import { expectedIntegrationExample } from '../integration-examples.js';
 import { printJson, printLines } from '../output.js';
