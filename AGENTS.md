@@ -18,7 +18,8 @@ The repository is currently private. The project is an **MVP candidate**, not a 
 - Local validation is the default development workflow.
 - No npm package, Git tag, GitHub release, public announcement, or repository visibility change is authorized.
 - Real Codex CLI/desktop UI, trust prompts, skill discovery, lifecycle behavior, and model behavior are not certified.
-- The dependency-security release blocker documented in the repository remains unresolved and must be rechecked before any release work.
+- The prior MCP SDK/Hono dependency-security blocker was cleared locally in merged pull request `#5`.
+- Publication remains blocked by owner-only npm authority, account-security, and release-approval gates.
 
 ## What has been implemented
 
@@ -110,6 +111,12 @@ pnpm audit --prod --audit-level high
 - build: passed;
 - production audit: no known vulnerabilities found.
 
+The supported dependency upgrade was completed in pull request `#5` and merged as `612ba1e`.
+`@modelcontextprotocol/sdk` 1.30.0 permits the patched Hono 2.x line, so the obsolete root Hono override was
+removed. The secure packed verifier passed for all eight tarballs and nine MCP tools. Independent clean npm
+and pnpm consumers both resolved SDK 1.30.0, `@hono/node-server` 2.0.12, and `fast-uri` 3.1.4, with zero
+production audit findings. This is local dependency-security evidence, not release authorization.
+
 Specialized scripts such as packed-package verification, host-neutral MCP verification, SQLite recovery verification, clean-source verification, artifact generation, and SBOM generation are not normal per-change checks. Run them only for a justified release candidate and only after owner approval.
 
 ### Future fixes
@@ -134,9 +141,9 @@ Do not start new phases, unrelated refactors, large test expansions, or infrastr
 
 ## What remains before production release
 
-Even after local development validation passes, the project is not production-ready until all of these are resolved:
+The prior dependency-security blocker is locally cleared. The project is still not production-ready until
+all of these remaining gates are resolved:
 
-- the documented dependency-security blocker is cleared using a stable supported dependency path;
 - npm scope/package ownership and write authority are confirmed;
 - npm write-protection 2FA and recovery readiness are completed by the owner;
 - package names are rechecked immediately before publication;
@@ -237,14 +244,14 @@ Use evidence-based wording:
 Current accurate status:
 
 > Core MVP functionality is implemented, focused review is complete, and the required local validation
-> passed on merged pull request `#3`. The project is not production-ready and publication remains blocked.
+> passed on merged pull request `#3`. The stable MCP SDK dependency path and secure packed-consumer checks
+> passed on merged pull request `#5`. The project is not production-ready and publication remains blocked.
 
 ## Exact next work item
 
-Do not begin another implementation phase. Monitor the stable MCP TypeScript SDK dependency graph and
-reassess the documented Hono security blocker only when a supported upstream release changes that graph.
-Until then, release, packaging, artifact generation, SBOM generation, publication, and public-state changes
-remain blocked.
+Do not begin another implementation phase. The owner must personally verify npm scope/package authority,
+write-protection 2FA, and recovery readiness. After that, every release artifact, SBOM, publication, tag,
+GitHub release, repository visibility change, and announcement still requires explicit owner approval.
 
 No CI, GitHub Actions, new roadmap features, release automation, or direct changes to `main` are part of the
 next work.
