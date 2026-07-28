@@ -86,26 +86,13 @@ The CLI includes initialization, server startup, diagnostics, status, configurat
 
 The repository contains architecture, data-model, privacy, security, integration, recovery, release-gate, roadmap, and phase-report documentation. Some older phase documents are historical evidence and may describe CI or release processes that are no longer active.
 
-## What remains before development can be called complete
+## Development review status
 
-### 1. Focused code review
+The focused review of commitment lifecycle, migration, health-check, backup, and recovery changes was
+completed in pull request `#3` and merged as `e07439e`. Confirmed defects were corrected without adding CI,
+release automation, or roadmap features.
 
-The recent commitment-lifecycle, migration, health-check, backup, and recovery changes were added without a normal pull-request review. Review those changes for concrete defects, especially:
-
-- lifecycle state transitions and idempotency;
-- completion and cancellation timestamp preservation;
-- migration compatibility with older databases;
-- backup destination safety and cleanup on failure;
-- cross-platform path behavior;
-- SQLite handle cleanup after migration or health failure;
-- safe MCP error messages;
-- default privacy behavior.
-
-Do not create speculative fixes. Change code only when a concrete defect or unsafe behavior is identified.
-
-### 2. One local validation pass
-
-Run locally from a clean checkout using Node.js 24 and pnpm 11.9.0:
+The final local validation used Node.js 24.14.0 and pnpm 11.9.0:
 
 ```sh
 pnpm install --frozen-lockfile
@@ -116,11 +103,16 @@ pnpm build
 pnpm audit --prod --audit-level high
 ```
 
-Record the exact command results in the pull request. Do not claim PASS without command output.
+- frozen install: 12 workspace projects, already up to date;
+- lint: 143 files checked;
+- typecheck: passed;
+- tests: 29 files and 168 tests passed;
+- build: passed;
+- production audit: no known vulnerabilities found.
 
 Specialized scripts such as packed-package verification, host-neutral MCP verification, SQLite recovery verification, clean-source verification, artifact generation, and SBOM generation are not normal per-change checks. Run them only for a justified release candidate and only after owner approval.
 
-### 3. Fix only confirmed failures
+### Future fixes
 
 When local validation fails:
 
@@ -133,7 +125,7 @@ When local validation fails:
 
 Do not start new phases, unrelated refactors, large test expansions, or infrastructure work while fixing a specific failure.
 
-### 4. Owner review and merge
+### Owner review and merge
 
 - Present the PR with a plain summary, files changed, risks, and local results.
 - Do not merge automatically.
@@ -244,15 +236,15 @@ Use evidence-based wording:
 
 Current accurate status:
 
-> Core MVP functionality is implemented. Focused review and current local validation remain incomplete. The project is not production-ready and publication remains blocked.
+> Core MVP functionality is implemented, focused review is complete, and the required local validation
+> passed on merged pull request `#3`. The project is not production-ready and publication remains blocked.
 
 ## Exact next work item
 
-After this documentation PR is merged, code completion must happen through one separate focused branch and pull request, only after the owner approves the scope. That code PR should contain only:
+Do not begin another implementation phase. Monitor the stable MCP TypeScript SDK dependency graph and
+reassess the documented Hono security blocker only when a supported upstream release changes that graph.
+Until then, release, packaging, artifact generation, SBOM generation, publication, and public-state changes
+remain blocked.
 
-1. confirmed corrections found during focused review;
-2. necessary targeted tests for those corrections;
-3. recorded local validation results;
-4. directly related documentation updates, when required.
-
-No CI, GitHub Actions, new roadmap features, release automation, or direct changes to `main` are part of that work.
+No CI, GitHub Actions, new roadmap features, release automation, or direct changes to `main` are part of the
+next work.
