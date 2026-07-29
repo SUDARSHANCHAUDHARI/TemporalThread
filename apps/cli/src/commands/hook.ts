@@ -1,5 +1,8 @@
-import { MAX_CODEX_HOOK_INPUT_BYTES, parseCodexHookInput } from '@temporalthread/codex-integration';
-import { createRuntime } from '@temporalthread/mcp-server';
+import {
+  MAX_CODEX_HOOK_INPUT_BYTES,
+  parseCodexHookInput,
+} from '@sudarshanchaudhari/temporalthread-codex-integration';
+import { createRuntime } from '@sudarshanchaudhari/temporalthread-mcp-server';
 import type { Command } from 'commander';
 import { type HookHost, handleHostHook } from '../hook-adapter.js';
 import { printJson } from '../output.js';

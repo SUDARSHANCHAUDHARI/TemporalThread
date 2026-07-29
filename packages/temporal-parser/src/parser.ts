@@ -1,5 +1,5 @@
 import type { Temporal } from '@js-temporal/polyfill';
-import type { ReferenceType, TemporalResolution } from '@temporalthread/shared-types';
+import type { ReferenceType, TemporalResolution } from '@sudarshanchaudhari/temporalthread-shared-types';
 import {
   calendarDateRange,
   parseAnchor,

@@ -1,8 +1,8 @@
 import { existsSync, writeFileSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
-import { createRuntime } from '@temporalthread/mcp-server';
-import type { InteractionRole } from '@temporalthread/shared-types';
-import { createVerifiedBackup } from '@temporalthread/storage-sqlite';
+import { createRuntime } from '@sudarshanchaudhari/temporalthread-mcp-server';
+import type { InteractionRole } from '@sudarshanchaudhari/temporalthread-shared-types';
+import { createVerifiedBackup } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import type { Command } from 'commander';
 import { printJson, printLines } from '../output.js';
 

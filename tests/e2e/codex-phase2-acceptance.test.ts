@@ -18,11 +18,15 @@ import {
   MAX_CODEX_CONTEXT_BYTES,
   TEMPORALTHREAD_MCP_TOOL_NAMES,
   uninstallCodexIntegration,
-} from '@temporalthread/codex-integration';
-import type { TemporalThreadConfig } from '@temporalthread/config';
-import { createDefaultConfig, resolveTemporalThreadPaths, writeConfig } from '@temporalthread/config';
-import { FakeClock, TemporalThreadService } from '@temporalthread/core';
-import { SqliteStorage } from '@temporalthread/storage-sqlite';
+} from '@sudarshanchaudhari/temporalthread-codex-integration';
+import type { TemporalThreadConfig } from '@sudarshanchaudhari/temporalthread-config';
+import {
+  createDefaultConfig,
+  resolveTemporalThreadPaths,
+  writeConfig,
+} from '@sudarshanchaudhari/temporalthread-config';
+import { FakeClock, TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
+import { SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import { afterEach, describe, expect, it } from 'vitest';
 
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'));

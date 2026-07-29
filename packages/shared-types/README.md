@@ -1,4 +1,4 @@
-# `@temporalthread/shared-types`
+# `@sudarshanchaudhari/temporalthread-shared-types`
 
 Public Zod schemas, domain types, results, and adapter contracts shared by TemporalThread packages.
 

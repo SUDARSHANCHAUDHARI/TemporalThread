@@ -1,5 +1,5 @@
 {
-  "name": "@temporalthread/core",
+  "name": "@sudarshanchaudhari/temporalthread-core",
   "version": "0.1.0",
   "description": "TemporalThread service logic and deterministic clock abstractions.",
   "type": "module",
@@ -37,10 +37,10 @@
   },
   "dependencies": {
     "@js-temporal/polyfill": "0.5.1",
-    "@temporalthread/config": "workspace:*",
-    "@temporalthread/shared-types": "workspace:*",
-    "@temporalthread/storage-sqlite": "workspace:*",
-    "@temporalthread/temporal-parser": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-config": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-shared-types": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-storage-sqlite": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-temporal-parser": "workspace:*",
     "ulid": "3.0.2"
   }
 }

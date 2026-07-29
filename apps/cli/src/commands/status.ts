@@ -1,5 +1,5 @@
-import { loadConfig, resolveTemporalThreadPaths } from '@temporalthread/config';
-import { inspectDatabaseHealth, SqliteStorage } from '@temporalthread/storage-sqlite';
+import { loadConfig, resolveTemporalThreadPaths } from '@sudarshanchaudhari/temporalthread-config';
+import { inspectDatabaseHealth, SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import type { Command } from 'commander';
 import { printJson, printLines } from '../output.js';
 

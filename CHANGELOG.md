@@ -6,6 +6,9 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ### Changed
 
+- Move the seven publishable workspace packages from the unavailable `@temporalthread` organization scope
+  to the maintainer-owned `@sudarshanchaudhari/temporalthread-*` personal scope. The unscoped
+  `temporalthread` CLI name is unchanged.
 - Upgrade `@modelcontextprotocol/sdk` to 1.30.0 and remove the Hono workspace override now that the
   SDK's supported range resolves patched `@hono/node-server` 2.x releases in clean npm and pnpm consumers.
 

@@ -1,13 +1,13 @@
 {
-  "name": "@temporalthread/example-manual-event-recording",
+  "name": "temporalthread-example-manual-event-recording",
   "version": "0.1.0",
   "private": true,
   "type": "module",
   "dependencies": {
-    "@temporalthread/config": "workspace:*",
-    "@temporalthread/core": "workspace:*",
-    "@temporalthread/shared-types": "workspace:*",
-    "@temporalthread/storage-sqlite": "workspace:*",
-    "@temporalthread/temporal-parser": "workspace:*"
+    "@sudarshanchaudhari/temporalthread-config": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-core": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-shared-types": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-storage-sqlite": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-temporal-parser": "workspace:*"
   }
 }

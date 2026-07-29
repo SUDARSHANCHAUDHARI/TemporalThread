@@ -1,5 +1,5 @@
 {
-  "name": "@temporalthread/config",
+  "name": "@sudarshanchaudhari/temporalthread-config",
   "version": "0.1.0",
   "description": "Validated configuration and platform paths for TemporalThread.",
   "type": "module",
@@ -36,7 +36,7 @@
     }
   },
   "dependencies": {
-    "@temporalthread/shared-types": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-shared-types": "workspace:*",
     "zod": "4.4.3"
   }
 }

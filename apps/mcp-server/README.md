@@ -1,4 +1,4 @@
-# `@temporalthread/mcp-server`
+# `@sudarshanchaudhari/temporalthread-mcp-server`
 
 Local stdio MCP transport for TemporalThread. It registers the nine TemporalThread tools against the core
 service and does not open a network listener.

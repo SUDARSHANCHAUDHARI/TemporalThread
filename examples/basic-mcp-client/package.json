@@ -1,5 +1,5 @@
 {
-  "name": "@temporalthread/example-basic-mcp-client",
+  "name": "temporalthread-example-basic-mcp-client",
   "version": "0.1.0",
   "private": true,
   "type": "module",

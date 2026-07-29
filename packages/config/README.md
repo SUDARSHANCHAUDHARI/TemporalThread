@@ -1,4 +1,4 @@
-# `@temporalthread/config`
+# `@sudarshanchaudhari/temporalthread-config`
 
 Validated configuration, privacy defaults, and platform-specific local paths for TemporalThread.
 

@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
-import { handleCodexHook } from '@temporalthread/codex-integration';
-import type { TemporalThreadConfig } from '@temporalthread/config';
-import type { TemporalThreadService } from '@temporalthread/core';
+import { handleCodexHook } from '@sudarshanchaudhari/temporalthread-codex-integration';
+import type { TemporalThreadConfig } from '@sudarshanchaudhari/temporalthread-config';
+import type { TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
 
 export type HookHost = 'codex' | 'claude-code';
 

@@ -33,6 +33,12 @@ const requireSecureDependencies = verificationArguments.includes('--require-secu
 
 const packageSpecs = releasePackages.map(({ name, directory, archive }) => [name, directory, archive]);
 
+function installedPackageRoot(installRoot, directory) {
+  const packageName = releasePackages.find((releasePackage) => releasePackage.directory === directory)?.name;
+  if (!packageName) throw new Error(`Release package is missing for directory: ${directory}`);
+  return join(installRoot, 'node_modules', ...packageName.split('/'));
+}
+
 function diagnosticValue(record, key) {
   if (!record || typeof record !== 'object' || !(key in record)) return '';
   const value = record[key];
@@ -302,7 +308,7 @@ try {
   );
   const securityGateFailed = requireSecureDependencies && !packedDependencySecurity;
 
-  const integrationRoot = join(pnpmInstallRoot, 'node_modules', '@temporalthread', 'codex-integration');
+  const integrationRoot = installedPackageRoot(pnpmInstallRoot, 'integrations/codex');
   const installedIntegration = await import(pathToFileURL(join(integrationRoot, 'dist', 'index.js')).href);
   const pluginValidation = installedIntegration.validateCodexPluginPackage({
     pluginRoot: join(integrationRoot, 'plugin'),
@@ -415,10 +421,7 @@ try {
   const mcp = await exerciseMcpRelease({
     nodeModulesRoot: join(pnpmInstallRoot, 'node_modules'),
     dependencyResolverPath: join(
-      pnpmInstallRoot,
-      'node_modules',
-      '@temporalthread',
-      'mcp-server',
+      installedPackageRoot(pnpmInstallRoot, 'apps/mcp-server'),
       'dist',
       'index.js',
     ),

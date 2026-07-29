@@ -3,7 +3,7 @@ import {
   migrate,
   migrationChecksum,
   migrations,
-} from '@temporalthread/storage-sqlite';
+} from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import Database from 'better-sqlite3';
 import { describe, expect, it } from 'vitest';
 

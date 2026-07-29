@@ -56,7 +56,8 @@ TemporalThread is local-first, not anonymous.
 
 - Node.js 24 or newer.
 - pnpm 11.9.0 for source/release-candidate workflows.
-- Linux, macOS, and Windows are covered by CI and packed installation tests.
+- The current candidate is locally validated on macOS. Historical cross-platform evidence does not replace
+  exact-candidate validation on Linux or Windows.
 - `better-sqlite3` uses a native binary and may require a supported native toolchain when no compatible
   prebuild is available.
 - Current Codex host compatibility still requires the documented manual certification.
@@ -67,10 +68,9 @@ The package set is not published. Until publication is explicitly approved, use 
 install. Do not present `npm install temporalthread` as an active public installation method yet, and do not
 use a prior dry-run artifact as a release candidate.
 
-The intended registry model is the `temporalthread` CLI plus seven public `@temporalthread/*` runtime
-packages. Ownership of the `@temporalthread` npm scope must be established before release. The prior dry-run
-artifacts are superseded and must not be installed or published as a release candidate because their fresh
-consumer graph resolves vulnerable `@hono/node-server@1.19.14`.
+The intended registry model is the `temporalthread` CLI plus seven public
+`@sudarshanchaudhari/temporalthread-*` runtime packages under the maintainer's personal npm scope. The prior
+dry-run artifacts are superseded and must not be installed or published as a release candidate.
 
 ## Uninstall and deletion
 
@@ -87,7 +87,7 @@ deletion action. Stop clients before copying or inspecting SQLite/WAL/SHM files.
 - OpenCode live automation and real Codex host trust are not yet certified for this release candidate.
 - Claude Code support remains partial; Ollama is an example-client path, not native MCP hosting.
 - Byte-for-byte release artifact reproducibility across operating systems is not established.
-- The current stable MCP TypeScript SDK range resolves a vulnerable Hono server in packed consumers; release
+- The SDK 1.30.0 packed npm and pnpm consumer graphs resolve patched Hono 2.x releases; publication still
   remains blocked until a stable dependency update carries Hono 2.0.10 or newer.
 - Phase 4.1 reproduced the blocked graph in isolated npm and pnpm consumers. The release verifier now audits
   both managers and rejects any mixed or vulnerable nested Hono copy without relying on workspace overrides.

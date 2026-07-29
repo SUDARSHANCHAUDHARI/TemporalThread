@@ -6,7 +6,7 @@ import {
   loadConfig,
   resolveTemporalThreadPaths,
   writeConfig,
-} from '@temporalthread/config';
+} from '@sudarshanchaudhari/temporalthread-config';
 import { describe, expect, it } from 'vitest';
 
 describe('configuration', () => {

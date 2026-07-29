@@ -1,5 +1,5 @@
 {
-  "name": "@temporalthread/shared-types",
+  "name": "@sudarshanchaudhari/temporalthread-shared-types",
   "version": "0.1.0",
   "description": "Public schemas and domain types for TemporalThread.",
   "type": "module",

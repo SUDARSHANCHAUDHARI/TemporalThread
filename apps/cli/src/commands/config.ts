@@ -3,7 +3,7 @@ import {
   resolveTemporalThreadPaths,
   TemporalThreadConfigSchema,
   writeConfig,
-} from '@temporalthread/config';
+} from '@sudarshanchaudhari/temporalthread-config';
 import type { Command } from 'commander';
 import { printJson, printLines } from '../output.js';
 

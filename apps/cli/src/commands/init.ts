@@ -9,8 +9,8 @@ import {
   resolveTemporalThreadPaths,
   TemporalThreadConfigSchema,
   writeConfig,
-} from '@temporalthread/config';
-import { assertDatabaseHealthy, SqliteStorage } from '@temporalthread/storage-sqlite';
+} from '@sudarshanchaudhari/temporalthread-config';
+import { assertDatabaseHealthy, SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import type { Command } from 'commander';
 import { generateIntegrationExamples } from '../integration-examples.js';
 import { printJson, printLines } from '../output.js';

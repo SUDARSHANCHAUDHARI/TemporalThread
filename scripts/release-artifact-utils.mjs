@@ -157,7 +157,7 @@ function packagePath(path) {
 function isAllowedFile(path, packageName) {
   if (['LICENSE', 'README.md', 'package.json'].includes(path)) return true;
   if (/^dist\/.+\.(?:d\.ts|d\.ts\.map|js|js\.map)$/u.test(path)) return true;
-  if (packageName === '@temporalthread/codex-integration') {
+  if (packageName === '@sudarshanchaudhari/temporalthread-codex-integration') {
     return path === 'hooks.json' || path.startsWith('plugin/');
   }
   return false;

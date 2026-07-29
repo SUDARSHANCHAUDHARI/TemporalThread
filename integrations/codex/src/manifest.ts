@@ -1,4 +1,4 @@
-import { PrivacyModeSchema } from '@temporalthread/shared-types';
+import { PrivacyModeSchema } from '@sudarshanchaudhari/temporalthread-shared-types';
 import { z } from 'zod';
 import { CodexInstallationScopeSchema } from './paths.js';
 

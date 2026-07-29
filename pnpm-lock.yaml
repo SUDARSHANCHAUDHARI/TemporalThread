@@ -41,25 +41,25 @@ importers:
 
   apps/cli:
     dependencies:
-      '@temporalthread/codex-integration':
+      '@sudarshanchaudhari/temporalthread-codex-integration':
         specifier: workspace:*
         version: link:../../integrations/codex
-      '@temporalthread/config':
+      '@sudarshanchaudhari/temporalthread-config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@temporalthread/core':
+      '@sudarshanchaudhari/temporalthread-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@temporalthread/mcp-server':
+      '@sudarshanchaudhari/temporalthread-mcp-server':
         specifier: workspace:*
         version: link:../mcp-server
-      '@temporalthread/shared-types':
+      '@sudarshanchaudhari/temporalthread-shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
-      '@temporalthread/storage-sqlite':
+      '@sudarshanchaudhari/temporalthread-storage-sqlite':
         specifier: workspace:*
         version: link:../../packages/storage-sqlite
-      '@temporalthread/temporal-parser':
+      '@sudarshanchaudhari/temporalthread-temporal-parser':
         specifier: workspace:*
         version: link:../../packages/temporal-parser
       commander:
@@ -71,19 +71,19 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 1.30.0
         version: 1.30.0(zod@4.4.3)
-      '@temporalthread/config':
+      '@sudarshanchaudhari/temporalthread-config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@temporalthread/core':
+      '@sudarshanchaudhari/temporalthread-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@temporalthread/shared-types':
+      '@sudarshanchaudhari/temporalthread-shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
-      '@temporalthread/storage-sqlite':
+      '@sudarshanchaudhari/temporalthread-storage-sqlite':
         specifier: workspace:*
         version: link:../../packages/storage-sqlite
-      '@temporalthread/temporal-parser':
+      '@sudarshanchaudhari/temporalthread-temporal-parser':
         specifier: workspace:*
         version: link:../../packages/temporal-parser
       zod:
@@ -98,19 +98,19 @@ importers:
 
   examples/manual-event-recording:
     dependencies:
-      '@temporalthread/config':
+      '@sudarshanchaudhari/temporalthread-config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@temporalthread/core':
+      '@sudarshanchaudhari/temporalthread-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@temporalthread/shared-types':
+      '@sudarshanchaudhari/temporalthread-shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
-      '@temporalthread/storage-sqlite':
+      '@sudarshanchaudhari/temporalthread-storage-sqlite':
         specifier: workspace:*
         version: link:../../packages/storage-sqlite
-      '@temporalthread/temporal-parser':
+      '@sudarshanchaudhari/temporalthread-temporal-parser':
         specifier: workspace:*
         version: link:../../packages/temporal-parser
 
@@ -125,13 +125,13 @@ importers:
       '@modelcontextprotocol/sdk':
         specifier: 1.30.0
         version: 1.30.0(zod@4.4.3)
-      '@temporalthread/config':
+      '@sudarshanchaudhari/temporalthread-config':
         specifier: workspace:*
         version: link:../../packages/config
-      '@temporalthread/core':
+      '@sudarshanchaudhari/temporalthread-core':
         specifier: workspace:*
         version: link:../../packages/core
-      '@temporalthread/shared-types':
+      '@sudarshanchaudhari/temporalthread-shared-types':
         specifier: workspace:*
         version: link:../../packages/shared-types
       smol-toml:
@@ -143,7 +143,7 @@ importers:
 
   packages/config:
     dependencies:
-      '@temporalthread/shared-types':
+      '@sudarshanchaudhari/temporalthread-shared-types':
         specifier: workspace:*
         version: link:../shared-types
       zod:
@@ -155,16 +155,16 @@ importers:
       '@js-temporal/polyfill':
         specifier: 0.5.1
         version: 0.5.1
-      '@temporalthread/config':
+      '@sudarshanchaudhari/temporalthread-config':
         specifier: workspace:*
         version: link:../config
-      '@temporalthread/shared-types':
+      '@sudarshanchaudhari/temporalthread-shared-types':
         specifier: workspace:*
         version: link:../shared-types
-      '@temporalthread/storage-sqlite':
+      '@sudarshanchaudhari/temporalthread-storage-sqlite':
         specifier: workspace:*
         version: link:../storage-sqlite
-      '@temporalthread/temporal-parser':
+      '@sudarshanchaudhari/temporalthread-temporal-parser':
         specifier: workspace:*
         version: link:../temporal-parser
       ulid:
@@ -179,7 +179,7 @@ importers:
 
   packages/storage-sqlite:
     dependencies:
-      '@temporalthread/shared-types':
+      '@sudarshanchaudhari/temporalthread-shared-types':
         specifier: workspace:*
         version: link:../shared-types
       better-sqlite3:
@@ -191,7 +191,7 @@ importers:
       '@js-temporal/polyfill':
         specifier: 0.5.1
         version: 0.5.1
-      '@temporalthread/shared-types':
+      '@sudarshanchaudhari/temporalthread-shared-types':
         specifier: workspace:*
         version: link:../shared-types
 

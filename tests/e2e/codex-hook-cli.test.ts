@@ -3,7 +3,7 @@ import { mkdtempSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SqliteStorage } from '@temporalthread/storage-sqlite';
+import { SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import { afterEach, describe, expect, it } from 'vitest';
 
 const tsxCli = fileURLToPath(import.meta.resolve('tsx/cli'));

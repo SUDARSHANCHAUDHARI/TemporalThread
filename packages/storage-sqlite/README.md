@@ -1,4 +1,4 @@
-# `@temporalthread/storage-sqlite`
+# `@sudarshanchaudhari/temporalthread-storage-sqlite`
 
 Local SQLite persistence and migrations for TemporalThread.
 

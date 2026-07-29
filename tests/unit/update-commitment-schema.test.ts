@@ -2,7 +2,7 @@ import {
   CommitmentStatusSchema,
   CommitmentUpdateActionSchema,
   UpdateCommitmentInputSchema,
-} from '@temporalthread/shared-types';
+} from '@sudarshanchaudhari/temporalthread-shared-types';
 import { describe, expect, it } from 'vitest';
 
 const commitmentId = '01K123456789ABCDEFGHJKMNPQ';

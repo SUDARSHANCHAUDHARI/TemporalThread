@@ -1,4 +1,4 @@
-# `@temporalthread/temporal-parser`
+# `@sudarshanchaudhari/temporalthread-temporal-parser`
 
 Deterministic relative-time extraction and resolution for TemporalThread.
 

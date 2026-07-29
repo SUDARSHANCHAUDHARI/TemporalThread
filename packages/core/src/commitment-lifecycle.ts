@@ -3,7 +3,7 @@ import type {
   CommitmentStatus,
   CommitmentUpdateAction,
   TemporalResolution,
-} from '@temporalthread/shared-types';
+} from '@sudarshanchaudhari/temporalthread-shared-types';
 
 export interface CommitmentTransitionInput {
   existing: Commitment;

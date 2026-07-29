@@ -1,4 +1,4 @@
-import type { TemporalResolution } from '@temporalthread/shared-types';
+import type { TemporalResolution } from '@sudarshanchaudhari/temporalthread-shared-types';
 import { resolveRelativeTime } from './parser.js';
 
 const clock = String.raw`(?:\s+at\s+\d{1,2}(?::\d{2})?\s*(?:am|pm)?)?`;
