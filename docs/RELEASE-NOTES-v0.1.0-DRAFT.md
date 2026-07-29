@@ -1,6 +1,6 @@
 # TemporalThread v0.1.0 release notes (draft)
 
-Status: UNRELEASED; npm packages, tag, and GitHub release do not exist yet
+Status: release candidate approved; exact artifacts, npm packages, tag, and GitHub release pending
 
 ## Summary
 
@@ -64,9 +64,8 @@ TemporalThread is local-first, not anonymous.
 
 ## Installation state
 
-The package set is not published. Until publication is explicitly approved, use only the documented source
-install. Do not present `npm install temporalthread` as an active public installation method yet, and do not
-use a prior dry-run artifact as a release candidate.
+After publication, install the CLI with `npm install --global temporalthread`. Prior dry-run artifacts are
+superseded and must not be used as a release candidate.
 
 The intended registry model is the `temporalthread` CLI plus seven public
 `@sudarshanchaudhari/temporalthread-*` runtime packages under the maintainer's personal npm scope. The prior
@@ -87,12 +86,10 @@ deletion action. Stop clients before copying or inspecting SQLite/WAL/SHM files.
 - OpenCode live automation and real Codex host trust are not yet certified for this release candidate.
 - Claude Code support remains partial; Ollama is an example-client path, not native MCP hosting.
 - Byte-for-byte release artifact reproducibility across operating systems is not established.
-- The SDK 1.30.0 packed npm and pnpm consumer graphs resolve patched Hono 2.x releases; publication still
-  remains blocked until a stable dependency update carries Hono 2.0.10 or newer.
-- Phase 4.1 reproduced the blocked graph in isolated npm and pnpm consumers. The release verifier now audits
-  both managers and rejects any mixed or vulnerable nested Hono copy without relying on workspace overrides.
-- Phase 4.2 prepares functional-only live Codex setup/check/cleanup tooling and npm authority checklists; it
-  does not clear the dependency blocker or constitute live-host/account approval.
+- The SDK 1.30.0 packed npm and pnpm consumer graphs resolve patched Hono 2.x releases. The release verifier
+  audits both managers and rejects any mixed or vulnerable nested Hono copy.
+- Real Codex host behavior remains not certified; the release claim is limited to automated package,
+  installer, adapter, MCP, privacy, and lifecycle coverage.
 
 ## Upgrade notes
 
@@ -102,18 +99,16 @@ only after all clients stop.
 
 ## Checksums
 
-The final release must attach `SHA256SUMS` and `release-manifest.json` from the selected clean, successful
-release-dry-run artifact. Do not copy local dirty-tree checksums into the final release.
+The final release must attach `SHA256SUMS` and `release-manifest.json` generated and verified from the exact
+clean release commit.
 
 ## SBOM and provenance
 
-The release tooling can produce `temporalthread-v0.1.0.spdx.json` (SPDX 2.3) for the eight-package production
-graph. The prior SBOM is superseded; the security follow-up correctly stopped before creating a new candidate
-SBOM. The final public npm publication should use a protected GitHub-hosted job with npm provenance and,
-after bootstrap, trusted publishing/OIDC. No provenance, signed tag, or release attestation exists yet.
+The release tooling produces `temporalthread-v0.1.0.spdx.json` (SPDX 2.3) for the eight-package production
+graph. This no-CI initial release uses interactive write-protection 2FA and does not claim npm provenance.
 
 ## Release status
 
-This draft becomes final only after npm scope/2FA verification, green release-dry-run jobs on Ubuntu/macOS/
-Windows, real Codex certification, explicit visibility/publication/release approval, and replacement of this
-status with the actual release date and artifact checksums.
+This draft becomes final after exact-commit local release verification, artifact/checksum/SBOM verification,
+and successful publication. Validation claims remain limited to the operating systems and host behavior
+actually tested.

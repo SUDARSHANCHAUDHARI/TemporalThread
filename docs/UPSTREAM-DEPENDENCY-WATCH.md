@@ -27,9 +27,9 @@ The stable-upstream trigger has fired. TemporalThread now pins SDK 1.30.0 and no
 override. Local source validation and the fail-closed packed verifier pass, including independent clean npm
 and pnpm production audits with no known vulnerabilities.
 
-This clears the dependency-security blocker only. v0.1.0 remains **NO-GO** until the owner verifies npm
-authority and account security and explicitly approves each publication or public-state action. The generated
-tarballs remain disposable local-test inputs and must not be published from this task.
+This clears the dependency-security blocker. The owner subsequently verified npm account security and
+approved the v0.1.0 release actions on 2026-07-29. Only artifacts generated and verified from the exact
+release commit may be published.
 
 ## Local evidence
 

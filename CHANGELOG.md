@@ -20,7 +20,7 @@ All notable changes to TemporalThread will be documented in this file. The forma
 - Later interactions reopen ended sessions and preserve out-of-order session start timestamps.
 - Storage query helpers retain their no-filter defaults after the repository refactor.
 
-## [0.1.0] - UNRELEASED
+## [0.1.0] - 2026-07-29
 
 ### Added
 
