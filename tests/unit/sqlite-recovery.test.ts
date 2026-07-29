@@ -11,7 +11,7 @@ import {
   migrations,
   SqliteStorage,
   verifyDatabaseFile,
-} from '@temporalthread/storage-sqlite';
+} from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import Database from 'better-sqlite3';
 import { afterEach, describe, expect, it } from 'vitest';
 

@@ -1,8 +1,11 @@
 import { randomUUID } from 'node:crypto';
-import { loadConfig, resolveTemporalThreadPaths } from '@temporalthread/config';
-import { SystemClock, TemporalThreadService } from '@temporalthread/core';
-import type { GetTemporalContextInput, RecordInteractionInput } from '@temporalthread/shared-types';
-import { SqliteStorage } from '@temporalthread/storage-sqlite';
+import { loadConfig, resolveTemporalThreadPaths } from '@sudarshanchaudhari/temporalthread-config';
+import { SystemClock, TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
+import type {
+  GetTemporalContextInput,
+  RecordInteractionInput,
+} from '@sudarshanchaudhari/temporalthread-shared-types';
+import { SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 
 interface TemporalThreadAdapter {
   recordInteraction(event: RecordInteractionInput): Promise<unknown>;

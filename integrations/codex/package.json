@@ -1,5 +1,5 @@
 {
-  "name": "@temporalthread/codex-integration",
+  "name": "@sudarshanchaudhari/temporalthread-codex-integration",
   "version": "0.1.0",
   "description": "Official Codex integration package for TemporalThread.",
   "type": "module",
@@ -39,9 +39,9 @@
   ],
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",
-    "@temporalthread/config": "workspace:*",
-    "@temporalthread/core": "workspace:*",
-    "@temporalthread/shared-types": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-config": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-core": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-shared-types": "workspace:*",
     "smol-toml": "1.7.0",
     "zod": "4.4.3"
   }

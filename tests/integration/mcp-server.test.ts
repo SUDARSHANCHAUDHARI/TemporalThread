@@ -1,9 +1,9 @@
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { InMemoryTransport } from '@modelcontextprotocol/sdk/inMemory.js';
-import type { TemporalThreadConfig } from '@temporalthread/config';
-import { FakeClock, TemporalThreadService } from '@temporalthread/core';
-import { createMcpServer } from '@temporalthread/mcp-server';
-import { SqliteStorage } from '@temporalthread/storage-sqlite';
+import type { TemporalThreadConfig } from '@sudarshanchaudhari/temporalthread-config';
+import { FakeClock, TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
+import { createMcpServer } from '@sudarshanchaudhari/temporalthread-mcp-server';
+import { SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 const config: TemporalThreadConfig = {

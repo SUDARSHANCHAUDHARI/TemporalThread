@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
-import type { ResolutionType } from '@temporalthread/shared-types';
+import type { ResolutionType } from '@sudarshanchaudhari/temporalthread-shared-types';
 
 export interface ResolvedRange {
   start: string | null;

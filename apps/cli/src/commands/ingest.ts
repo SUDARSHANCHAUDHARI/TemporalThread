@@ -1,6 +1,6 @@
 import { readFileSync, statSync } from 'node:fs';
-import { createRuntime } from '@temporalthread/mcp-server';
-import { type GenericEvent, GenericEventSchema } from '@temporalthread/shared-types';
+import { createRuntime } from '@sudarshanchaudhari/temporalthread-mcp-server';
+import { type GenericEvent, GenericEventSchema } from '@sudarshanchaudhari/temporalthread-shared-types';
 import type { Command } from 'commander';
 import { printJson, printLines } from '../output.js';
 

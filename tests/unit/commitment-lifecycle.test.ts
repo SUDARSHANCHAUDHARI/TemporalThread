@@ -1,5 +1,5 @@
-import { applyCommitmentTransition } from '@temporalthread/core';
-import type { Commitment, TemporalResolution } from '@temporalthread/shared-types';
+import { applyCommitmentTransition } from '@sudarshanchaudhari/temporalthread-core';
+import type { Commitment, TemporalResolution } from '@sudarshanchaudhari/temporalthread-shared-types';
 import { describe, expect, it } from 'vitest';
 
 const createdAt = '2026-07-20T00:00:00Z';

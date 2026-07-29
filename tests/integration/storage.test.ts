@@ -1,8 +1,8 @@
 import { mkdtempSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import type { Interaction } from '@temporalthread/shared-types';
-import { latestMigrationVersion, SqliteStorage } from '@temporalthread/storage-sqlite';
+import type { Interaction } from '@sudarshanchaudhari/temporalthread-shared-types';
+import { latestMigrationVersion, SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import { describe, expect, it } from 'vitest';
 
 const interaction = (overrides: Partial<Interaction> = {}): Interaction => ({

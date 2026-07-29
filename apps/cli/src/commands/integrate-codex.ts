@@ -15,17 +15,17 @@ import {
   resolveCodexIntegrationPaths,
   TEMPORALTHREAD_MCP_TOOL_NAMES,
   uninstallCodexIntegration,
-} from '@temporalthread/codex-integration';
+} from '@sudarshanchaudhari/temporalthread-codex-integration';
 import {
   createDefaultConfig,
   loadConfig,
   resolveTemporalThreadPaths,
   TemporalThreadConfigSchema,
   writeConfig,
-} from '@temporalthread/config';
-import { SystemClock, TemporalThreadService } from '@temporalthread/core';
-import { type PrivacyMode, PrivacyModeSchema } from '@temporalthread/shared-types';
-import { SqliteStorage } from '@temporalthread/storage-sqlite';
+} from '@sudarshanchaudhari/temporalthread-config';
+import { SystemClock, TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
+import { type PrivacyMode, PrivacyModeSchema } from '@sudarshanchaudhari/temporalthread-shared-types';
+import { SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import type { Command } from 'commander';
 import { printJson, printLines } from '../output.js';
 

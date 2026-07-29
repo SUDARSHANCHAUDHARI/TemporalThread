@@ -1,5 +1,5 @@
 {
-  "name": "@temporalthread/storage-sqlite",
+  "name": "@sudarshanchaudhari/temporalthread-storage-sqlite",
   "version": "0.1.0",
   "description": "SQLite persistence adapter for TemporalThread.",
   "type": "module",
@@ -36,7 +36,7 @@
     }
   },
   "dependencies": {
-    "@temporalthread/shared-types": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-shared-types": "workspace:*",
     "better-sqlite3": "12.11.1"
   }
 }

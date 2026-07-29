@@ -13,7 +13,7 @@ import type {
   PurgeResult,
   Session,
   TemporalReference,
-} from '@temporalthread/shared-types';
+} from '@sudarshanchaudhari/temporalthread-shared-types';
 import Database from 'better-sqlite3';
 import {
   mapAgent,

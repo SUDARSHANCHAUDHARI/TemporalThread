@@ -1,5 +1,5 @@
 {
-  "name": "@temporalthread/mcp-server",
+  "name": "@sudarshanchaudhari/temporalthread-mcp-server",
   "version": "0.1.0",
   "description": "Local stdio MCP transport for TemporalThread.",
   "type": "module",
@@ -37,11 +37,11 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "1.30.0",
-    "@temporalthread/config": "workspace:*",
-    "@temporalthread/core": "workspace:*",
-    "@temporalthread/shared-types": "workspace:*",
-    "@temporalthread/storage-sqlite": "workspace:*",
-    "@temporalthread/temporal-parser": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-config": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-core": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-shared-types": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-storage-sqlite": "workspace:*",
+    "@sudarshanchaudhari/temporalthread-temporal-parser": "workspace:*",
     "zod": "4.4.3"
   }
 }

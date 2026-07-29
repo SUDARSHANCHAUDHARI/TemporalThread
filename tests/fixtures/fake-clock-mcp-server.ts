@@ -1,6 +1,6 @@
-import { loadConfig, resolveTemporalThreadPaths } from '@temporalthread/config';
-import { FakeClock, TemporalThreadService } from '@temporalthread/core';
-import { SqliteStorage } from '@temporalthread/storage-sqlite';
+import { loadConfig, resolveTemporalThreadPaths } from '@sudarshanchaudhari/temporalthread-config';
+import { FakeClock, TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
+import { SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import { startStdioServer } from '../../apps/mcp-server/src/stdio.js';
 
 async function main(): Promise<void> {

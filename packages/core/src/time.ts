@@ -1,5 +1,5 @@
 import { Temporal } from '@js-temporal/polyfill';
-import type { CurrentTimeResult, ElapsedTimeResult } from '@temporalthread/shared-types';
+import type { CurrentTimeResult, ElapsedTimeResult } from '@sudarshanchaudhari/temporalthread-shared-types';
 import type { Clock } from './clock.js';
 
 const MILLISECONDS_PER_SECOND = 1_000;

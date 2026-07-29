@@ -1,4 +1,4 @@
-import { FakeClock } from '@temporalthread/core';
+import { FakeClock } from '@sudarshanchaudhari/temporalthread-core';
 import { describe, expect, it } from 'vitest';
 
 describe('FakeClock', () => {

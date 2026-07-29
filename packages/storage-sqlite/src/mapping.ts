@@ -5,7 +5,7 @@ import type {
   Project,
   Session,
   TemporalReference,
-} from '@temporalthread/shared-types';
+} from '@sudarshanchaudhari/temporalthread-shared-types';
 
 export type SqlRow = Record<string, unknown>;
 

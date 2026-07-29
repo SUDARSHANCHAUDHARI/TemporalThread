@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { basename, resolve } from 'node:path';
 import { Temporal } from '@js-temporal/polyfill';
-import type { TemporalThreadConfig } from '@temporalthread/config';
+import type { TemporalThreadConfig } from '@sudarshanchaudhari/temporalthread-config';
 import {
   CalculateElapsedTimeInputSchema,
   type Commitment,
@@ -31,9 +31,12 @@ import {
   type TimelineItem,
   UpdateCommitmentInputSchema,
   type UpdatedCommitmentResult,
-} from '@temporalthread/shared-types';
-import type { InteractionFilters, SqliteStorage } from '@temporalthread/storage-sqlite';
-import { extractTemporalReferences, resolveRelativeTime } from '@temporalthread/temporal-parser';
+} from '@sudarshanchaudhari/temporalthread-shared-types';
+import type { InteractionFilters, SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
+import {
+  extractTemporalReferences,
+  resolveRelativeTime,
+} from '@sudarshanchaudhari/temporalthread-temporal-parser';
 import { ulid } from 'ulid';
 import type { Clock } from './clock.js';
 import { applyCommitmentTransition } from './commitment-lifecycle.js';

@@ -6,13 +6,13 @@ const root = fileURLToPath(new URL('.', import.meta.url));
 export default defineConfig({
   resolve: {
     alias: {
-      '@temporalthread/shared-types': `${root}packages/shared-types/src/index.ts`,
-      '@temporalthread/config': `${root}packages/config/src/index.ts`,
-      '@temporalthread/temporal-parser': `${root}packages/temporal-parser/src/index.ts`,
-      '@temporalthread/storage-sqlite': `${root}packages/storage-sqlite/src/index.ts`,
-      '@temporalthread/core': `${root}packages/core/src/index.ts`,
-      '@temporalthread/codex-integration': `${root}integrations/codex/src/index.ts`,
-      '@temporalthread/mcp-server': `${root}apps/mcp-server/src/index.ts`,
+      '@sudarshanchaudhari/temporalthread-shared-types': `${root}packages/shared-types/src/index.ts`,
+      '@sudarshanchaudhari/temporalthread-config': `${root}packages/config/src/index.ts`,
+      '@sudarshanchaudhari/temporalthread-temporal-parser': `${root}packages/temporal-parser/src/index.ts`,
+      '@sudarshanchaudhari/temporalthread-storage-sqlite': `${root}packages/storage-sqlite/src/index.ts`,
+      '@sudarshanchaudhari/temporalthread-core': `${root}packages/core/src/index.ts`,
+      '@sudarshanchaudhari/temporalthread-codex-integration': `${root}integrations/codex/src/index.ts`,
+      '@sudarshanchaudhari/temporalthread-mcp-server': `${root}apps/mcp-server/src/index.ts`,
     },
   },
   test: {

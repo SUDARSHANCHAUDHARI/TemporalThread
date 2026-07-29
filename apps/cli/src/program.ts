@@ -1,4 +1,4 @@
-import { startStdioServer } from '@temporalthread/mcp-server';
+import { startStdioServer } from '@sudarshanchaudhari/temporalthread-mcp-server';
 import { Command } from 'commander';
 import { registerConfigCommand } from './commands/config.js';
 import { registerDoctorCommand } from './commands/doctor.js';

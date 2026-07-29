@@ -1,9 +1,9 @@
-# npm scope human actions
+# npm personal-scope human actions
 
 Status: owner guide only. Codex must not perform these account mutations.
 
 Official guidance can change; re-open the linked npm documentation immediately before any account or
-organization action.
+account action.
 
 ## 1. Sign in and confirm identity
 
@@ -13,35 +13,22 @@ Do not share the password, session, token, email address, security-key response,
 Current read-only evidence identifies `sudarshanchaudhari`; the owner must confirm this is the durable account
 that should control TemporalThread.
 
-## 2. Decide whether the organization is required
+## 2. Confirm the personal scope
 
-The package plan uses the `@temporalthread` scope, so an npm user or organization must control that scope.
-The 2026-07-23 read-only checks did not prove that a `temporalthread` organization is accessible to the
-authenticated account.
+The owner selected the existing `sudarshanchaudhari` personal npm scope. The seven scoped packages use
+`@sudarshanchaudhari/temporalthread-*`; no npm organization is required. Confirm the website account matches
+the authenticated CLI identity immediately before publication.
 
-If the scope is not already owned, make an explicit owner decision before creating it. npm's current
-[organization guide](https://docs.npmjs.com/creating-an-organization/) says the organization name becomes
-the scope and currently offers an unlimited-public-packages option; review the live plan/billing screen.
-Do not let an automated agent create the organization.
+## 3. Confirm public package authority
 
-## 3. Confirm roles and public package authority
-
-After the organization exists, personally confirm the account's role and developers-team access. npm
-documents owner, admin, and member capabilities in
-[organization roles and permissions](https://docs.npmjs.com/organization-roles-and-permissions/).
-
-Confirm every intended package can be public. Public access is a package-level distribution decision, not
-something inferred from an available name.
+Confirm every intended scoped package will be public. Public access is a package-level distribution decision,
+not something inferred from an available name. The first publish must explicitly use public access.
 
 ## 4. Protect writes with 2FA
 
 Review [configuring two-factor authentication](https://docs.npmjs.com/configuring-two-factor-authentication/)
 and enable the strongest appropriate authorization/write protection personally if it is not already active.
 Never paste an OTP or security-key response into Codex, a terminal transcript, an issue, or this repository.
-
-If an organization will enforce 2FA, review
-[requiring 2FA in an organization](https://docs.npmjs.com/requiring-two-factor-authentication-in-your-organization/)
-first: npm warns that members without 2FA can lose organization access.
 
 ## 5. Confirm recovery readiness privately
 
@@ -53,24 +40,22 @@ Confirm access to the account-recovery channel personally. npm's
 [2FA recovery guide](https://docs.npmjs.com/recovering-your-2fa-enabled-account/) describes recovery-code and
 support-assisted paths. Record only `CONFIRMED` in the checklist.
 
-## 6. Consider a second trusted owner
+## 6. Consider continuity
 
-For continuity, consider a second carefully selected owner after reviewing npm's
-[member invitation guidance](https://docs.npmjs.com/adding-members-to-your-organization/). Use least
-privilege and account-level 2FA. A second owner is a risk decision, not an automatic Phase 4.2 action.
+Personal scopes do not provide organization ownership roles. Keep account recovery current; any future
+multi-owner distribution model requires a separate decision.
 
 ## 7. Recheck names immediately before bootstrap
 
-All eight names lacked registry entries on 2026-07-23, but availability is not reservation. Immediately before
-an approved bootstrap, recheck:
+Availability is not reservation. Immediately before an approved bootstrap, recheck:
 
-- `@temporalthread/shared-types`
-- `@temporalthread/config`
-- `@temporalthread/temporal-parser`
-- `@temporalthread/storage-sqlite`
-- `@temporalthread/core`
-- `@temporalthread/mcp-server`
-- `@temporalthread/codex-integration`
+- `@sudarshanchaudhari/temporalthread-shared-types`
+- `@sudarshanchaudhari/temporalthread-config`
+- `@sudarshanchaudhari/temporalthread-temporal-parser`
+- `@sudarshanchaudhari/temporalthread-storage-sqlite`
+- `@sudarshanchaudhari/temporalthread-core`
+- `@sudarshanchaudhari/temporalthread-mcp-server`
+- `@sudarshanchaudhari/temporalthread-codex-integration`
 - `temporalthread`
 
 Stop if any result conflicts with the release plan.
@@ -84,7 +69,7 @@ requires a separately approved, interactive, write-protected bootstrap after:
 - both packed consumer graphs are secure;
 - the exact-commit release dry run is green;
 - the repository/public provenance decision is approved; and
-- scope, 2FA, recovery, and package access are verified.
+- personal account identity, 2FA, recovery, and package access are verified.
 
 No bootstrap or publication command belongs in Phase 4.2.
 
@@ -95,16 +80,16 @@ npm's [trusted publishing guide](https://docs.npmjs.com/trusted-publishers/) and
 Current guidance requires npm 11.5.1+ and Node 22.14+ and supports specified hosted CI providers. Public npm
 provenance requires a public package and public repository.
 
-After bootstrap, configure each package for the exact approved repository/workflow/environment and restrict
-traditional token access. This requires a separate workflow/security review; Phase 4.2 adds no publishing
-workflow, secret, environment, or token.
+Trusted publishing is deferred because this repository has no approved CI or GitHub Actions. Do not add a
+publishing workflow implicitly. A future trusted-publishing setup requires separate owner approval and a
+workflow/security review.
 
 ## 10. Emergency deprecation and access recovery
 
-After ownership exists, verify which trusted owners can:
+After publication, verify the owner can:
 
-- regain organization/package access;
-- revoke obsolete access;
+- regain account/package access;
+- revoke obsolete tokens or trusted publishers;
 - deprecate an affected immutable version with an incident message; and
 - publish a fixed version after review.
 

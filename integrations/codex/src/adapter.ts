@@ -1,8 +1,8 @@
 import { createHash } from 'node:crypto';
 import { resolve } from 'node:path';
-import type { TemporalThreadConfig } from '@temporalthread/config';
-import type { TemporalThreadService } from '@temporalthread/core';
-import type { TemporalContextResult } from '@temporalthread/shared-types';
+import type { TemporalThreadConfig } from '@sudarshanchaudhari/temporalthread-config';
+import type { TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
+import type { TemporalContextResult } from '@sudarshanchaudhari/temporalthread-shared-types';
 import { z } from 'zod';
 
 export const MAX_CODEX_HOOK_INPUT_BYTES = 256 * 1_024;

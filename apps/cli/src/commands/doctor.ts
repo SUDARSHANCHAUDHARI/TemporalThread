@@ -1,10 +1,18 @@
 import { accessSync, constants, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { isValidTimezone, loadConfig, resolveTemporalThreadPaths } from '@temporalthread/config';
-import { SystemClock, TemporalThreadService } from '@temporalthread/core';
-import { createMcpServer } from '@temporalthread/mcp-server';
-import type { DoctorCheck } from '@temporalthread/shared-types';
-import { type DatabaseHealth, inspectDatabaseHealth, SqliteStorage } from '@temporalthread/storage-sqlite';
+import {
+  isValidTimezone,
+  loadConfig,
+  resolveTemporalThreadPaths,
+} from '@sudarshanchaudhari/temporalthread-config';
+import { SystemClock, TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
+import { createMcpServer } from '@sudarshanchaudhari/temporalthread-mcp-server';
+import type { DoctorCheck } from '@sudarshanchaudhari/temporalthread-shared-types';
+import {
+  type DatabaseHealth,
+  inspectDatabaseHealth,
+  SqliteStorage,
+} from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import type { Command } from 'commander';
 import { expectedIntegrationExample } from '../integration-examples.js';
 import { printJson, printLines } from '../output.js';

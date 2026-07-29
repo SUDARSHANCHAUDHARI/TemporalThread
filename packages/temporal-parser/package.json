@@ -1,5 +1,5 @@
 {
-  "name": "@temporalthread/temporal-parser",
+  "name": "@sudarshanchaudhari/temporalthread-temporal-parser",
   "version": "0.1.0",
   "description": "Deterministic relative-time parsing for TemporalThread.",
   "type": "module",
@@ -37,6 +37,6 @@
   },
   "dependencies": {
     "@js-temporal/polyfill": "0.5.1",
-    "@temporalthread/shared-types": "workspace:*"
+    "@sudarshanchaudhari/temporalthread-shared-types": "workspace:*"
   }
 }

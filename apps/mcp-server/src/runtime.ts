@@ -1,6 +1,6 @@
-import { loadConfig, resolveTemporalThreadPaths } from '@temporalthread/config';
-import { SystemClock, TemporalThreadService } from '@temporalthread/core';
-import { assertDatabaseHealthy, SqliteStorage } from '@temporalthread/storage-sqlite';
+import { loadConfig, resolveTemporalThreadPaths } from '@sudarshanchaudhari/temporalthread-config';
+import { SystemClock, TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
+import { assertDatabaseHealthy, SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 
 export interface TemporalThreadRuntime {
   service: TemporalThreadService;

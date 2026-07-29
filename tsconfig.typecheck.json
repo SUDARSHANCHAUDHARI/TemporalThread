@@ -6,13 +6,13 @@
     "declarationMap": false,
     "sourceMap": false,
     "paths": {
-      "@temporalthread/shared-types": ["./packages/shared-types/src/index.ts"],
-      "@temporalthread/config": ["./packages/config/src/index.ts"],
-      "@temporalthread/temporal-parser": ["./packages/temporal-parser/src/index.ts"],
-      "@temporalthread/storage-sqlite": ["./packages/storage-sqlite/src/index.ts"],
-      "@temporalthread/core": ["./packages/core/src/index.ts"],
-      "@temporalthread/codex-integration": ["./integrations/codex/src/index.ts"],
-      "@temporalthread/mcp-server": ["./apps/mcp-server/src/index.ts"]
+      "@sudarshanchaudhari/temporalthread-shared-types": ["./packages/shared-types/src/index.ts"],
+      "@sudarshanchaudhari/temporalthread-config": ["./packages/config/src/index.ts"],
+      "@sudarshanchaudhari/temporalthread-temporal-parser": ["./packages/temporal-parser/src/index.ts"],
+      "@sudarshanchaudhari/temporalthread-storage-sqlite": ["./packages/storage-sqlite/src/index.ts"],
+      "@sudarshanchaudhari/temporalthread-core": ["./packages/core/src/index.ts"],
+      "@sudarshanchaudhari/temporalthread-codex-integration": ["./integrations/codex/src/index.ts"],
+      "@sudarshanchaudhari/temporalthread-mcp-server": ["./apps/mcp-server/src/index.ts"]
     }
   },
   "include": [

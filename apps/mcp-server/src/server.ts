@@ -1,6 +1,6 @@
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import type { CallToolResult, ToolAnnotations } from '@modelcontextprotocol/sdk/types.js';
-import type { TemporalThreadService } from '@temporalthread/core';
+import type { TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
 import {
   CalculateElapsedTimeInputSchema,
   CommitmentListOutputSchema,
@@ -20,7 +20,7 @@ import {
   TemporalResolutionOutputSchema,
   UpdateCommitmentInputSchema,
   UpdatedCommitmentOutputSchema,
-} from '@temporalthread/shared-types';
+} from '@sudarshanchaudhari/temporalthread-shared-types';
 import { ZodError } from 'zod';
 
 const readOnly: ToolAnnotations = {

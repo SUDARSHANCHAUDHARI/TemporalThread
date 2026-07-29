@@ -1,7 +1,7 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { homedir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
-import { LogLevelSchema, PrivacyModeSchema } from '@temporalthread/shared-types';
+import { LogLevelSchema, PrivacyModeSchema } from '@sudarshanchaudhari/temporalthread-shared-types';
 import { z } from 'zod';
 
 export const IntegrationSchema = z.enum(['codex', 'claude-code', 'opencode', 'ollama', 'generic']);

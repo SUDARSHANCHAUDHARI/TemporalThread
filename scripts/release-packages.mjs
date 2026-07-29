@@ -2,51 +2,57 @@ export const releaseVersion = '0.1.0';
 
 export const releasePackages = [
   {
-    name: '@temporalthread/shared-types',
+    name: '@sudarshanchaudhari/temporalthread-shared-types',
     directory: 'packages/shared-types',
-    archive: 'temporalthread-shared-types-0.1.0.tgz',
+    archive: 'sudarshanchaudhari-temporalthread-shared-types-0.1.0.tgz',
     nativeDependencies: [],
   },
   {
-    name: '@temporalthread/config',
+    name: '@sudarshanchaudhari/temporalthread-config',
     directory: 'packages/config',
-    archive: 'temporalthread-config-0.1.0.tgz',
+    archive: 'sudarshanchaudhari-temporalthread-config-0.1.0.tgz',
     nativeDependencies: [],
   },
   {
-    name: '@temporalthread/temporal-parser',
+    name: '@sudarshanchaudhari/temporalthread-temporal-parser',
     directory: 'packages/temporal-parser',
-    archive: 'temporalthread-temporal-parser-0.1.0.tgz',
+    archive: 'sudarshanchaudhari-temporalthread-temporal-parser-0.1.0.tgz',
     nativeDependencies: [],
   },
   {
-    name: '@temporalthread/storage-sqlite',
+    name: '@sudarshanchaudhari/temporalthread-storage-sqlite',
     directory: 'packages/storage-sqlite',
-    archive: 'temporalthread-storage-sqlite-0.1.0.tgz',
+    archive: 'sudarshanchaudhari-temporalthread-storage-sqlite-0.1.0.tgz',
     nativeDependencies: ['better-sqlite3'],
   },
   {
-    name: '@temporalthread/core',
+    name: '@sudarshanchaudhari/temporalthread-core',
     directory: 'packages/core',
-    archive: 'temporalthread-core-0.1.0.tgz',
-    nativeDependencies: ['better-sqlite3 (transitive through @temporalthread/storage-sqlite)'],
+    archive: 'sudarshanchaudhari-temporalthread-core-0.1.0.tgz',
+    nativeDependencies: [
+      'better-sqlite3 (transitive through @sudarshanchaudhari/temporalthread-storage-sqlite)',
+    ],
   },
   {
-    name: '@temporalthread/mcp-server',
+    name: '@sudarshanchaudhari/temporalthread-mcp-server',
     directory: 'apps/mcp-server',
-    archive: 'temporalthread-mcp-server-0.1.0.tgz',
-    nativeDependencies: ['better-sqlite3 (transitive through @temporalthread/storage-sqlite)'],
+    archive: 'sudarshanchaudhari-temporalthread-mcp-server-0.1.0.tgz',
+    nativeDependencies: [
+      'better-sqlite3 (transitive through @sudarshanchaudhari/temporalthread-storage-sqlite)',
+    ],
   },
   {
-    name: '@temporalthread/codex-integration',
+    name: '@sudarshanchaudhari/temporalthread-codex-integration',
     directory: 'integrations/codex',
-    archive: 'temporalthread-codex-integration-0.1.0.tgz',
-    nativeDependencies: ['better-sqlite3 (transitive through @temporalthread/core)'],
+    archive: 'sudarshanchaudhari-temporalthread-codex-integration-0.1.0.tgz',
+    nativeDependencies: ['better-sqlite3 (transitive through @sudarshanchaudhari/temporalthread-core)'],
   },
   {
     name: 'temporalthread',
     directory: 'apps/cli',
     archive: 'temporalthread-0.1.0.tgz',
-    nativeDependencies: ['better-sqlite3 (transitive through @temporalthread/storage-sqlite)'],
+    nativeDependencies: [
+      'better-sqlite3 (transitive through @sudarshanchaudhari/temporalthread-storage-sqlite)',
+    ],
   },
 ];

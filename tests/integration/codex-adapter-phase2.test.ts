@@ -1,7 +1,7 @@
 import { resolve } from 'node:path';
-import type { TemporalThreadConfig } from '@temporalthread/config';
-import { FakeClock, TemporalThreadService } from '@temporalthread/core';
-import { SqliteStorage } from '@temporalthread/storage-sqlite';
+import type { TemporalThreadConfig } from '@sudarshanchaudhari/temporalthread-config';
+import { FakeClock, TemporalThreadService } from '@sudarshanchaudhari/temporalthread-core';
+import { SqliteStorage } from '@sudarshanchaudhari/temporalthread-storage-sqlite';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   handleCodexHook,

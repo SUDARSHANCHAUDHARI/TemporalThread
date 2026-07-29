@@ -1,4 +1,4 @@
-# `@temporalthread/core`
+# `@sudarshanchaudhari/temporalthread-core`
 
 Host-independent TemporalThread service logic, elapsed-time calculations, and injectable clock abstractions.
 

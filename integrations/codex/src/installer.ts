@@ -13,7 +13,7 @@ import {
 } from 'node:fs';
 import { dirname, isAbsolute, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import type { PrivacyMode } from '@temporalthread/shared-types';
+import type { PrivacyMode } from '@sudarshanchaudhari/temporalthread-shared-types';
 import { CodexHooksError, inspectCodexHooks, mergeCodexHooks, removeCodexHooks } from './hooks-config.js';
 import {
   type CodexInstallationManifest,
