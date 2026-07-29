@@ -1,6 +1,6 @@
 # SBOM and provenance plan
 
-Status: SBOM tooling implemented; prior candidate SBOM superseded; publication provenance planned only
+Status: SBOM tooling implemented; exact v0.1.0 SBOM generation owner-approved
 
 ## SBOM result
 
@@ -15,8 +15,8 @@ The generator reads `pnpm list -r --prod --depth Infinity --json` plus
 emits deterministic package/relationship ordering. The historical commit-`dc2c0b4` candidate contains 140
 local, direct, and transitive package records and 247 relationships.
 
-The SBOM is stored as a 14-day `Release dry run` workflow artifact rather than committed machine-generated
-output. Its namespace binds the version, source commit, and production graph digest. A dirty local source
+The SBOM is generated locally from the exact clean release commit and attached to the GitHub release rather
+than committed. Its namespace binds the version, source commit, and production graph digest. A dirty source
 tree is explicitly marked and must not be used for publication evidence.
 
 The historical SBOM is no longer an approved release candidate. The 2026-07-22 packed-consumer security gate
@@ -25,9 +25,9 @@ consumer resolves vulnerable 1.19.14. Release dry run `29932142666` stopped befo
 new SBOM. A future candidate must bind the source graph and separately verify the installed packed-consumer
 graph before its SBOM and checksums are accepted.
 
-Phase 4.1 confirmed the blocker independently with npm and pnpm and did not generate a replacement SBOM.
-Artifact/SBOM generation remains downstream of the secure packed dependency gate; retaining NO-GO therefore
-produces zero fresh release-candidate artifacts by design.
+Merged PR #5 cleared the blocker with SDK 1.30.0, and merged PR #7 verified the final personal-scope package
+graph in clean npm and pnpm consumers. Fresh artifact/SBOM generation remains downstream of exact-commit
+verification.
 
 ## Scope and limitations
 
@@ -89,15 +89,13 @@ repositories, so the repository must become public before a provenance-bearing v
 Trusted-publisher configuration requires an existing package. The first creation of eight new names therefore
 needs a separately approved bootstrap:
 
-- verify `@temporalthread` ownership and npm 2FA;
+- verify the authenticated `sudarshanchaudhari` personal scope and npm 2FA;
 - make the reviewed repository public;
-- use either interactive owner publication with 2FA or a narrowly scoped, short-lived granular token in the
-  protected GitHub environment;
-- publish with `--provenance` from the GitHub-hosted job if a token is used;
-- configure trusted publishing for every package immediately afterward;
-- revoke the bootstrap token and disallow broad tokens.
+- use interactive owner publication with write-protection 2FA;
+- do not claim provenance for the initial no-CI release;
+- consider trusted publishing only after separate CI approval.
 
-Phase 4 does not create a token, environment, trusted-publisher relationship, or publishing workflow.
+No token, environment, trusted-publisher relationship, or publishing workflow is created for v0.1.0.
 
 ## GitHub release provenance
 
@@ -105,7 +103,6 @@ For the later approved release:
 
 - create a signed tag where available, otherwise an annotated tag with documented commit verification;
 - build from the exact tag with a clean tree;
-- retain the release-dry-run run ID and job IDs;
 - attach the eight tarballs, `SHA256SUMS`, `release-manifest.json`, and SPDX SBOM;
 - consider GitHub artifact attestations in a separately reviewed workflow with only the permissions their
   official action requires;
@@ -126,9 +123,9 @@ published version or rewrite a release tag. Follow `docs/NPM-DISTRIBUTION-PLAN.m
 | SBOM structural verification | PASS locally |
 | Tarball SHA-256 generation/verification | PASS locally |
 | Historical clean source association | SUPERSEDED for commit `dc2c0b44f56ec3d21294d2949a8c861238256adc`; no tag created |
-| Current packed-consumer dependency gate | FAIL/BLOCKED for npm and pnpm at Hono 1.19.14 on run `29940910728` |
-| Current release-candidate SBOM | BLOCKED; no artifact generated after the security follow-up |
-| Public repository required for npm provenance | BLOCKED by explicit approval |
-| npm scope ownership/2FA | BLOCKED/unverified |
+| Current packed-consumer dependency gate | PASS locally; SDK 1.30.0 and Hono 2.0.12 in npm and pnpm consumers |
+| Current release-candidate SBOM | APPROVED; generate after the release-finalization PR is merged |
+| npm provenance | NOT CLAIMED for the initial no-CI release |
+| npm personal scope/2FA | Authenticated identity and owner confirmation complete |
 | Trusted publisher | Not configured; future public action |
-| Signed tag/GitHub release | Not created; prohibited in Phase 4 |
+| Signed tag/GitHub release | Owner-approved; pending exact-candidate verification |

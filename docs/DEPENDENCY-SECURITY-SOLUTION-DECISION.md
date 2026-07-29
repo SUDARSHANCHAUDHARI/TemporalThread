@@ -2,16 +2,17 @@
 
 Decision date: 2026-07-22; outcome verified 2026-07-28
 
-Status: **Selected upstream upgrade verified; preserve release NO-GO**
+Status: **Selected upstream upgrade verified**
 
 ## Decision
 
 SDK 1.30.0 is the supported upstream solution: its published range permits patched Hono 2.x releases without
-leaving a vulnerable nested copy. TemporalThread will still not publish v0.1.0 without the remaining owner
-and account-security approvals.
+leaving a vulnerable nested copy. The owner and account-security approvals were confirmed on 2026-07-29;
+exact-candidate release verification remains required.
 
 The release gate remains authoritative. SDK 1.30.0 now provides the selected supported range and passes the
-clean npm and pnpm evidence. This closes the technical dependency blocker without authorizing publication.
+clean npm and pnpm evidence. This closes the technical dependency blocker; publication authorization is
+recorded separately.
 
 ## Decision matrix
 

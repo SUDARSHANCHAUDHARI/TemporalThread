@@ -16,9 +16,16 @@ It stores data locally in SQLite, uses MCP over stdio, opens no network port, co
 - CLI commands for setup, diagnostics, timeline, commitments, ingestion, export, verified backup, and purge.
 - Integration guidance for Codex, Claude Code, OpenCode, generic MCP clients, and Ollama examples.
 
-## Installation from source
+## Installation
 
-The MVP is not yet published to npm.
+Install the CLI from npm:
+
+```sh
+npm install --global temporalthread
+temporalthread init
+```
+
+To work from source instead:
 
 Requirements:
 
@@ -33,7 +40,7 @@ npm link
 temporalthread init
 ```
 
-Remove the global link later with:
+Remove a source-linked CLI later with:
 
 ```sh
 npm unlink --global temporalthread

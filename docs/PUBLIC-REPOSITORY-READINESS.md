@@ -1,6 +1,6 @@
 # Public repository readiness
 
-Audit date: 2026-07-20; dependency-security follow-up 2026-07-22
+Audit date: 2026-07-20; release authorization update 2026-07-29
 Current visibility: private
 Visibility changed during Phase 4: no
 
@@ -13,8 +13,8 @@ templates, pull request template, and release-candidate reports.
 Results:
 
 - no npm or GitHub release badge is present before publication;
-- the root README advertises source installation only and explicitly says npm publication has not happened;
-- package READMEs also say they are not yet published;
+- the root README documents the approved npm installation path and retains source-development instructions;
+- package READMEs use the final personal-scope names;
 - no maintainer email address, real conversation, token, database, or personal machine path is present;
 - repository-owner URLs appear only where needed for source, issues, security, and package metadata;
 - local stdio is never claimed to work in ChatGPT web;
@@ -44,13 +44,14 @@ repository becomes public. The security issue-template link is intended for that
 | Merge methods | Merge commit, squash, and rebase all enabled |
 | Delete head branch after merge | Disabled |
 | Branch protection | Not available on the current private repository plan; API returned 403 |
-| Actions | Enabled; all actions allowed; SHA pinning not enforced at repository level |
+| Actions | No workflows; CI remains intentionally absent |
 | Default workflow token | Read-only; cannot approve pull requests |
-| Artifact/log retention | 90-day repository default; release dry-run overrides artifacts to 14 days |
+| Artifact/log retention | Repository default; no workflow artifacts are generated |
 
-## Exact settings for a later approved public launch
+## Exact settings for the approved public launch
 
-Do not apply these settings during Phase 4.
+Apply these settings only after the release-finalization pull request is merged and the exact commit passes
+the remaining technical gates.
 
 | Setting | Recommended value |
 | --- | --- |
@@ -60,23 +61,22 @@ Do not apply these settings during Phase 4.
 | Homepage | Leave empty until a durable project site or documentation URL exists |
 | Topics | `mcp`, `model-context-protocol`, `temporal`, `ai-agents`, `local-first`, `sqlite`, `typescript`, `codex` |
 | Issues | Enabled |
-| Discussions | Enable after launch for usage questions and ideas; keep defects in Issues |
+| Discussions | Disabled initially; enable later only if the maintainer will actively use it |
 | Wiki | Disabled; versioned documentation remains in `docs/` |
 | Projects | Optional; leave enabled only if the maintainer will use it |
 | Private vulnerability reporting | Enable immediately after public visibility |
 | Merge strategy | Squash merge enabled; disable merge commits; rebase merge optional; delete head branches |
-| Auto merge | Optional after branch rules are active |
+| Auto merge | Disabled |
 | Workflow token | Keep read-only by default; grant job-level permissions only |
-| Actions policy | Allow GitHub-authored and explicitly selected verified actions; continue immutable SHA pins |
+| Actions policy | Keep workflows absent until separately approved |
 | Fork pull-request workflows | Never send write tokens or secrets to untrusted fork code |
-| Artifact retention | Keep the 14-day release-dry-run override; use a separately approved durable release asset for releases |
+| Artifact retention | Use GitHub release assets for the approved v0.1.0 artifacts |
 
 ## Branch rules recommendation
 
 After public visibility makes branch protection available, protect `main` with:
 
 - pull requests required for external changes;
-- all three uniquely named CI matrix checks required;
 - conversation resolution required;
 - force pushes and branch deletion disabled;
 - linear history required if merge commits are disabled;
@@ -84,21 +84,16 @@ After public visibility makes branch protection available, protect `main` with:
 - signed release tags and tag protection for `v*`;
 - no broad bypass list.
 
-For a solo maintainer, zero mandatory external approvals is practical, but required CI and conversation
-resolution should still prevent an accidental red build from merging. The Phase 4 direct push is part of the
-explicit audit brief and does not set the future contribution policy.
+For a solo maintainer, zero mandatory external approvals is practical. Local validation remains the release
+gate because CI is intentionally absent.
 
 GitHub documents the available controls in [protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
 and [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/configuring-private-vulnerability-reporting-for-a-repository).
 
-## Launch blockers
+## Launch gates
 
-- The packed npm consumer resolves vulnerable `@hono/node-server@1.19.14`; release dry run `29932142666`
-  fails closed before artifact upload on Ubuntu, macOS, and Windows.
-- npm `@temporalthread` scope authority is not established.
-- Real Codex CLI/desktop trust and discovery certification is incomplete.
-- Public visibility, npm publication, tag, and GitHub release each require explicit human approval.
-
-The repository source is structurally ready for owner review after green source CI run `29931945659`, but the
-current release-dry-run matrix is intentionally red at the distribution security gate. The remaining blockers
-prevent treating it as a complete v0.1.0 public package launch today.
+- The secure SDK 1.30.0 packed npm and pnpm consumer graphs pass locally.
+- The package set uses the authenticated `sudarshanchaudhari` personal npm scope.
+- The owner confirmed write-protection 2FA/recovery readiness and approved the release actions.
+- Real Codex CLI/desktop trust and discovery certification remains deferred and must not be claimed.
+- Exact-commit artifact, checksum, SBOM, publication, and post-install verification remain required.
