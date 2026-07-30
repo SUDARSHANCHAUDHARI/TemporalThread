@@ -1,50 +1,49 @@
-# npm authority and 2FA checklist
+# npm authority and account-security record
 
-Read-only review date: 2026-07-29
+Last verified: 2026-07-30
 
-No npm account, organization, package, role, 2FA setting, recovery method, token, or trusted publisher was
-changed. No `.npmrc`, token, email address, recovery code, or complete account profile was printed or stored.
+No npm account, organization, role, 2FA setting, recovery method, token, or trusted publisher was changed
+during this documentation sync. No `.npmrc`, token, email address, recovery code, or complete account profile
+was printed or stored.
 
-Allowed status vocabulary: `PASS`, `READ-ONLY VERIFIED`, `MANUAL`, `BLOCKED`, `NOT PERFORMED`.
+## v0.1.0 bootstrap outcome
 
-| Requirement | Status | Evidence type | Evidence | Human action |
-| --- | --- | --- | --- | --- |
-| npm account access | READ-ONLY VERIFIED | Authenticated CLI identity check | `npm whoami` succeeded on 2026-07-29 | Confirm this is the account intended to own the project. |
-| npm username | READ-ONLY VERIFIED | Authenticated CLI identity check | Username: `sudarshanchaudhari` | Confirm spelling and long-term account ownership. |
-| Personal scope selected | PASS | Owner decision plus authenticated identity | Owner approved `@sudarshanchaudhari/temporalthread-*`; no npm organization is required | Preserve the coordinated package names. |
-| Package publish permission | MANUAL | Personal-scope bootstrap requirement | Packages do not exist yet; the authenticated owner must complete the first 2FA-protected publish | Confirm immediately before publication. |
-| Package name availability | READ-ONLY VERIFIED | Public registry metadata | All eight final names returned E404 on 2026-07-29 | Recheck immediately before publication; availability is not reservation. |
-| 2FA enabled for writes | MANUAL | Safe CLI field check inconclusive | The requested 2FA field could not be confirmed without broader profile disclosure | Verify the account's authorization/write protection personally in npm account settings. |
-| Recovery codes stored safely | MANUAL | Owner attestation required | Not inspected; codes are prohibited from this repository and session | Confirm offline/password-manager storage without revealing any code. |
-| Recovery email/account access | MANUAL | Owner attestation required | Not inspected; no email address was requested or printed | Confirm recovery access personally and record only `CONFIRMED`, never the address. |
-| Backup trusted owner | MANUAL | Owner decision required | No second owner was established in Phase 4.2 | Decide whether a trusted second owner is appropriate; use least privilege. |
-| Organization requirement | NOT APPLICABLE | Personal npm scope selected | No `temporalthread` organization will be created | None. |
-| Public scoped package access | BLOCKED | Packages not created | No package settings exist yet | Publish each scoped package with explicit public access after approval. |
-| Trusted-publishing eligibility | BLOCKED | Official npm requirements | Packages must already exist; public provenance also requires a public package/repository and supported hosted CI | Configure separately after ownership exists and only with an approved workflow. |
-| Emergency deprecation authority | BLOCKED | Ownership prerequisite absent | No package ownership exists | After bootstrap, verify an owner can deprecate and recover access; do not test by mutating production metadata. |
+| Requirement | Final status | Evidence |
+| --- | --- | --- |
+| npm account access | VERIFIED FOR RELEASE | The authenticated initial publication completed |
+| npm username/scope | VERIFIED FOR RELEASE | `sudarshanchaudhari` personal scope used |
+| Package publish permission | PASS | All eight v0.1.0 packages were published |
+| Package names | PASS | The exact eight v0.1.0 names resolve publicly |
+| Public scoped access | PASS | Seven scoped runtime packages resolve as public packages |
+| Unscoped CLI | PASS | `temporalthread@0.1.0` resolves with the expected bin and Node `>=24` engine |
+| Write-protection 2FA | OWNER CONFIRMED | Confirmed privately before publication; no sensitive account data recorded |
+| Recovery readiness | OWNER CONFIRMED | Confirmed privately before publication; no recovery details recorded |
+| npm organization | NOT APPLICABLE | Personal scope selected; no `temporalthread` organization created |
+| Trusted publisher | NOT CONFIGURED | Initial release was interactive and used no CI |
+| npm provenance | NOT CLAIMED | Initial no-CI bootstrap release |
 
-## Read-only commands selected
+## Published package family
 
-Current npm CLI documentation uses:
+1. `@sudarshanchaudhari/temporalthread-shared-types@0.1.0`
+2. `@sudarshanchaudhari/temporalthread-config@0.1.0`
+3. `@sudarshanchaudhari/temporalthread-temporal-parser@0.1.0`
+4. `@sudarshanchaudhari/temporalthread-storage-sqlite@0.1.0`
+5. `@sudarshanchaudhari/temporalthread-core@0.1.0`
+6. `@sudarshanchaudhari/temporalthread-mcp-server@0.1.0`
+7. `@sudarshanchaudhari/temporalthread-codex-integration@0.1.0`
+8. `temporalthread@0.1.0`
 
-```sh
-npm whoami
-npm profile get <property>
-npm access list packages <user-or-scope> --json
-npm org ls <organization> --json
-npm view <package> name version owners --json
-```
+## Security boundary
 
-Only the minimum safe subset was run. Commands that could expose a full package portfolio or account profile
-were summarized rather than copied into documentation.
+- Never commit or print npm tokens, OTPs, recovery codes, private account fields, or `.npmrc` credentials.
+- Do not test production authority by mutating package ownership, access, or deprecation metadata.
+- Treat v0.1.0 as immutable; fixes require a new version.
+- A later publication requires a new owner approval and a fresh account/registry check.
+- Trusted publishing or provenance requires a separately approved design and CI workflow.
 
 Official references:
 
-- [npm whoami](https://docs.npmjs.com/cli/v11/commands/npm-whoami/)
-- [npm profile](https://docs.npmjs.com/cli/v11/commands/npm-profile/)
-- [npm access](https://docs.npmjs.com/cli/v11/commands/npm-access/)
-- [Organization roles and permissions](https://docs.npmjs.com/organization-roles-and-permissions/)
+- [npm account access](https://docs.npmjs.com/cli/v11/commands/npm-access/)
 - [Configuring two-factor authentication](https://docs.npmjs.com/configuring-two-factor-authentication/)
 - [Trusted publishing](https://docs.npmjs.com/trusted-publishers/)
-
-This checklist does not authorize account mutation or publication.
+- [Generating provenance statements](https://docs.npmjs.com/generating-provenance-statements/)

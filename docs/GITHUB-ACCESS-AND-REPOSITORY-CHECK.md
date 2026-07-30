@@ -1,5 +1,8 @@
 # GitHub Access and Repository Check
 
+> Historical audit snapshot. It intentionally records the private repository and CI state observed on
+> 2026-07-20. See [Public repository status](PUBLIC-REPOSITORY-READINESS.md) for the current state.
+
 Audit date: 2026-07-20 (Asia/Bangkok)
 
 Repository: `SUDARSHANCHAUDHARI/TemporalThread`

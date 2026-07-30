@@ -4,9 +4,15 @@ TemporalThread supports an official-format Codex plugin and a direct CLI install
 the fallback for the IDE extension, project-specific configuration, and users who do not use a plugin
 marketplace.
 
-No TemporalThread package or plugin has been published from this repository yet. The source and packed
-artifacts are release-ready, but installation currently starts from a local clone or another explicitly
-obtained artifact.
+TemporalThread v0.1.0 is published on npm. Install the CLI before using either Codex integration path:
+
+```sh
+npm install --global temporalthread@0.1.0
+temporalthread --version
+```
+
+The official-format Codex plugin bundle remains versioned in this repository. The published CLI provides the
+direct installer and the runtime command used by both integration paths.
 
 ## Prerequisites
 
@@ -64,10 +70,10 @@ node $cli integrate codex install --scope project --development-cli $cli --yes
 Development mode stores `node`, the selected absolute CLI entry, and `start` in the MCP entry. The installer
 validates that entry before modifying Codex. It does not commit that machine-specific path to the repository.
 
-## Installed-package mode
+## Installed-package mode (recommended)
 
-Once an official artifact has been installed and `temporalthread --version` succeeds, use installed-package
-mode (the default):
+After the published CLI is installed and `temporalthread --version` succeeds, use installed-package mode
+(the default):
 
 ```sh
 temporalthread integrate codex install --scope user --dry-run

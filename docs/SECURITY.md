@@ -17,7 +17,9 @@ TemporalThread protects local conversation timing and privacy-permitted content 
 - The SQLite backup command verifies a temporary snapshot, publishes it with an exclusive no-overwrite operation, and verifies the published file again. It uses an atomic same-directory hard link where supported and an exclusive-copy fallback otherwise.
 - Host adapters use fixed executable names and argument arrays with `shell: false`; interaction text is JSON on stdin.
 - MCP failures and hook logs use allow-listed messages and do not echo private text.
-- CI has read-only repository permissions, pins third-party actions to full commit SHAs, audits production dependencies, and runs source tests, host-neutral MCP certification, SQLite recovery checks, and packed verification on three operating systems.
+- GitHub Actions workflows are currently absent by owner policy. Source checks, production dependency
+  audits, host-neutral MCP certification, SQLite recovery checks, and packed verification are local
+  release tools; do not infer current cross-platform CI coverage from historical phase reports.
 
 ## Database recovery
 

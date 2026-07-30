@@ -79,4 +79,6 @@ Allowed result values: `PASS`, `FAIL`, `MANUAL`, `NOT TESTED`, `NOT APPLICABLE`.
 - Only a human tester can mark trust prompts, Codex UI/tool/skill visibility, model behavior, desktop behavior, terminal restart, and IDE fallback.
 - Skipping real-host certification means TemporalThread may claim automated Codex integration coverage, but not live Codex host certification.
 - A future platform result is `PASS` only when every mandatory manual and automated check for that platform passes.
-- This record does not clear the SDK/Hono blocker and does not authorize publication.
+- v0.1.0 was later published without live-host certification. This record remains the authoritative reason
+  that the release may claim automated Codex integration coverage but not certified Codex UI, trust, skill,
+  lifecycle, desktop, or model compatibility.

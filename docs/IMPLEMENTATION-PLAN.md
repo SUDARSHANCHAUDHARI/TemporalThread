@@ -1,6 +1,9 @@
 # TemporalThread implementation plan
 
-Status: implementation and release verification complete
+Status: historical implementation plan; MVP implemented and v0.1.0 released
+
+The version and upstream-library choices below record the plan as written. See the root README,
+`CHANGELOG.md`, and `V0.1.0-RELEASE-GATE.md` for the final release state.
 Research date: 2026-07-19
 Completion date: 2026-07-20
 Target release: `0.1.0`

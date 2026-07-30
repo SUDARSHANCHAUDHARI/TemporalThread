@@ -4,22 +4,6 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ## [Unreleased]
 
-### Changed
-
-- Move the seven publishable workspace packages from the unavailable `@temporalthread` organization scope
-  to the maintainer-owned `@sudarshanchaudhari/temporalthread-*` personal scope. The unscoped
-  `temporalthread` CLI name is unchanged.
-- Upgrade `@modelcontextprotocol/sdk` to 1.30.0 and remove the Hono workspace override now that the
-  SDK's supported range resolves patched `@hono/node-server` 2.x releases in clean npm and pnpm consumers.
-
-### Fixed
-
-- Codex status and doctor now inspect the configured database path, including validated environment
-  overrides, instead of assuming the default data path.
-- Commitment status filters are applied before the requested result limit.
-- Later interactions reopen ended sessions and preserve out-of-order session start timestamps.
-- Storage query helpers retain their no-filter defaults after the repository refactor.
-
 ## [0.1.0] - 2026-07-29
 
 ### Added
@@ -52,6 +36,11 @@ All notable changes to TemporalThread will be documented in this file. The forma
 
 ### Changed
 
+- Move the seven publishable workspace packages from the unavailable `@temporalthread` organization scope
+  to the maintainer-owned `@sudarshanchaudhari/temporalthread-*` personal scope. The unscoped
+  `temporalthread` CLI name is unchanged.
+- Upgrade `@modelcontextprotocol/sdk` to 1.30.0 and remove the Hono workspace override now that the
+  SDK's supported range resolves patched `@hono/node-server` 2.x releases in clean npm and pnpm consumers.
 - Commitment updates now use an explicit state machine: repeated actions are idempotent, terminal states must
   be reopened before crossing, rescheduling reopens the item and clears terminal timestamps, and privacy-redacted
   original text remains redacted.
@@ -83,6 +72,14 @@ All notable changes to TemporalThread will be documented in this file. The forma
 - Packed dependency verification now installs all eight tarballs into independent npm and pnpm consumers
   with isolated caches/stores, audits both production graphs, reports every SDK/Hono/fast-uri version, and
   fails closed when any manager retains a vulnerable nested dependency.
+
+### Fixed
+
+- Codex status and doctor now inspect the configured database path, including validated environment
+  overrides, instead of assuming the default data path.
+- Commitment status filters are applied before the requested result limit.
+- Later interactions reopen ended sessions and preserve out-of-order session start timestamps.
+- Storage query helpers retain their no-filter defaults after the repository refactor.
 
 ### Security
 
