@@ -1,6 +1,6 @@
-# SBOM and provenance plan
+# SBOM and provenance record
 
-Status: SBOM tooling implemented; exact v0.1.0 SBOM generation owner-approved
+Status: v0.1.0 checksums, manifest, and SPDX SBOM published
 
 ## SBOM result
 
@@ -12,22 +12,22 @@ pnpm release:sbom -- --output release-artifacts/temporalthread-v0.1.0.spdx.json
 
 The generator reads `pnpm list -r --prod --depth Infinity --json` plus
 `pnpm licenses list --prod --json`, removes installation paths, walks only the eight release packages, and
-emits deterministic package/relationship ordering. The historical commit-`dc2c0b4` candidate contains 140
-local, direct, and transitive package records and 247 relationships.
+emits deterministic package/relationship ordering. The published v0.1.0 document contains 140 local,
+direct, and transitive package records.
 
 The SBOM is generated locally from the exact clean release commit and attached to the GitHub release rather
 than committed. Its namespace binds the version, source commit, and production graph digest. A dirty source
 tree is explicitly marked and must not be used for publication evidence.
 
-The historical SBOM is no longer an approved release candidate. The 2026-07-22 packed-consumer security gate
+An earlier historical SBOM was superseded. The 2026-07-22 packed-consumer security gate
 showed that the workspace SBOM/source graph can contain overridden `@hono/node-server@2.0.10` while a registry
 consumer resolves vulnerable 1.19.14. Release dry run `29932142666` stopped before generating or uploading a
-new SBOM. A future candidate must bind the source graph and separately verify the installed packed-consumer
-graph before its SBOM and checksums are accepted.
+new SBOM.
 
 Merged PR #5 cleared the blocker with SDK 1.30.0, and merged PR #7 verified the final personal-scope package
-graph in clean npm and pnpm consumers. Fresh artifact/SBOM generation remains downstream of exact-commit
-verification.
+graph in clean npm and pnpm consumers. The final `release-manifest.json` binds all eight v0.1.0 tarballs to
+source commit `5056916c602752632f16fe61bebd814454575c3c`; the SPDX namespace independently binds the SBOM's
+version, source commit, and production graph digest.
 
 ## Scope and limitations
 
@@ -80,33 +80,33 @@ Preferred steady state:
 
 Official npm documentation says trusted publishing requires npm CLI 11.5.1+ and Node 22.14+; TemporalThread's
 Node 24 and npm 11 toolchain meets that minimum. It also says provenance is unavailable for private source
-repositories, so the repository must become public before a provenance-bearing v0.1.0 publish. See
+repositories, so this public repository state must be preserved for a future provenance-bearing publish. See
 [trusted publishing](https://docs.npmjs.com/trusted-publishers/) and
 [generating provenance](https://docs.npmjs.com/generating-provenance-statements/).
 
-## Initial package bootstrap
+## Initial package bootstrap result
 
-Trusted-publisher configuration requires an existing package. The first creation of eight new names therefore
-needs a separately approved bootstrap:
+Trusted-publisher configuration requires an existing package. The owner approved and completed the initial
+interactive bootstrap for all eight new names:
 
-- verify the authenticated `sudarshanchaudhari` personal scope and npm 2FA;
-- make the reviewed repository public;
-- use interactive owner publication with write-protection 2FA;
-- do not claim provenance for the initial no-CI release;
-- consider trusted publishing only after separate CI approval.
+- the authenticated `sudarshanchaudhari` personal scope was used;
+- the reviewed repository became public;
+- all eight v0.1.0 packages were published; and
+- the initial no-CI release does not claim provenance.
 
-No token, environment, trusted-publisher relationship, or publishing workflow is created for v0.1.0.
+No publishing workflow or trusted-publisher relationship was created for v0.1.0. Trusted publishing remains
+a possible future design only after separate CI approval.
 
 ## GitHub release provenance
 
-For the later approved release:
+The v0.1.0 release record:
 
-- create a signed tag where available, otherwise an annotated tag with documented commit verification;
-- build from the exact tag with a clean tree;
-- attach the eight tarballs, `SHA256SUMS`, `release-manifest.json`, and SPDX SBOM;
-- consider GitHub artifact attestations in a separately reviewed workflow with only the permissions their
-  official action requires;
-- never replace an existing tag or release asset with different bytes.
+- uses an annotated tag at `5056916c602752632f16fe61bebd814454575c3c`;
+- attaches the eight tarballs, `SHA256SUMS`, `release-manifest.json`, and SPDX SBOM;
+- is not signed and does not include a GitHub artifact attestation; and
+- must never be replaced with different bytes or moved to a different commit.
+
+GitHub artifact attestations may be considered only in a separately approved future workflow.
 
 ## Recovery
 
@@ -124,8 +124,9 @@ published version or rewrite a release tag. Follow `docs/NPM-DISTRIBUTION-PLAN.m
 | Tarball SHA-256 generation/verification | PASS locally |
 | Historical clean source association | SUPERSEDED for commit `dc2c0b44f56ec3d21294d2949a8c861238256adc`; no tag created |
 | Current packed-consumer dependency gate | PASS locally; SDK 1.30.0 and Hono 2.0.12 in npm and pnpm consumers |
-| Current release-candidate SBOM | APPROVED; generate after the release-finalization PR is merged |
+| Published v0.1.0 SBOM | PASS; attached to the GitHub release |
+| Published checksum and manifest assets | PASS; attached with all eight tarballs |
 | npm provenance | NOT CLAIMED for the initial no-CI release |
 | npm personal scope/2FA | Authenticated identity and owner confirmation complete |
-| Trusted publisher | Not configured; future public action |
-| Signed tag/GitHub release | Owner-approved; pending exact-candidate verification |
+| Trusted publisher | Not configured; future separately approved action |
+| Tag/GitHub release | Annotated tag and final release published; tag is not signed |

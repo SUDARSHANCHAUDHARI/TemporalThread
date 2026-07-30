@@ -1,6 +1,6 @@
 # npm personal-scope human actions
 
-Status: owner guide only. Codex must not perform these account mutations.
+Status: account-safety guide. The v0.1.0 bootstrap is complete; agents must not perform account mutations.
 
 Official guidance can change; re-open the linked npm documentation immediately before any account or
 account action.
@@ -16,13 +16,13 @@ that should control TemporalThread.
 ## 2. Confirm the personal scope
 
 The owner selected the existing `sudarshanchaudhari` personal npm scope. The seven scoped packages use
-`@sudarshanchaudhari/temporalthread-*`; no npm organization is required. Confirm the website account matches
-the authenticated CLI identity immediately before publication.
+`@sudarshanchaudhari/temporalthread-*`; no npm organization is required. All seven scoped packages and the
+unscoped CLI were published at v0.1.0.
 
 ## 3. Confirm public package authority
 
-Confirm every intended scoped package will be public. Public access is a package-level distribution decision,
-not something inferred from an available name. The first publish must explicitly use public access.
+All seven intended scoped v0.1.0 packages are public. Do not change package access, ownership, or scope
+without a separately reviewed owner decision.
 
 ## 4. Protect writes with 2FA
 
@@ -45,9 +45,10 @@ support-assisted paths. Record only `CONFIRMED` in the checklist.
 Personal scopes do not provide organization ownership roles. Keep account recovery current; any future
 multi-owner distribution model requires a separate decision.
 
-## 7. Recheck names immediately before bootstrap
+## 7. Recheck ownership before a future release
 
-Availability is not reservation. Immediately before an approved bootstrap, recheck:
+The eight names below are now occupied by the published TemporalThread package family. Before an approved
+future release, verify ownership and current metadata rather than testing availability:
 
 - `@sudarshanchaudhari/temporalthread-shared-types`
 - `@sudarshanchaudhari/temporalthread-config`
@@ -58,20 +59,19 @@ Availability is not reservation. Immediately before an approved bootstrap, reche
 - `@sudarshanchaudhari/temporalthread-codex-integration`
 - `temporalthread`
 
-Stop if any result conflicts with the release plan.
+Stop if any result conflicts with the release plan. Do not mutate ownership or access to test authority.
 
-## 8. Initial package bootstrap
+## 8. Initial package bootstrap outcome
 
-Trusted publishing cannot create ownership for a nonexistent package. The initial package creation therefore
-requires a separately approved, interactive, write-protected bootstrap after:
+The separately approved interactive v0.1.0 bootstrap completed after:
 
-- the dependency blocker is resolved;
-- both packed consumer graphs are secure;
-- the exact-commit release dry run is green;
-- the repository/public provenance decision is approved; and
-- personal account identity, 2FA, recovery, and package access are verified.
+- the dependency blocker was resolved;
+- both packed consumer graphs were secure;
+- the release artifacts were associated with the tagged source commit;
+- the repository became public; and
+- personal account identity, 2FA, recovery, and package access were owner-confirmed.
 
-No bootstrap or publication command belongs in Phase 4.2.
+v0.1.0 is immutable. Never rerun its publication commands or reuse its version.
 
 ## 9. Configure trusted publishing after ownership exists
 

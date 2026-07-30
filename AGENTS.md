@@ -6,7 +6,9 @@ This file is the operating contract and project handoff for every AI coding agen
 
 TemporalThread gives local AI agents a persistent sense of time. It is a local-first TypeScript monorepo with an MCP server over stdio, a CLI, deterministic temporal parsing, SQLite persistence, privacy modes, commitment tracking, and host-integration helpers.
 
-The repository is currently private. The project is an **MVP candidate**, not a verified production release. Do not describe it as production-ready, release-ready, fully validated, or fully complete until the remaining review, validation, security, packaging, and owner-approval gates are closed with evidence.
+The repository is public and v0.1.0 is published. The project is an **initial MVP release**, not a verified
+production deployment. Do not describe it as production-ready, fully validated, or fully complete without
+real usage and compatibility evidence beyond the initial release checks.
 
 ## Current repository state
 
@@ -16,10 +18,14 @@ The repository is currently private. The project is an **MVP candidate**, not a 
 - Do not merge or enable auto-merge without explicit owner approval.
 - GitHub Actions workflows are currently removed.
 - Local validation is the default development workflow.
-- No npm package, Git tag, GitHub release, public announcement, or repository visibility change is authorized.
+- The annotated `v0.1.0` tag points to commit `5056916c602752632f16fe61bebd814454575c3c`.
+- All eight v0.1.0 packages are public on npm, and the GitHub release contains the eight tarballs,
+  `SHA256SUMS`, `release-manifest.json`, and the SPDX 2.3 SBOM.
+- The repository is public and private vulnerability reporting is enabled.
+- No later package publication, tag, GitHub release, announcement, or repository-setting change is
+  authorized by the v0.1.0 approval.
 - Real Codex CLI/desktop UI, trust prompts, skill discovery, lifecycle behavior, and model behavior are not certified.
 - The prior MCP SDK/Hono dependency-security blocker was cleared locally in merged pull request `#5`.
-- Publication remains blocked by owner-only npm authority, account-security, and release-approval gates.
 
 ## What has been implemented
 
@@ -139,18 +145,16 @@ Do not start new phases, unrelated refactors, large test expansions, or infrastr
 - Do not enable auto-merge.
 - Wait for explicit owner approval before merging.
 
-## What remains before production release
+## Post-release status
 
-The prior dependency-security blocker is locally cleared. The project is still not production-ready until
-all of these remaining gates are resolved:
+The v0.1.0 publication gates are complete. The project is still not production-ready because an initial
+package release is not evidence of broad production operation:
 
-- npm scope/package ownership and write authority are confirmed;
-- npm write-protection 2FA and recovery readiness are completed by the owner;
-- package names are rechecked immediately before publication;
-- a clean install from the exact release candidate is verified;
-- release artifacts, checksums, and SBOM are generated only from a security-cleared candidate;
-- public claims match actual evidence;
-- repository visibility, package publication, tag, GitHub release, and announcement each receive explicit owner approval.
+- real Codex CLI/desktop trust, UI, skill discovery, lifecycle delivery, and model behavior remain not tested;
+- the exact released commit does not have current Linux or Windows validation evidence;
+- no sustained real-user reliability, upgrade, support, or incident-response history has been recorded;
+- byte-for-byte release artifact reproducibility across operating systems is not established; and
+- the initial no-CI npm release does not claim provenance.
 
 Real Codex host certification is currently deferred. Documentation may claim automated package and adapter coverage, but must not claim verified Codex UI, trust, skill, hook, lifecycle, or model compatibility.
 
@@ -243,15 +247,14 @@ Use evidence-based wording:
 
 Current accurate status:
 
-> Core MVP functionality is implemented, focused review is complete, and the required local validation
-> passed on merged pull request `#3`. The stable MCP SDK dependency path and secure packed-consumer checks
-> passed on merged pull request `#5`. The project is not production-ready and publication remains blocked.
+> Core MVP functionality is implemented and TemporalThread v0.1.0 is published on npm and GitHub. The
+> release includes checksums, a manifest, and an SPDX SBOM. The project is not production-ready: real Codex
+> host behavior, current Linux/Windows evidence, and sustained production usage remain unverified.
 
 ## Exact next work item
 
-Do not begin another implementation phase. The owner must personally verify npm scope/package authority,
-write-protection 2FA, and recovery readiness. After that, every release artifact, SBOM, publication, tag,
-GitHub release, repository visibility change, and announcement still requires explicit owner approval.
+No implementation phase is queued automatically. Wait for an owner-selected follow-up such as real-host
+certification, v0.1.0 feedback triage, or a separately scoped next release.
 
-No CI, GitHub Actions, new roadmap features, release automation, or direct changes to `main` are part of the
-next work.
+No CI, GitHub Actions, new roadmap features, release automation, direct changes to `main`, or additional
+public release actions are authorized by the completed v0.1.0 work.

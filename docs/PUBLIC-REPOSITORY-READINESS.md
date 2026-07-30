@@ -1,99 +1,73 @@
-# Public repository readiness
+# Public repository status
 
-Audit date: 2026-07-20; release authorization update 2026-07-29
-Current visibility: private
-Visibility changed during Phase 4: no
+Last verified: 2026-07-30
 
-## Public surface review
+Repository: [SUDARSHANCHAUDHARI/TemporalThread](https://github.com/SUDARSHANCHAUDHARI/TemporalThread)
 
-Reviewed `README.md`, `LICENSE`, `SECURITY.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`, `CHANGELOG.md`,
-`AGENTS.md`, architecture/privacy/security/integration/roadmap/install documents, package READMEs, issue
-templates, pull request template, and release-candidate reports.
+## Current state
 
-Results:
+The repository became public for the v0.1.0 release. The public surface includes the source, documentation,
+issue templates, security policy, annotated `v0.1.0` tag, and final GitHub release.
 
-- no npm or GitHub release badge is present before publication;
-- the root README documents the approved npm installation path and retains source-development instructions;
-- package READMEs use the final personal-scope names;
-- no maintainer email address, real conversation, token, database, or personal machine path is present;
-- repository-owner URLs appear only where needed for source, issues, security, and package metadata;
-- local stdio is never claimed to work in ChatGPT web;
-- Codex configuration is supported but live trust remains manual, Claude Code is partial, OpenCode is
-  experimental, and Ollama is an example client;
-- automatic capture is consistently best effort;
-- `temporal-references-only` is documented as the default and full history as explicit opt-in;
-- uninstall and purge are separate, and uninstall preserves the database by default;
-- the MIT license, contribution rules, code of conduct, security policy, privacy model, architecture, support
-  matrix, and roadmap are present;
-- privacy-aware bug/feature issue forms and a pull request template are prepared.
+The public review found:
 
-Private vulnerability reporting is not currently confirmed by the API and must be enabled when the
-repository becomes public. The security issue-template link is intended for that future enabled state.
+- no token, database, private key, maintainer machine path, or real conversation content in the reviewed
+  release surface;
+- package READMEs and manifests use the published personal-scope names;
+- local stdio is not presented as working in ChatGPT web;
+- automatic capture is described as best effort;
+- `temporal-references-only` remains the default privacy mode;
+- uninstall and purge remain separate operations; and
+- real Codex host certification is explicitly not claimed.
 
-## Current GitHub settings
+## Verified GitHub settings
 
-| Setting | Current evidence |
+| Setting | Verified value |
 | --- | --- |
-| Visibility | Private |
+| Visibility | Public |
 | Default branch | `main` |
 | Description | “Give AI agents a persistent sense of time.” |
-| Topics | None |
+| Topics | `ai-agents`, `codex`, `local-first`, `mcp`, `model-context-protocol`, `sqlite`, `temporal`, `typescript` |
 | Issues | Enabled |
 | Discussions | Disabled |
 | Wiki | Disabled |
-| Merge methods | Merge commit, squash, and rebase all enabled |
-| Delete head branch after merge | Disabled |
-| Branch protection | Not available on the current private repository plan; API returned 403 |
-| Actions | No workflows; CI remains intentionally absent |
-| Default workflow token | Read-only; cannot approve pull requests |
-| Artifact/log retention | Repository default; no workflow artifacts are generated |
+| Merge methods | Squash and rebase enabled; merge commits disabled |
+| Delete head branch after merge | Enabled |
+| GitHub Actions | No workflows; intentionally absent |
+| Private vulnerability reporting | Enabled |
+| Secret scanning | Disabled |
+| Dependabot security updates | Disabled |
 
-## Exact settings for the approved public launch
+The `main` branch rule:
 
-Apply these settings only after the release-finalization pull request is merged and the exact commit passes
-the remaining technical gates.
+- requires pull requests;
+- requires conversation resolution;
+- requires linear history;
+- applies to administrators;
+- blocks force pushes and branch deletion; and
+- has no required status checks because CI is intentionally absent.
 
-| Setting | Recommended value |
-| --- | --- |
-| Visibility | Public, only after a final secret/history review and explicit owner approval |
-| Default branch | `main` |
-| Description | `Give AI agents a persistent sense of time.` |
-| Homepage | Leave empty until a durable project site or documentation URL exists |
-| Topics | `mcp`, `model-context-protocol`, `temporal`, `ai-agents`, `local-first`, `sqlite`, `typescript`, `codex` |
-| Issues | Enabled |
-| Discussions | Disabled initially; enable later only if the maintainer will actively use it |
-| Wiki | Disabled; versioned documentation remains in `docs/` |
-| Projects | Optional; leave enabled only if the maintainer will use it |
-| Private vulnerability reporting | Enable immediately after public visibility |
-| Merge strategy | Squash merge enabled; disable merge commits; rebase merge optional; delete head branches |
-| Auto merge | Disabled |
-| Workflow token | Keep read-only by default; grant job-level permissions only |
-| Actions policy | Keep workflows absent until separately approved |
-| Fork pull-request workflows | Never send write tokens or secrets to untrusted fork code |
-| Artifact retention | Use GitHub release assets for the approved v0.1.0 artifacts |
+Zero mandatory approvals is intentional for the solo-maintainer workflow. It does not permit agents to merge
+or enable auto-merge without explicit owner approval.
 
-## Branch rules recommendation
+## Release surface
 
-After public visibility makes branch protection available, protect `main` with:
+The [v0.1.0 GitHub release](https://github.com/SUDARSHANCHAUDHARI/TemporalThread/releases/tag/v0.1.0)
+contains eight npm tarballs, `SHA256SUMS`, `release-manifest.json`, and the SPDX 2.3 SBOM. The annotated tag
+points to commit `5056916c602752632f16fe61bebd814454575c3c`.
 
-- pull requests required for external changes;
-- conversation resolution required;
-- force pushes and branch deletion disabled;
-- linear history required if merge commits are disabled;
-- branch rules applying to administrators when practical;
-- signed release tags and tag protection for `v*`;
-- no broad bypass list.
+All eight v0.1.0 packages are public on npm. The initial release used an interactive no-CI publication and
+does not claim npm provenance.
 
-For a solo maintainer, zero mandatory external approvals is practical. Local validation remains the release
-gate because CI is intentionally absent.
+## Remaining limitations
 
-GitHub documents the available controls in [protected branches](https://docs.github.com/en/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches)
-and [private vulnerability reporting](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/configuring-private-vulnerability-reporting-for-a-repository).
+- Real Codex CLI/desktop trust, UI, skill discovery, lifecycle delivery, and model behavior remain not
+  tested.
+- The exact released commit does not have current Linux or Windows validation evidence.
+- Secret scanning and Dependabot security updates are currently disabled. Enabling either is a separate
+  repository-setting change and requires owner approval.
+- GitHub Actions remain absent by policy; historical phase reports are not current CI evidence.
+- Public availability does not make the project production-ready.
 
-## Launch gates
-
-- The secure SDK 1.30.0 packed npm and pnpm consumer graphs pass locally.
-- The package set uses the authenticated `sudarshanchaudhari` personal npm scope.
-- The owner confirmed write-protection 2FA/recovery readiness and approved the release actions.
-- Real Codex CLI/desktop trust and discovery certification remains deferred and must not be claimed.
-- Exact-commit artifact, checksum, SBOM, publication, and post-install verification remain required.
+No repository setting should be changed merely to make this document's recommendations pass. Inspect the
+current setting, explain the effect and resource implications, and obtain explicit owner approval first.
