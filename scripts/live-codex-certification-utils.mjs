@@ -452,7 +452,7 @@ export function createCertificationManifest({
     certificationId,
     expectedCommit,
     createdAt,
-    dependencySecurity: 'BLOCKED',
+    dependencySecurity: 'NOT_EVALUATED',
     releaseUse: 'PROHIBITED',
     timezone,
     root: paths.root,
@@ -508,8 +508,11 @@ export function validateCertificationManifest(value, expectedRoot) {
   if (!/^[a-f0-9]{64}$/u.test(requiredString(manifest, 'privacyMarkerSha256'))) {
     throw new Error('Certification manifest marker digest is invalid');
   }
-  if (manifest.dependencySecurity !== 'BLOCKED' || manifest.releaseUse !== 'PROHIBITED') {
-    throw new Error('Certification manifest must retain the release blocker');
+  if (manifest.dependencySecurity !== 'NOT_EVALUATED') {
+    throw new Error('Certification manifest dependency security status is invalid');
+  }
+  if (manifest.releaseUse !== 'PROHIBITED') {
+    throw new Error('Certification manifest must retain the release-use prohibition');
   }
   if (manifest.state !== 'prepared') throw new Error('Certification manifest state is invalid');
   if (!Number.isFinite(Date.parse(requiredString(manifest, 'createdAt')))) {

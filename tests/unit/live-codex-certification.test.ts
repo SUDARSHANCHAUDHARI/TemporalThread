@@ -268,6 +268,13 @@ describe('live Codex certification safety utilities', () => {
     });
 
     expect(certification.validateCertificationManifest(manifest, root)).toEqual(manifest);
+    expect(manifest).toMatchObject({
+      dependencySecurity: 'NOT_EVALUATED',
+      releaseUse: 'PROHIBITED',
+    });
+    expect(() =>
+      certification.validateCertificationManifest({ ...manifest, dependencySecurity: 'BLOCKED' }, root),
+    ).toThrow('dependency security status');
     expect(JSON.stringify(manifest)).not.toContain('TT_CERT_PRIVATE');
     expect(() => certification.validateCertificationManifest({ ...manifest, extra: true }, root)).toThrow(
       'unknown field',

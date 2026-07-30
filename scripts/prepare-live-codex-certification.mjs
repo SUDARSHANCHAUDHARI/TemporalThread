@@ -165,7 +165,7 @@ function instructionContent(manifest) {
 Status: **MANUAL REQUIRED**
 
 These files are temporary functional-test material. They are **not release candidates**, must not be
-published, and retain the blocked SDK/Hono dependency graph.
+published, and do not provide dependency-security evidence.
 
 ## Controlled state
 
@@ -284,7 +284,7 @@ export async function prepareLiveCodexCertification(arguments_ = process.argv.sl
       `TemporalThread Phase 4.2 functional-test packages
 
 NOT FOR RELEASE OR PUBLICATION.
-The @modelcontextprotocol/sdk / @hono/node-server packed dependency security blocker remains open.
+Dependency security is not evaluated by this certification kit.
 These archives exist only inside this disposable certification root.
 `,
       { encoding: 'utf8', mode: 0o600 },
@@ -423,7 +423,7 @@ These archives exist only inside this disposable certification root.
       ok: true,
       status: 'MANUAL REQUIRED',
       certificationKit: 'PREPARED',
-      dependencySecurity: 'BLOCKED',
+      dependencySecurity: 'NOT_EVALUATED',
       releaseUse: 'PROHIBITED',
       expectedCommit,
       temporaryProjectPath: paths.projectRoot,
