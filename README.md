@@ -6,6 +6,11 @@ TemporalThread is a local-first MCP server and CLI that helps AI agents understa
 
 It stores data locally in SQLite, uses MCP over stdio, opens no network port, collects no telemetry, and does not call an LLM.
 
+It is more than a clock tool. If a user said “Let’s continue tomorrow” at 8:00 PM on July 15 in Bangkok,
+TemporalThread anchors “tomorrow” to July 16. When the user returns on July 19, it can report that four exact
+days elapsed and that the commitment is three calendar days overdue—without reinterpreting “tomorrow” using
+July 19.
+
 ## MVP features
 
 - Nine MCP tools for time, elapsed duration, temporal context, interactions, relative-time resolution, and commitments.
@@ -61,11 +66,11 @@ temporalthread init --yes --timezone UTC --integration generic --json
 temporalthread doctor
 ```
 
-Ingest JSON or JSONL events, using the file from the worked example below:
+Ingest JSON or JSONL events:
 
 ```sh
-temporalthread ingest --file interaction.json --json
-temporalthread timeline --session example-session
+temporalthread ingest --file integrations/generic/events.example.jsonl --json
+temporalthread timeline
 ```
 
 Create a verified SQLite snapshot:
@@ -73,39 +78,6 @@ Create a verified SQLite snapshot:
 ```sh
 temporalthread backup --output /private/path/temporalthread-backup.sqlite
 ```
-
-## Worked example: remember what “tomorrow” meant
-
-Create `interaction.json` with a synthetic interaction:
-
-```json
-{
-  "eventType": "interaction",
-  "role": "user",
-  "occurredAt": "2026-01-15T09:00:00Z",
-  "timezone": "UTC",
-  "agent": {
-    "name": "README example",
-    "platform": "generic"
-  },
-  "sessionId": "example-session",
-  "text": "Continue tomorrow.",
-  "idempotencyKey": "readme-example-user-1"
-}
-```
-
-Initialize local storage, ingest the event, and inspect the timeline:
-
-```sh
-temporalthread init --yes --timezone UTC --integration generic
-temporalthread ingest --file interaction.json --json
-temporalthread timeline --session example-session
-```
-
-The ingestion result contains a `temporalReferences` entry for `tomorrow`, resolved from the original
-interaction time to a range beginning at `2026-01-16T00:00:00Z`. With the default
-`temporal-references-only` privacy mode, TemporalThread stores that resolution without storing the complete
-message text.
 
 ## MCP tools
 
