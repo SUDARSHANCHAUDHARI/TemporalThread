@@ -362,6 +362,34 @@ describe('live Codex certification safety utilities', () => {
   });
 
   it.runIf(process.platform !== 'win32')(
+    'allows the isolated Codex arg0 wrappers created by an availability probe',
+    () => {
+      const root = temporaryRoot('cleanup-codex-arg0');
+      const outside = temporaryRoot('cleanup-codex-binary');
+      const id = '123e4567-e89b-42d3-a456-426614174000';
+      const codexBinary = join(outside, 'codex');
+      const wrappers = join(root, 'isolated-codex-home', 'tmp', 'arg0', 'codex-arg0-regression');
+      writeFileSync(codexBinary, 'temporary test executable', 'utf8');
+      mkdirSync(wrappers, { recursive: true });
+      certification.initializeCertificationRoot(root, id);
+      for (const name of ['applypatch', 'apply_patch', 'codex-execve-wrapper']) {
+        symlinkSync(codexBinary, join(wrappers, name), 'file');
+      }
+
+      expect(
+        certification.cleanupCertificationRoot({
+          root,
+          certificationId: id,
+          userHome: '/Users/example',
+          repositoryRoot: '/work/repository',
+          systemTemp: tmpdir(),
+        }),
+      ).toEqual({ removed: true, alreadyRemoved: false });
+      temporaryRoots.splice(temporaryRoots.indexOf(root), 1);
+    },
+  );
+
+  it.runIf(process.platform !== 'win32')(
     'allows internal package-manager symlinks but refuses cleanup of an escaping symlink',
     () => {
       const root = temporaryRoot('cleanup-symlinks');
