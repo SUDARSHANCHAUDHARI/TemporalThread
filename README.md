@@ -61,11 +61,11 @@ temporalthread init --yes --timezone UTC --integration generic --json
 temporalthread doctor
 ```
 
-Ingest JSON or JSONL events:
+Ingest JSON or JSONL events, using the file from the worked example below:
 
 ```sh
-temporalthread ingest --file integrations/generic/events.example.jsonl --json
-temporalthread timeline
+temporalthread ingest --file interaction.json --json
+temporalthread timeline --session example-session
 ```
 
 Create a verified SQLite snapshot:
@@ -73,6 +73,39 @@ Create a verified SQLite snapshot:
 ```sh
 temporalthread backup --output /private/path/temporalthread-backup.sqlite
 ```
+
+## Worked example: remember what “tomorrow” meant
+
+Create `interaction.json` with a synthetic interaction:
+
+```json
+{
+  "eventType": "interaction",
+  "role": "user",
+  "occurredAt": "2026-01-15T09:00:00Z",
+  "timezone": "UTC",
+  "agent": {
+    "name": "README example",
+    "platform": "generic"
+  },
+  "sessionId": "example-session",
+  "text": "Continue tomorrow.",
+  "idempotencyKey": "readme-example-user-1"
+}
+```
+
+Initialize local storage, ingest the event, and inspect the timeline:
+
+```sh
+temporalthread init --yes --timezone UTC --integration generic
+temporalthread ingest --file interaction.json --json
+temporalthread timeline --session example-session
+```
+
+The ingestion result contains a `temporalReferences` entry for `tomorrow`, resolved from the original
+interaction time to a range beginning at `2026-01-16T00:00:00Z`. With the default
+`temporal-references-only` privacy mode, TemporalThread stores that resolution without storing the complete
+message text.
 
 ## MCP tools
 
@@ -164,16 +197,17 @@ Specialized MCP, SQLite recovery, package, artifact, SBOM, and live-host verific
 
 ## Current release status
 
-The intended MVP implementation is complete. Public release remains blocked by:
+TemporalThread v0.1.0 was published to
+[npm](https://www.npmjs.com/package/temporalthread) and
+[GitHub](https://github.com/SUDARSHANCHAUDHARI/TemporalThread/releases/tag/v0.1.0) on July 29, 2026. It is an
+MVP release, not a claim of production readiness.
 
-- the documented secure stable MCP SDK dependency path;
-- npm scope ownership and publishing permission;
-- npm 2FA and recovery readiness; and
-- explicit owner approval for every public release action.
+The CLI, package, installer, privacy boundaries, and MCP behavior have automated local coverage. Real Codex
+CLI/desktop trust, UI, skill discovery, lifecycle delivery, and model behavior remain uncertified, and
+hook-based capture remains best effort.
 
-No additional feature phase is required before release preparation.
-
-See [v0.1.0 release status](docs/V0.1.0-RELEASE-GATE.md).
+See the [live Codex certification results](docs/LIVE-CODEX-CERTIFICATION-RESULTS.md) for the untested host
+surfaces.
 
 ## Documentation
 
