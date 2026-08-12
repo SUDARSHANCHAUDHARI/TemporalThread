@@ -1,6 +1,5 @@
-import { spawnSync } from 'node:child_process';
-import { accessSync, constants, existsSync, readdirSync } from 'node:fs';
-import { dirname, join } from 'node:path';
+import { accessSync, constants, existsSync, readdirSync, statSync } from 'node:fs';
+import { delimiter, dirname, join } from 'node:path';
 import { createInterface } from 'node:readline/promises';
 import {
   assertCodexPathsWritable,
@@ -80,12 +79,27 @@ async function runCodexCommand(options: { json?: boolean }, operation: () => Pro
 }
 
 function detectCodexSurface(): 'codex-cli' | 'unknown' {
-  const detected = spawnSync('codex', ['--version'], {
-    encoding: 'utf8',
-    stdio: 'ignore',
-    timeout: 1_000,
-  });
-  return detected.status === 0 ? 'codex-cli' : 'unknown';
+  const pathValue = Object.entries(process.env).find(([key]) => key.toUpperCase() === 'PATH')?.[1];
+  if (!pathValue) return 'unknown';
+
+  const extensions =
+    process.platform === 'win32' ? (process.env.PATHEXT ?? '.COM;.EXE;.BAT;.CMD').split(';') : [''];
+  const accessMode = process.platform === 'win32' ? constants.F_OK : constants.X_OK;
+
+  for (const rawDirectory of pathValue.split(delimiter)) {
+    const directory = rawDirectory.replace(/^"(.*)"$/u, '$1') || '.';
+    for (const extension of extensions) {
+      const candidate = join(directory, `codex${extension}`);
+      try {
+        if (!statSync(candidate).isFile()) continue;
+        accessSync(candidate, accessMode);
+        return 'codex-cli';
+      } catch {
+        // Continue searching PATH when an entry is absent, inaccessible, or not executable.
+      }
+    }
+  }
+  return 'unknown';
 }
 
 async function resolveScope(value: string | undefined): Promise<Scope> {

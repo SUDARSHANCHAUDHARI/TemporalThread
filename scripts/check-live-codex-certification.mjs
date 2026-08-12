@@ -403,7 +403,7 @@ export async function checkLiveCodexCertification(arguments_ = process.argv.slic
     ok: true,
     stage: options.stage,
     expectedCommit: manifest.expectedCommit,
-    dependencySecurity: 'BLOCKED',
+    dependencySecurity: 'NOT_EVALUATED',
     releaseUse: 'PROHIBITED',
     temporaryEnvironment: 'PASS',
     isolatedHome: 'PASS',

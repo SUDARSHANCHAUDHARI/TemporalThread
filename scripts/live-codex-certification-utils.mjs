@@ -12,7 +12,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
-import { delimiter, dirname, join, posix, relative, resolve, win32 } from 'node:path';
+import { basename, delimiter, dirname, join, posix, relative, resolve, win32 } from 'node:path';
 
 export const EXPECTED_MCP_TOOLS = Object.freeze([
   'calculate_elapsed_time',
@@ -30,6 +30,7 @@ export const ROOT_MARKER_FILE = '.temporalthread-live-certification-root.json';
 export const CERTIFICATION_ROOT_PREFIX = 'temporalthread-live-codex-';
 const manifestSchemaVersion = 1;
 const maximumDiagnosticCharacters = 4_000;
+const codexArg0WrapperNames = new Set(['applypatch', 'apply_patch', 'codex-execve-wrapper']);
 
 const manifestFields = new Set([
   'schemaVersion',
@@ -452,7 +453,7 @@ export function createCertificationManifest({
     certificationId,
     expectedCommit,
     createdAt,
-    dependencySecurity: 'BLOCKED',
+    dependencySecurity: 'NOT_EVALUATED',
     releaseUse: 'PROHIBITED',
     timezone,
     root: paths.root,
@@ -508,8 +509,11 @@ export function validateCertificationManifest(value, expectedRoot) {
   if (!/^[a-f0-9]{64}$/u.test(requiredString(manifest, 'privacyMarkerSha256'))) {
     throw new Error('Certification manifest marker digest is invalid');
   }
-  if (manifest.dependencySecurity !== 'BLOCKED' || manifest.releaseUse !== 'PROHIBITED') {
-    throw new Error('Certification manifest must retain the release blocker');
+  if (manifest.dependencySecurity !== 'NOT_EVALUATED') {
+    throw new Error('Certification manifest dependency security status is invalid');
+  }
+  if (manifest.releaseUse !== 'PROHIBITED') {
+    throw new Error('Certification manifest must retain the release-use prohibition');
   }
   if (manifest.state !== 'prepared') throw new Error('Certification manifest state is invalid');
   if (!Number.isFinite(Date.parse(requiredString(manifest, 'createdAt')))) {
@@ -584,13 +588,31 @@ function walkAndRefuseSymlinkEscapes(root, current = root) {
       } catch {
         throw new Error('Cleanup refuses a broken symbolic link in the temporary root');
       }
-      if (!samePath(root, target) && !isPathInside(root, target)) {
+      if (
+        !samePath(root, target) &&
+        !isPathInside(root, target) &&
+        !isKnownCodexArg0Wrapper(root, path, target)
+      ) {
         throw new Error('Cleanup refuses a symbolic link that escapes the temporary root');
       }
       continue;
     }
     if (entry.isDirectory()) walkAndRefuseSymlinkEscapes(root, path);
   }
+}
+
+function isKnownCodexArg0Wrapper(root, path, target) {
+  const segments = relative(root, path).split(/[\\/]/u);
+  return (
+    segments.length === 5 &&
+    segments[0] === 'isolated-codex-home' &&
+    segments[1] === 'tmp' &&
+    segments[2] === 'arg0' &&
+    /^codex-arg0[\w-]+$/u.test(segments[3]) &&
+    codexArg0WrapperNames.has(segments[4]) &&
+    basename(target) === 'codex' &&
+    lstatSync(target).isFile()
+  );
 }
 
 function safeCleanupLocation(root, userHome, repositoryRoot, systemTemp) {

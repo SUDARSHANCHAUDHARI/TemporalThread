@@ -1,6 +1,8 @@
 import { spawnSync } from 'node:child_process';
 import {
+  chmodSync,
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   realpathSync,
@@ -9,7 +11,7 @@ import {
   writeFileSync,
 } from 'node:fs';
 import { tmpdir } from 'node:os';
-import { join, resolve } from 'node:path';
+import { delimiter, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -24,7 +26,13 @@ function temporaryRoot(label: string): string {
   return root;
 }
 
-function runCli(home: string, project: string, arguments_: string[], input?: string) {
+function runCli(
+  home: string,
+  project: string,
+  arguments_: string[],
+  input?: string,
+  environment: NodeJS.ProcessEnv = {},
+) {
   return spawnSync(process.execPath, [tsxCli, '--tsconfig', typecheckConfig, cliEntry, ...arguments_], {
     cwd: project,
     encoding: 'utf8',
@@ -35,6 +43,7 @@ function runCli(home: string, project: string, arguments_: string[], input?: str
       TEMPORALTHREAD_TIMEZONE: 'UTC',
       TEMPORALTHREAD_LOG_LEVEL: 'silent',
       NO_COLOR: '1',
+      ...environment,
     },
     maxBuffer: 2 * 1_024 * 1_024,
   });
@@ -201,6 +210,31 @@ describe('temporalthread integrate codex CLI', () => {
       database: { path: configuredDatabase, accessible: true, schemaVersion: 3 },
     });
     expect(existsSync(defaultDatabase)).toBe(false);
+  });
+
+  it.runIf(process.platform !== 'win32')('detects the Codex CLI without launching it', () => {
+    const home = temporaryRoot('home');
+    const project = temporaryRoot('project');
+    const fakeBin = join(temporaryRoot('fake-codex'), 'bin');
+    const invocationMarker = join(fakeBin, 'codex-was-launched');
+    mkdirSync(fakeBin);
+    writeFileSync(join(fakeBin, 'codex'), '#!/bin/sh\nprintf invoked > "$CODEX_PROBE_MARKER"\n', 'utf8');
+    chmodSync(join(fakeBin, 'codex'), 0o755);
+
+    const status = runCli(
+      home,
+      project,
+      ['integrate', 'codex', 'status', '--scope', 'project', '--json'],
+      undefined,
+      {
+        PATH: [fakeBin, process.env.PATH].filter(Boolean).join(delimiter),
+        CODEX_PROBE_MARKER: invocationMarker,
+      },
+    );
+
+    expect(status.status).toBe(0);
+    expect(JSON.parse(status.stdout)).toMatchObject({ detectedCodexSurface: 'codex-cli' });
+    expect(existsSync(invocationMarker)).toBe(false);
   });
 
   it('provides JSON and human-readable doctor output with recommended fixes', () => {
