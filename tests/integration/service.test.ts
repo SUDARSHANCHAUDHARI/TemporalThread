@@ -150,7 +150,7 @@ describe('TemporalThreadService interaction continuity', () => {
   });
 
   it('enforces all privacy modes in persisted rows and retrieval responses', () => {
-    const { service, storage } = trackedHarness();
+    const { service, storage } = trackedHarness({ privacyMode: 'full-local-history' });
     const common = {
       role: 'user' as const,
       occurredAt: '2026-07-18T13:00:00Z',
@@ -192,6 +192,24 @@ describe('TemporalThreadService interaction continuity', () => {
     expect(
       service.getLastInteraction({ sessionId: 'privacy-history-session', includeRawText: true }),
     ).toHaveProperty('rawText', common.text);
+  });
+
+  it('refuses a per-call privacy mode looser than the configured mode', () => {
+    const { service, storage } = trackedHarness();
+    const recorded = service.recordInteraction({
+      role: 'user',
+      occurredAt: '2026-07-18T13:00:00Z',
+      timezone: 'UTC',
+      agent: { name: 'Codex', platform: 'codex' },
+      text: 'Continue tomorrow with the private details.',
+      privacyMode: 'full-local-history',
+    });
+
+    expect(storage.getInteraction(recorded.interactionId)).toMatchObject({
+      privacyMode: 'temporal-references-only',
+      rawText: null,
+      textPreview: null,
+    });
   });
 
   it('deduplicates keys and orders out-of-order events by occurrence time', () => {
