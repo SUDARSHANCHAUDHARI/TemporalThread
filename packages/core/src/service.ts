@@ -42,6 +42,12 @@ import type { Clock } from './clock.js';
 import { applyCommitmentTransition } from './commitment-lifecycle.js';
 import { calculateElapsedTime, getCurrentTime } from './time.js';
 
+const privacyRank: Record<TemporalThreadConfig['privacyMode'], number> = {
+  'metadata-only': 0,
+  'temporal-references-only': 1,
+  'full-local-history': 2,
+};
+
 interface ResolvedFilters {
   filters: InteractionFilters;
   project: Project | null;
@@ -160,7 +166,11 @@ export class TemporalThreadService {
       occurred,
       timezone,
     );
-    const privacyMode = parsed.privacyMode ?? this.config.privacyMode;
+    // A caller may tighten the configured privacy mode but never loosen it.
+    const privacyMode =
+      parsed.privacyMode && privacyRank[parsed.privacyMode] < privacyRank[this.config.privacyMode]
+        ? parsed.privacyMode
+        : this.config.privacyMode;
     const messageHash = parsed.text ? createHash('sha256').update(parsed.text).digest('hex') : null;
     const extracted =
       parsed.text && privacyMode !== 'metadata-only'
