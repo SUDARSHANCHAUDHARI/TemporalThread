@@ -36,7 +36,7 @@
     }
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "1.30.0",
+    "@modelcontextprotocol/sdk": "1.31.0",
     "@sudarshanchaudhari/temporalthread-config": "workspace:*",
     "@sudarshanchaudhari/temporalthread-core": "workspace:*",
     "@sudarshanchaudhari/temporalthread-shared-types": "workspace:*",
