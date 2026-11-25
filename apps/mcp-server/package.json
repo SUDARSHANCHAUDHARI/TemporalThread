@@ -42,6 +42,6 @@
     "@sudarshanchaudhari/temporalthread-shared-types": "workspace:*",
     "@sudarshanchaudhari/temporalthread-storage-sqlite": "workspace:*",
     "@sudarshanchaudhari/temporalthread-temporal-parser": "workspace:*",
-    "zod": "4.4.3"
+    "zod": "4.6.6"
   }
 }
